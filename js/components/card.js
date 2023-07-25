@@ -6,7 +6,7 @@ class ImageMaterial extends THREE.MeshBasicMaterial {
 }
 
 class Card extends THREE.Group {
-    constructor(frontSrc, backSrc, loader) {
+    constructor(frontSrc, backSrc, loader, width=1, height=1) {
         loader = loader || new THREE.TextureLoader();
         super();
 
@@ -14,7 +14,7 @@ class Card extends THREE.Group {
         this.frontMaterial = new ImageMaterial(frontSrc, THREE.FrontSide, loader);
         this.backMaterial = new ImageMaterial(backSrc, THREE.BackSide, loader);
 
-        this.geometry = new THREE.PlaneGeometry(1, 1);
+        this.geometry = new THREE.PlaneGeometry(width, height);
 
 
         // Create a mesh for the front and back
