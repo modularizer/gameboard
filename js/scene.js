@@ -1,3 +1,4 @@
+// assuming OrbitControls is available in the global scope or has been imported
 class CustomScene extends THREE.Scene {
     constructor() {
         super();
@@ -6,6 +7,9 @@ class CustomScene extends THREE.Scene {
 
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // OrbitControls for panning, zooming, and rotating
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 
         this.display = this.display.bind(this);
         this.animate = this.animate.bind(this);
@@ -16,6 +20,7 @@ class CustomScene extends THREE.Scene {
     animate(item) {
         requestAnimationFrame(this.animate.bind(this, item));
         item.rotate(0.02, 0.01);
+        this.controls.update();  // update OrbitControls
         this.renderer.render(this, this.camera);
     }
 }

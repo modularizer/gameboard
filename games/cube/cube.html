@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Card</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="../../js/components/cube.js"></script>
+    <script src="../../js/scene.js"></script>
+</head>
+<body>
+
+    <script>
+
+        // Create a scene
+        var scene = new CustomScene();
+
+        // Add both cards to the scene
+        var card = new Cube([
+            './front.jpg',
+            './back.jpg',
+            './left.jpg',
+            './right.jpg',
+            './top.jpg',
+            './bottom.jpg'
+        ], 1, 2, 2);
+        scene.add(card);
+
+
+        window.addEventListener('load', ()=>{
+            scene.display(document.body);
+            scene.animate(card);
+        })
+
+
+    </script>
+
+</body>
+</html>
