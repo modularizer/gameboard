@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+     <script src="../../js/components/card.js"></script>
+    <script src="../../js/scene.js"></script>
+</head>
+<body>
+    <script>
+        // Create a scene
+        var scene = new CustomScene();
+
+        // Add both cards to the scene
+        var card = new Card('front.jpg', 'back.jpg');
+        scene.add(card);
+
+
+        window.addEventListener('load', ()=>{
+            scene.display(document.body);
+            scene.animate(card);
+        })
+    </script>
+
+</body>
+</html>
