@@ -17,10 +17,12 @@
 </head>
 <body>
     <script type="module">
+        import * as THREE from 'three';
+        window.THREE = THREE;
         import { Cube, CustomScene } from 'gameengine';
 
         // Create a scene
-        var scene = new CustomScene();
+        var scene = new CustomScene({x: 5, y: 5, z: 5});
 
         // Add both cards to the scene
         let card = new Cube({
@@ -40,12 +42,18 @@
             depth: 1,
             width: 1,
         });
-        scene.add(cube);
+        scene.add(cube, {x: 3, y: 1});
+
+        window.scene = scene;
+        window.cube = cube;
+        window.card = card;
+
 
 
         window.addEventListener('load', ()=>{
             scene.display(document.body);
-            scene.animate(card);
+            card.startRotation();
+            cube.startTranslation(0.001, 0.0001, 0.001);
         })
     </script>
 </body>
