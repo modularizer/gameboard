@@ -1,3 +1,7 @@
+import * as THREE from 'three';
+
+window.THREE = THREE;
+
 class DeferredPromise {
     constructor() {
         this.promise = new Promise((resolve, reject) => {
@@ -39,7 +43,7 @@ function underside(material){
 }
 
 
-class Cube extends THREE.Group {
+export class Cube extends THREE.Group {
     constructor(sources, dimensions, loader) {
         super();
 

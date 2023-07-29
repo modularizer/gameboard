@@ -1,4 +1,8 @@
-class CustomScene extends THREE.Scene {
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+export class CustomScene extends THREE.Scene {
     constructor(item) {
         super();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -8,7 +12,7 @@ class CustomScene extends THREE.Scene {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
         // OrbitControls for panning, zooming, and rotating
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
          this.isDragging = false;
         this.controls.addEventListener('start', () => {
             this.shouldRotate = false;
