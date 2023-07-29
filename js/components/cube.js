@@ -3,24 +3,26 @@ import { DeferredPromise } from 'utils';
 
 function getMaterial(v, loader){
     let loadPromise = false;
-    if (v instanceof THREE.MeshBasicMaterial){
+    if (v instanceof THREE.MeshStandardMaterial){
         // do nothing
     }else if (v instanceof THREE.Texture){
-        v = new THREE.MeshBasicMaterial({ map: v });
+        v = new THREE.MeshStandardMaterial({ map: v });
     }else if (v instanceof THREE.Color){
-        v = new THREE.MeshBasicMaterial({ color: v });
+        v = new THREE.MeshStandardMaterial({ color: v });
     }else if (typeof v === "string"){
         if (v.includes(".") || v.includes("/") || v.includes("\\")){
              let deferredLoadPromise = new DeferredPromise();
-             v = new THREE.MeshBasicMaterial({
+             v = new THREE.MeshStandardMaterial({
                 map: loader.load(v, deferredLoadPromise.resolve, undefined, deferredLoadPromise.reject)
              });
              loadPromise = deferredLoadPromise.promise;
 
         }else{
-            v = new THREE.MeshBasicMaterial({ color: new THREE.Color(v) });
+            v = new THREE.MeshStandardMaterial({ color: new THREE.Color(v) });
         }
     }
+    v.castShadow = true;
+    v.receiveShadow = true;
     return [v, loadPromise]
 }
 
@@ -196,8 +198,8 @@ export class Cube extends THREE.Group {
                     console.log("result", materials[a]);
                 }else{
                     console.log("neither")
-                    materials[a] = new THREE.MeshBasicMaterial({color: defaultColors[a]});
-                    materials[b] = new THREE.MeshBasicMaterial({color: defaultColors[b]});
+                    materials[a] = new THREE.MeshStandardMaterial({color: defaultColors[a]});
+                    materials[b] = new THREE.MeshStandardMaterial({color: defaultColors[b]});
                 }
 
             }
@@ -221,6 +223,10 @@ export class Cube extends THREE.Group {
                 materials.front,
                 materials.back,
             ]);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            this.castShadow = true;
+            this.receiveShadow = true;
 
             this.add(cube);
         });

@@ -45,6 +45,9 @@ export class CustomScene extends THREE.Scene {
         // Add grid helper
         if (this.config.grid.show) this.addGridHelper();
 
+        if (this.config.floor.show) this.addFloor();
+        this.addLights();
+
         this.addMouseListeners();
 
     }
@@ -57,6 +60,48 @@ export class CustomScene extends THREE.Scene {
                 near: 0.1,
                 far: 1000,
             },
+            minAngle: 0,
+            maxAngle: 70,
+        },
+        lights: {
+            ambient: {
+                enabled: true,
+                color: 0xffffff,
+                intensity: 0.5,
+                type: "ambient",
+            },
+            directional: {
+                enabled: false,
+                color: 0xff00ff,
+                intensity: 0.9,
+                type: "directional",
+                position: {
+                    x: 10,
+                    y: 10,
+                    z: 10,
+                },
+                target: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                },
+                castShadow: true,
+            },
+            point: {
+                enabled: true,
+                color: 0xffffff,
+                intensity: 1,
+                distance: 0,
+                decay: 1,
+                type: "point",
+                position: {
+                    x: 10,
+                    y: 10,
+                    z: 10,
+                },
+                castShadow: true,
+            }
+
         },
         renderer: {
             clearColor: 0xffffff,
@@ -64,8 +109,15 @@ export class CustomScene extends THREE.Scene {
             size: {
                 width: window.innerWidth,
                 height: window.innerHeight,
-            }
+            },
+            shadows: true,
 
+        },
+        floor: {
+            show: true,
+            width: 100,
+            height: 100,
+            color: 0xcccccc,
         },
         speed: 0.1,
         grid: {
@@ -90,7 +142,11 @@ export class CustomScene extends THREE.Scene {
         },
         items: [],
         selectedItem: null,
+        mode: "y",
         planeY: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+    }
+    reset(){
+        this.state.items.map(item => item.reset());
     }
     lookAt(x, y, z) {
         super.lookAt(new Vector3(x, y, z));
@@ -130,6 +186,7 @@ export class CustomScene extends THREE.Scene {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(this.config.renderer.size.width, this.config.renderer.size.height);
         this.renderer.setClearColor(this.config.renderer.clearColor, this.config.renderer.clearAlpha);
+        this.renderer.shadowMap.enabled = this.config.renderer.shadows;
     }
     addGridHelper(){
         this.gridHelper = new THREE.GridHelper(this.config.grid.size, this.config.grid.divisions);
@@ -139,15 +196,56 @@ export class CustomScene extends THREE.Scene {
         this.axesHelper = new THREE.AxesHelper(this.config.axes.size);
         super.add(this.axesHelper);
     }
+    addFloor(){
+        // Create a geometry
+        let floorGeometry = new THREE.PlaneGeometry(this.config.floor.width, this.config.floor.height, 1, 1);
+
+        // Rotate it so it's parallel to the xz plane
+        floorGeometry.rotateX(-Math.PI / 2);
+
+        // Create a material
+        let floorMaterial = new THREE.MeshStandardMaterial({ color: this.config.floor.color }); // gray color
+
+
+        // Create a mesh and add it to the scene
+        this.floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        this.floor.receiveShadow = true;
+        super.add(this.floor);
+
+    }
+    addLights(){
+        for (let [lightName, spec] of Object.entries(this.config.lights)){
+            let light = null;
+            if (spec.enabled == false) continue;
+            if (spec.type == "ambient"){
+                light = new THREE.AmbientLight(spec.color, spec.intensity);
+            }else if (spec.type == "directional"){
+                light = new THREE.DirectionalLight(spec.color, spec.intensity);
+                light.position.set(spec.position.x, spec.position.y, spec.position.z);
+                light.target.position.set(spec.target.x, spec.target.y, spec.target.z);
+                light.castShadow = spec.castShadow;
+            }else if (spec.type == "point"){
+                light = new THREE.PointLight(spec.color, spec.intensity, spec.distance, spec.decay);
+                light.position.set(spec.position.x, spec.position.y, spec.position.z);
+                light.castShadow = spec.castShadow;
+            }
+            super.add(light);
+        }
+    }
     addKeyListeners(){
         window.addEventListener('keydown', (e) => {
             let k = e.key;
+            if (this.state.selectedItem) {
+                // fire keydown event on selected item
+                this.state.selectedItem.dispatchEvent({ type: "keydown", key: k });
+
+            }
             if (e.shiftKey) k = "Shift+" + k;
             if (e.altKey) k = "Alt+" + k;
             if (e.ctrlKey) k = "Ctrl+" + k;
             if (e.metaKey) k = "Meta+" + k;
             if (e.fnKey) k = "Fn+" + k;
-            console.log("keydown", k, this.keyListeners[k])
+
             if (this.keyListeners[k]) {
                 this.keyListeners[k].bind(this)(e);
                 e.preventDefault();
@@ -157,7 +255,8 @@ export class CustomScene extends THREE.Scene {
     }
     addOrbitControls(){
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-//        this.controls.enabled  = false;
+        this.controls.minPolarAngle = (this.config.camera.minAngle * Math.PI / 180); // radians
+        this.controls.maxPolarAngle = (this.config.camera.maxAngle * Math.PI / 180); // radians
         for (let [k, v] of Object.entries(this.orbitListeners)){
             this.controls.addEventListener(k, v.bind(this));
         }
@@ -175,7 +274,8 @@ export class CustomScene extends THREE.Scene {
             if (!this.state._isDragging) {
                 this.state.shouldAnimate = !this.state.shouldAnimate; // Toggle rotation
             }
-        }
+        },
+        "r": ()=>{this.reset()},
     }
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
@@ -193,7 +293,7 @@ export class CustomScene extends THREE.Scene {
                 item.moveFrame(t);
             })
         }
-        this.controls.update();  // update OrbitControls
+        if (this.controls.enabled) this.controls.update();  // update OrbitControls
         this.renderer.render(this, this.camera);
     }
 
@@ -263,7 +363,8 @@ export class CustomScene extends THREE.Scene {
     }
     onMouseMove(event) {
         let [item, p] = this.getClickedItem(event);
-        item = this.state.selectedItem;
+        item = this.state.selectedItem
+
         if (this.state.selectedItem && item && item.onMouseMove) {
             let mousePos = new THREE.Vector3(
                 (event.clientX / window.innerWidth) * 2 - 1,
@@ -272,27 +373,32 @@ export class CustomScene extends THREE.Scene {
             );
             mousePos.unproject(this.camera); // this will give us position in 3D
 
-            // get the position where the mouse position intersects the Z plane
-            this.raycaster.ray.intersectPlane(this.state.planeY, mousePos);
+            if (this.state.mode === "y"){
+                // get the position where the mouse position intersects the Z plane
+                this.raycaster.ray.intersectPlane(this.state.planeY, mousePos);
 
-            // adjust the z-coordinate of mousePos
-            mousePos.y = this.state.planeY.constant;
+                // adjust the z-coordinate of mousePos
+                mousePos.y = this.state.planeY.constant;
 
-            item.position.copy(mousePos).sub(this.offset);
+                item.position.copy(mousePos).sub(this.offset);
+            }else{
+                let dir = mousePos.sub(this.camera.position).normalize();
+                let distance = - this.camera.position.z / dir.z;
+                let pos = this.camera.position.clone().add(dir.multiplyScalar(distance));
+
+                // Apply the offset to give the illusion of dragging the object
+                let endPos = item.position.clone().copy(pos).sub(this.offset);
+                endPos.y = Math.max(0, endPos.y);
+
+                let diff = endPos.clone().sub(item.position);
 
 
-//            let vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera);
-//            raycaster.ray.intersectPlane(planeZ, mousePos);
-//            let dir = vector.sub(this.camera.position).normalize();
-//            let distance = - this.camera.position.z / dir.z;
-//            let pos = this.camera.position.clone().add(dir.multiplyScalar(distance));
-//
-//            // Apply the offset to give the illusion of dragging the object
-//
-//            item.position.copy(pos).sub(this.offset);
-//            console.warn(this.offset, pos, item.position)
-//            item.onMouseMove(event);
-//            item.position.set(pos)
+                diff.y *= 0.2;
+
+                item.position.add(diff);
+
+
+            }
 
             event.preventDefault();
             event.stopPropagation();
@@ -309,9 +415,10 @@ export class CustomScene extends THREE.Scene {
             this.state.selectedItem.onMouseUp(event);
             this.state.selectedItem = null;
             this.state._isDragging = false;
+            this.addOrbitControls();
 
         }
-        this.controls.enabled = true;
+
     }
 }
 
