@@ -8,43 +8,45 @@
       {
         "imports": {
           "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.132.2/examples/jsm/"
+          "three/addons/": "https://unpkg.com/three@0.132.2/examples/jsm/",
+          "utils": "../../js/utils/index.js",
+          "gameengine": "../../js/index.js"
         }
       }
     </script>
 </head>
 <body>
     <script type="module">
-    import { Cube } from '../../js/components/cube.js';
-    import { CustomScene } from '../../js/scene.js';
+        import { Cube, CustomScene } from 'gameengine';
 
-    // Create a scene
-    var scene = new CustomScene();
+        // Create a scene
+        var scene = new CustomScene();
 
-    // Add both cards to the scene
-    var card = new Cube({
-        front: './front.jpg',
-        //back: './back.jpg',
-        back: "blue",
-        left: './left.jpg',
-        //right: './right.jpg',
-        //top: './top.jpg',
-        //bottom: './bottom.jpg'
-    }, {
-        //width: 1,
-        //height: 1,
-        //depth: 1
-    });
-    scene.add(card);
+        // Add both cards to the scene
+        let card = new Cube({
+            front: './front.jpg',
+            back: './back.jpg'
+        });
+        scene.add(card);
 
-
-    window.addEventListener('load', ()=>{
-        scene.display(document.body);
-        scene.animate(card);
-    })
+        let cube = new Cube({
+            front: './front.jpg',
+            back: './back.jpg',
+            left: "green",
+            bottom: "grey",
+            right: "blue",
+            top: "yellow",
+        },{
+            depth: 1,
+            width: 1,
+        });
+        scene.add(cube);
 
 
-</script>
-
+        window.addEventListener('load', ()=>{
+            scene.display(document.body);
+            scene.animate(card);
+        })
+    </script>
 </body>
 </html>

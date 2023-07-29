@@ -1,17 +1,5 @@
 import * as THREE from 'three';
-
-window.THREE = THREE;
-
-class DeferredPromise {
-    constructor() {
-        this.promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
-        })
-    }
-}
-
-
+import { DeferredPromise } from 'utils';
 
 function getMaterial(v, loader){
     let loadPromise = false;
@@ -46,6 +34,8 @@ function underside(material){
 export class Cube extends THREE.Group {
     constructor(sources, dimensions, loader) {
         super();
+        dimensions = dimensions || {};
+        sources = sources || {};
 
         loader = loader || new THREE.TextureLoader();
 
@@ -161,8 +151,8 @@ export class Cube extends THREE.Group {
                 let avgDim = avgDimensions[missingDimension];
                 let val = 0;
                 for (let k of dimensionNames){
-                    if (k !== missingDimension){
-                        val += (dimensions[k].input * avgDim / avgDimensions[k]);
+                    if (k !== missingDimension && avgDimensions[k]){
+                        val += (avgDim  * avgDimensions[k] / dimensions[k].input);
                     }
                 }
                 val /= 2;
@@ -173,6 +163,7 @@ export class Cube extends THREE.Group {
                     depth: dimensions.depth.input,
                 }
                 dimensions[missingDimension] = val;
+                console.warn(numDimensionInputs, missingDimension, avgDimensions, dimensions)
             }else{
                 dimensions = {
                     width: dimensions.width.input,
