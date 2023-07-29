@@ -17,14 +17,19 @@
         var scene = new CustomScene();
 
         // Add both cards to the scene
-        var card = new Cube([
-            './front.jpg',
-            './back.jpg',
-            './left.jpg',
-            './right.jpg',
-            './top.jpg',
-            './bottom.jpg'
-        ], 1, 2, 2);
+        var card = new Cube({
+            front: './front.jpg',
+            //back: './back.jpg',
+            back: "blue",
+            left: './left.jpg',
+            //right: './right.jpg',
+            top: './top.jpg',
+            //bottom: './bottom.jpg'
+        }, {
+            //width: 1,
+            //height: 1,
+            //depth: 1
+        });
         scene.add(card);
 
 
