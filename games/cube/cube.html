@@ -26,8 +26,8 @@
 
         // Add both cards to the scene
         let card = new Cube({
-            front: './front.jpg',
-            back: './back.jpg'
+            bottom: './front.jpg',
+            top: './back.jpg'
         });
         scene.add(card, {x: 0, y: 2, z: 0});
 
@@ -42,7 +42,7 @@
             depth: 1,
             width: 1,
         });
-        scene.add(cube, {x: 3, y: 1});
+        scene.add(cube, {x: 0, y: 0, z: 0});
 
         window.scene = scene;
         window.cube = cube;
@@ -52,8 +52,8 @@
 
         window.addEventListener('load', ()=>{
             scene.display(document.body);
-            card.startRotation();
-            cube.startTranslation(0.001, 0.0001, 0.001);
+            card.startRotation(0, 0.001, 0);
+            cube.startTranslation(0.001, 0, 0.001);
         })
     </script>
 </body>

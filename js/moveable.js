@@ -62,18 +62,22 @@ export class MoveableItem{
             }
         }
     }
+    flip(){
+        this.item.rotation.x += Math.PI;
+    }
     jumpTo(x, y, z){
         this.item.position.x = x;
-        this.item.position.y = y;
+        this.item.position.y = Math.max(y, 0);// TODO: make sure it doesn't rotate below the ground (y=0)
         this.item.position.z = z;
     }
     moveTo(x, y, z, duration, speed=0.01){
         let dx = x-this.item.position.x;
-        let dy = y-this.item.position.y;
+        let dy = y-Math.max(this.item.position.y, 0);
         let dz = z-this.item.position.z;
         this.move(dx, dy, dz, duration, speed);
     }
     move(dx, dy, dz, duration, speed=0.01){
+        dy = Math.max(dy, -this.item.position.y); // TODO: make sure it doesn't rotate below the ground (y=0)
         let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
         let fps=60; // FIXME: use timestamp or actual fps
         if (duration){
@@ -120,13 +124,14 @@ export class MoveableItem{
     }
 
     setRotation(x, y, z){
+        // TODO: make sure it doesn't rotate below the ground (y=0)
         this.item.rotation.x = x;
         this.item.rotation.y = y;
         this.item.rotation.z = z;
     }
     translate(x, y, z){
         this.item.position.x += x;
-        this.item.position.y += y;
+        this.item.position.y = Math.max(0, this.item.position.y + y) // TODO: make sure it doesn't rotate below the ground (y=0)
         this.item.position.z += z;
     }
     rotate(x, y, z){

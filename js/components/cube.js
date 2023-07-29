@@ -212,6 +212,7 @@ export class Cube extends THREE.Group {
                 depth: dimensions.depth || 0.01,
             }
             const geometry = new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth);
+            geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
 
             // Create a mesh
             console.log(dimensions, Object.values(materials));
