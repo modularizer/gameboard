@@ -12,6 +12,10 @@ function toXYZ(v) {
 export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
         super();
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.offset = new THREE.Vector3();
+
         if (cameraPosition) this.state.camera.position = toXYZ(cameraPosition);
 
         // Set up camera
@@ -29,12 +33,19 @@ export class CustomScene extends THREE.Scene {
 
         this.display = this.display.bind(this);
         this.animate = this.animate.bind(this);
+        this.getClickedItem = this.getClickedItem.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+
 
         // Add axes helper
         if (this.config.axes.show) this.addAxesHelper();
 
         // Add grid helper
         if (this.config.grid.show) this.addGridHelper();
+
+        this.addMouseListeners();
 
     }
     config = {
@@ -78,6 +89,8 @@ export class CustomScene extends THREE.Scene {
             },
         },
         items: [],
+        selectedItem: null,
+        planeY: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
     }
     lookAt(x, y, z) {
         super.lookAt(new Vector3(x, y, z));
@@ -104,11 +117,13 @@ export class CustomScene extends THREE.Scene {
         this.state.camera.position = this.camera.position;
         this.add(this.camera);
     }
-    add(item, position){
-        if (position) item.position.set(position.x, position.y, position.z);
-        item = new MoveableItem(item);
-        this.state.items.push(item);
-        this.item = item;
+    add(item, position, makeMoveable=true){
+        if (makeMoveable){
+            if (position) item.position.set(position.x, position.y, position.z);
+            item = new MoveableItem(item);
+            this.state.items.push(item);
+            this.item = item;
+        }
         super.add(item);
     }
     addRenderer(){
@@ -117,12 +132,12 @@ export class CustomScene extends THREE.Scene {
         this.renderer.setClearColor(this.config.renderer.clearColor, this.config.renderer.clearAlpha);
     }
     addGridHelper(){
-        const gridHelper = new THREE.GridHelper(this.config.grid.size, this.config.grid.divisions);
-        this.add(gridHelper);
+        this.gridHelper = new THREE.GridHelper(this.config.grid.size, this.config.grid.divisions);
+        super.add(this.gridHelper);
     }
     addAxesHelper(){
-        const axesHelper = new THREE.AxesHelper(this.config.axes.size);
-        this.add(axesHelper);
+        this.axesHelper = new THREE.AxesHelper(this.config.axes.size);
+        super.add(this.axesHelper);
     }
     addKeyListeners(){
         window.addEventListener('keydown', (e) => {
@@ -142,6 +157,7 @@ export class CustomScene extends THREE.Scene {
     }
     addOrbitControls(){
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+//        this.controls.enabled  = false;
         for (let [k, v] of Object.entries(this.orbitListeners)){
             this.controls.addEventListener(k, v.bind(this));
         }
@@ -170,15 +186,132 @@ export class CustomScene extends THREE.Scene {
         parentElement.appendChild(this.renderer.domElement);
         this.animate();
     }
-    animate() {
+    animate(t) {
         requestAnimationFrame(this.animate.bind(this));
         if (this.state.shouldAnimate){
             this.state.items.forEach(item => {
-                item.moveFrame();
+                item.moveFrame(t);
             })
         }
         this.controls.update();  // update OrbitControls
         this.renderer.render(this, this.camera);
+    }
+
+    getClickedItem(event) {
+        // Calculate mouse position in normalized device coordinates
+        this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+//        console.log(event.clientX, event.clientY, this.mouse.x, this.mouse.y)
+
+        // Update the picking ray with the camera and mouse position
+        this.raycaster.setFromCamera( this.mouse, this.camera );
+
+//        this.showRay();
+
+        // Calculate objects intersecting the picking ray
+        let intersects = this.raycaster.intersectObjects( this.state.items, true);
+        let o;
+        let p;
+        if (intersects.length){
+            o = intersects[0].object;
+            p = intersects[0].point;
+
+            while (!this.state.items.includes(o)){
+                o = o.parent;
+            }
+            this.offset.copy(intersects[0].point).sub(o.position);
+        }else{
+            o = null;
+        }
+        return [o, p];
+    }
+    showRay(){
+        let dir = this.raycaster.ray.direction;  // normalized direction vector components
+        let origin = this.raycaster.ray.origin;  // ray origin coordinates
+        let length = 10;  // length of the arrow
+        let color = 0xff0000;  // color of the arrow
+
+        let arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
+
+        // remove the old arrow from the scene if it exists
+        this.remove(this.getObjectByName("arrowHelper"));
+
+        // assign name to the arrow object
+        arrowHelper.name = "arrowHelper";
+
+        // add the arrow to the scene
+        super.add(arrowHelper);
+
+    }
+    addMouseListeners() {
+        window.addEventListener('mousedown', this.onMouseDown.bind(this));
+        window.addEventListener('mousemove', this.onMouseMove.bind(this));
+        window.addEventListener('mouseup', this.onMouseUp.bind(this));
+    }
+    onMouseDown(event) {
+        let [item, p] = this.getClickedItem(event);
+        if (item && item.onMouseDown){
+            this.state.planeY.constant = p.y;
+            this.state.selectedItem = item;
+            this.controls.enabled = false;
+            this.state._isDragging = true;
+            item.onMouseDown(event);
+        }else{
+            this.state.selectedItem = null;
+            this.controls.enabled = true;
+        }
+    }
+    onMouseMove(event) {
+        let [item, p] = this.getClickedItem(event);
+        item = this.state.selectedItem;
+        if (this.state.selectedItem && item && item.onMouseMove) {
+            let mousePos = new THREE.Vector3(
+                (event.clientX / window.innerWidth) * 2 - 1,
+                -(event.clientY / window.innerHeight) * 2 + 1,
+                0.5
+            );
+            mousePos.unproject(this.camera); // this will give us position in 3D
+
+            // get the position where the mouse position intersects the Z plane
+            this.raycaster.ray.intersectPlane(this.state.planeY, mousePos);
+
+            // adjust the z-coordinate of mousePos
+            mousePos.y = this.state.planeY.constant;
+
+            item.position.copy(mousePos).sub(this.offset);
+
+
+//            let vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera);
+//            raycaster.ray.intersectPlane(planeZ, mousePos);
+//            let dir = vector.sub(this.camera.position).normalize();
+//            let distance = - this.camera.position.z / dir.z;
+//            let pos = this.camera.position.clone().add(dir.multiplyScalar(distance));
+//
+//            // Apply the offset to give the illusion of dragging the object
+//
+//            item.position.copy(pos).sub(this.offset);
+//            console.warn(this.offset, pos, item.position)
+//            item.onMouseMove(event);
+//            item.position.set(pos)
+
+            event.preventDefault();
+            event.stopPropagation();
+        }else if (this.state.selectedItem){
+            this.state.selectedItem = null;
+            this.state._isDragging = false;
+            this.controls.enabled = this.wasOrbitEnabled;
+            document.dispatchEvent(new MouseEvent('mouseup'));
+        }
+    }
+    onMouseUp(event) {
+        let item = this.state.selectedItem;
+        if (item && item.onMouseUp) {
+            this.state.selectedItem.onMouseUp(event);
+            this.state.selectedItem = null;
+            this.state._isDragging = false;
+
+        }
+        this.controls.enabled = true;
     }
 }
 

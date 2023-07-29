@@ -35,6 +35,9 @@ export class MoveableItem{
         this.item.moveFrame = this.moveFrame.bind(this);
         this.item.rotationFrame = this.rotationFrame.bind(this);
         this.item.translationFrame = this.translationFrame.bind(this);
+        this.item.onMouseDown = this.onMouseDown.bind(this);
+        this.item.onMouseUp = this.onMouseUp.bind(this);
+        this.item.onMouseMove = this.onMouseMove.bind(this);
 
         return this.item;
     }
@@ -72,8 +75,9 @@ export class MoveableItem{
     }
     move(dx, dy, dz, duration, speed=0.01){
         let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        let fps=60; // FIXME: use timestamp or actual fps
         if (duration){
-            speed = distance/duration;
+            speed = distance/(duration*fps);
         }
         let sx = speed * dx/distance;
         let sy = speed * dy/distance;
@@ -154,7 +158,7 @@ export class MoveableItem{
     stopTranslation(){
         this.item.movestate.animation.translation.enabled = false;
     }
-    moveFrame(){
+    moveFrame(t){
         if (this.item.movestate.animation.rotation.enabled){
             this.rotationFrame();
         }
@@ -179,5 +183,15 @@ export class MoveableItem{
         }else if (t.cycles != null){
             t.cycles--;
         }
+    }
+
+    onMouseDown(event){
+        console.warn("onMouseDown", event);
+    }
+    onMouseUp(event){
+        console.warn("onMouseUp", event);
+    }
+    onMouseMove(event){
+        console.warn("onMouseMove", event);
     }
 }
