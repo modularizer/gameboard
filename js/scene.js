@@ -37,6 +37,10 @@ export class CustomScene extends THREE.Scene {
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
+        this.onTouchStart = this.onTouchStart.bind(this);
+        this.onTouchMove = this.onTouchMove.bind(this);
+        this.onTouchEnd = this.onTouchEnd.bind(this);
+
         this.setCameraMode = this.setCameraMode.bind(this);
 
 
@@ -54,7 +58,7 @@ export class CustomScene extends THREE.Scene {
     }
     config = {
         camera: {
-            mode: "orthographic",
+            mode: "perspective",
             orthographic: {
                 left: -10,
                 right: 10,
@@ -62,7 +66,7 @@ export class CustomScene extends THREE.Scene {
                 bottom: -4,
             },
             perspective: {
-                fov: 75,
+                fov: 50,
                 aspect: window.innerWidth / window.innerHeight,
                 near: 0.1,
                 far: 1000,
@@ -328,6 +332,9 @@ export class CustomScene extends THREE.Scene {
         window.addEventListener('mousedown', this.onMouseDown.bind(this));
         window.addEventListener('mousemove', this.onMouseMove.bind(this));
         window.addEventListener('mouseup', this.onMouseUp.bind(this));
+        window.addEventListener('touchstart', this.onTouchStart.bind(this));
+        window.addEventListener('touchmove', this.onTouchMove.bind(this));
+        window.addEventListener('touchend', this.onTouchEnd.bind(this));
     }
     getClickedItem(event) {
         // Calculate mouse position in normalized device coordinates
@@ -387,24 +394,27 @@ export class CustomScene extends THREE.Scene {
     intersectMovePlane(item){
         let planeNormal;
         let mm = this.state.moveMode;
-        if (mm === "normal"){
+        if (mm === "normal") {
             planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
-        }else if (mm === "x"){
+        } else if (mm === "x") {
             planeNormal = new THREE.Vector3(1, 0, 0);
-        }else if (mm === "y"){
+        } else if (mm === "y") {
             planeNormal = new THREE.Vector3(0, 1, 0);
-        }else if (mm === "z"){
+        } else if (mm === "z") {
             planeNormal = new THREE.Vector3(0, 0, 1);
-        }else if (mm instanceof THREE.Vector3){
+        } else if (mm instanceof THREE.Vector3) {
             planeNormal = mm;
-        }else if (mm instanceof Array){
+        } else if (mm instanceof Array) {
             planeNormal = new THREE.Vector3(...mm);
-        }else{
+        } else {
             planeNormal = new THREE.Vector3(mm.x, mm.y, mm.z);
         }
         let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
+        let mouse3D = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera);
+        this.raycaster.set(this.camera.position, mouse3D.sub(this.camera.position).normalize());
         this.raycaster.ray.intersectPlane(plane, this.mouse);
     }
+
     onMouseDown(event) {
         let item = this.getClickedItem(event);
         if (item){
@@ -442,6 +452,30 @@ export class CustomScene extends THREE.Scene {
             if (item.onMouseUp) item.onMouseUp(event);
         }
 
+    }
+
+
+    onTouchStart(event) {
+        event.preventDefault();
+        if(event.touches) { // Check if this is a touch event
+            // Update event to use first touch event
+            event.clientX = event.touches[0].clientX;
+            event.clientY = event.touches[0].clientY;
+        }
+        this.onMouseDown(event);
+    }
+    onTouchMove(event) {
+        event.preventDefault();
+        if(event.touches) { // Check if this is a touch event
+            // Update event to use first touch event
+            event.clientX = event.touches[0].clientX;
+            event.clientY = event.touches[0].clientY;
+        }
+        this.onMouseMove(event);
+    }
+    onTouchEnd(event) {
+        event.preventDefault();
+        this.onMouseUp(event);
     }
 }
 
