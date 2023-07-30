@@ -296,23 +296,38 @@ export class CustomScene extends THREE.Scene {
         this.renderer.render(this, this.camera);
     }
 
+    addMouseListeners() {
+        window.addEventListener('mousedown', this.onMouseDown.bind(this));
+        window.addEventListener('mousemove', this.onMouseMove.bind(this));
+        window.addEventListener('mouseup', this.onMouseUp.bind(this));
+    }
     getClickedItem(event) {
         // Calculate mouse position in normalized device coordinates
         this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
         this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-//        console.log(event.clientX, event.clientY, this.mouse.x, this.mouse.y)
 
         // Update the picking ray with the camera and mouse position
         this.raycaster.setFromCamera( this.mouse, this.camera );
 
-//        this.showRay();
+        // this.showRay();
 
         // Calculate objects intersecting the picking ray
         let intersects = this.raycaster.intersectObjects( this.state.items, true);
+
+        // keep the same object selected as it passes behind other objects
+        if (this.state.selectedFace){
+            for (let i of intersects){
+                if (i.face == this.state.selectedFace){
+                    return this.state.selectedItem
+                }
+            }
+        }
+
         let o;
         let p;
         if (intersects.length){
             o = intersects[0].object;
+            this.state.selectedFace = intersects[0].face;
             p = intersects[0].point;
 
             while (!this.state.items.includes(o)){
@@ -321,7 +336,7 @@ export class CustomScene extends THREE.Scene {
         }else{
             o = null;
         }
-        return [o, p];
+        return o
     }
     showRay(){
         let dir = this.raycaster.ray.direction;  // normalized direction vector components
@@ -340,11 +355,6 @@ export class CustomScene extends THREE.Scene {
         // add the arrow to the scene
         super.add(arrowHelper);
 
-    }
-    addMouseListeners() {
-        window.addEventListener('mousedown', this.onMouseDown.bind(this));
-        window.addEventListener('mousemove', this.onMouseMove.bind(this));
-        window.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
     intersectMovePlane(item){
         let planeNormal;
@@ -368,52 +378,40 @@ export class CustomScene extends THREE.Scene {
         this.raycaster.ray.intersectPlane(plane, this.mouse);
     }
     onMouseDown(event) {
-
-        let [item, p] = this.getClickedItem(event);
-
-
+        let item = this.getClickedItem(event);
         if (item){
             this.intersectMovePlane(item);
             this.offset.copy(item.position).sub(this.mouse);
-
-
             this.state.selectedItem = item;
             this.controls.enabled = false;
             this.state._isDragging = true;
             if (item.onMouseDown) item.onMouseDown(event);
         }else{
             this.state.selectedItem = null;
+            this.state.selectedFace = null;
             this.controls.enabled = true;
         }
     }
     onMouseMove(event) {
-        let [item, p] = this.getClickedItem(event);
-        item = this.state.selectedItem
-
-        if (this.state.selectedItem && item) {
+        this.getClickedItem(event);
+        let item = this.state.selectedItem;
+        if (item) {
             this.intersectMovePlane(item);
             let endPos = item.position.clone().copy(this.mouse).sub(this.offset);
             endPos.y = Math.max(0, endPos.y);
             let diff = endPos.clone().sub(item.position);
             item.position.add(diff);
-
-            event.preventDefault();
-            event.stopPropagation();
-        }else if (this.state.selectedItem){
-            this.state.selectedItem = null;
-            this.state._isDragging = false;
-            this.controls.enabled = this.wasOrbitEnabled;
-            document.dispatchEvent(new MouseEvent('mouseup'));
+            if (item.onMouseMove) item.onMouseMove(event);
         }
     }
     onMouseUp(event) {
         let item = this.state.selectedItem;
-        if (item && item.onMouseUp) {
-            this.state.selectedItem.onMouseUp(event);
+        if (item) {
             this.state.selectedItem = null;
+            this.state.selectedFace = null;
             this.state._isDragging = false;
             this.addOrbitControls();
-
+            if (item.onMouseUp) item.onMouseUp(event);
         }
 
     }
