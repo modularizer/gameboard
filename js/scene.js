@@ -142,9 +142,7 @@ export class CustomScene extends THREE.Scene {
         },
         items: [],
         selectedItem: null,
-//        moveMode: "normal", // "normal", "x", "y", "z"
-        moveMode: "y",
-        planeY: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+        moveMode: "normal", // "normal", "x", "y", "z", Vector3\
     }
     reset(){
         this.state.items.map(item => item.reset());
@@ -348,24 +346,34 @@ export class CustomScene extends THREE.Scene {
         window.addEventListener('mousemove', this.onMouseMove.bind(this));
         window.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
+    intersectMovePlane(item){
+        let planeNormal;
+        let mm = this.state.moveMode;
+        if (mm === "normal"){
+            planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
+        }else if (mm === "x"){
+            planeNormal = new THREE.Vector3(1, 0, 0);
+        }else if (mm === "y"){
+            planeNormal = new THREE.Vector3(0, 1, 0);
+        }else if (mm === "z"){
+            planeNormal = new THREE.Vector3(0, 0, 1);
+        }else if (mm instanceof THREE.Vector3){
+            planeNormal = mm;
+        }else if (mm instanceof Array){
+            planeNormal = new THREE.Vector3(...mm);
+        }else{
+            planeNormal = new THREE.Vector3(mm.x, mm.y, mm.z);
+        }
+        let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
+        this.raycaster.ray.intersectPlane(plane, this.mouse);
+    }
     onMouseDown(event) {
 
         let [item, p] = this.getClickedItem(event);
 
 
         if (item){
-            let planeNormal;
-            if (this.state.moveMode === "normal"){
-                planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
-            }else if (this.state.moveMode === "x"){
-                planeNormal = new THREE.Vector3(1, 0, 0);
-            }else if (this.state.moveMode === "y"){
-                planeNormal = new THREE.Vector3(0, 1, 0);
-            }else if (this.state.moveMode === "z"){
-                planeNormal = new THREE.Vector3(0, 0, 1);
-            }
-            let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
-            this.raycaster.ray.intersectPlane(plane, this.mouse);
+            this.intersectMovePlane(item);
             this.offset.copy(item.position).sub(this.mouse);
 
 
@@ -383,19 +391,7 @@ export class CustomScene extends THREE.Scene {
         item = this.state.selectedItem
 
         if (this.state.selectedItem && item) {
-            let dir = this.mouse.sub(this.camera.position).normalize();
-            let planeNormal;
-            if (this.state.moveMode === "normal"){
-                planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
-            }else if (this.state.moveMode === "x"){
-                planeNormal = new THREE.Vector3(1, 0, 0);
-            }else if (this.state.moveMode === "y"){
-                planeNormal = new THREE.Vector3(0, 1, 0);
-            }else if (this.state.moveMode === "z"){
-                planeNormal = new THREE.Vector3(0, 0, 1);
-            }
-            let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
-            this.raycaster.ray.intersectPlane(plane, this.mouse);
+            this.intersectMovePlane(item);
             let endPos = item.position.clone().copy(this.mouse).sub(this.offset);
             endPos.y = Math.max(0, endPos.y);
             let diff = endPos.clone().sub(item.position);
