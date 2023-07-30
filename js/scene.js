@@ -8,6 +8,10 @@ function toXYZ(v) {
     if (v instanceof Array) return { x: v[0], y: v[1], z: v[2] };
     if (typeof v === "object") return v;
 }
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
 
 export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
@@ -363,6 +367,43 @@ export class CustomScene extends THREE.Scene {
         window.addEventListener('touchmove', this.onTouchMove.bind(this));
         window.addEventListener('touchend', this.onTouchEnd.bind(this));
     }
+
+    showRay(dir, origin, color=0x00ff00, length=10, name="rayHelper"){
+        let arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
+
+        // remove the old arrow from the scene if it exists
+        this.remove(this.getObjectByName(name));
+
+        // assign name to the arrow object
+        arrowHelper.name = name;
+
+        // add the arrow to the scene
+        super.add(arrowHelper);
+
+    }
+    intersectMovePlane(item){
+        let planeNormal;
+        let mm = this.state.moveMode;
+        if (mm === "normal") {
+            planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
+        } else if (mm === "x") {
+            planeNormal = new THREE.Vector3(1, 0, 0);
+        } else if (mm === "y") {
+            planeNormal = new THREE.Vector3(0, 1, 0);
+        } else if (mm === "z") {
+            planeNormal = new THREE.Vector3(0, 0, 1);
+        } else if (mm instanceof THREE.Vector3) {
+            planeNormal = mm;
+        } else if (mm instanceof Array) {
+            planeNormal = new THREE.Vector3(...mm);
+        } else {
+            planeNormal = new THREE.Vector3(mm.x, mm.y, mm.z);
+        }
+        let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
+        let mouse3D = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera);
+        this.raycaster.set(this.camera.position, mouse3D.sub(this.camera.position).normalize());
+        this.raycaster.ray.intersectPlane(plane, this.mouse);
+    }
     getClickedItem(event) {
         // Calculate mouse position in normalized device coordinates
         this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -395,53 +436,12 @@ export class CustomScene extends THREE.Scene {
             while (!this.state.items.includes(o)){
                 o = o.parent;
             }
+            o.clickPoint = o.worldToLocal(p);
         }else{
             o = null;
         }
         return o
     }
-    showRay(){
-        let dir = this.raycaster.ray.direction;  // normalized direction vector components
-        let origin = this.raycaster.ray.origin;  // ray origin coordinates
-        let length = 10;  // length of the arrow
-        let color = 0xff0000;  // color of the arrow
-
-        let arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
-
-        // remove the old arrow from the scene if it exists
-        this.remove(this.getObjectByName("arrowHelper"));
-
-        // assign name to the arrow object
-        arrowHelper.name = "arrowHelper";
-
-        // add the arrow to the scene
-        super.add(arrowHelper);
-
-    }
-    intersectMovePlane(item){
-        let planeNormal;
-        let mm = this.state.moveMode;
-        if (mm === "normal") {
-            planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
-        } else if (mm === "x") {
-            planeNormal = new THREE.Vector3(1, 0, 0);
-        } else if (mm === "y") {
-            planeNormal = new THREE.Vector3(0, 1, 0);
-        } else if (mm === "z") {
-            planeNormal = new THREE.Vector3(0, 0, 1);
-        } else if (mm instanceof THREE.Vector3) {
-            planeNormal = mm;
-        } else if (mm instanceof Array) {
-            planeNormal = new THREE.Vector3(...mm);
-        } else {
-            planeNormal = new THREE.Vector3(mm.x, mm.y, mm.z);
-        }
-        let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
-        let mouse3D = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera);
-        this.raycaster.set(this.camera.position, mouse3D.sub(this.camera.position).normalize());
-        this.raycaster.ray.intersectPlane(plane, this.mouse);
-    }
-
     onMouseDown(event) {
         let item = this.getClickedItem(event);
         if (item){
@@ -453,6 +453,10 @@ export class CustomScene extends THREE.Scene {
             // if right click, call context menu
             if (event.button === 2 || this.state.clickMode === "right") {
                 this.state.clickMode = "right";
+                // Save the original mouse position and the original quaternion
+                this.mouseOriginal = {x: this.mouse.x, y: this.mouse.y};
+                item.originalQuaternion = item.quaternion.clone();
+
                 if (item.onRightClickDown) item.onRightClickDown(event);
                 return
             }
@@ -480,7 +484,26 @@ export class CustomScene extends THREE.Scene {
         if (item) {
             // if right click, call context menu
             if (event.button === 2 || this.state.clickMode === "right") {
-                if (item.onRightClickMove) item.onRightClickMove(event);
+                // Compute the difference between the current and the original mouse positions
+                let diffX = this.mouse.x - this.mouseOriginal.x;
+                let diffY = -(this.mouse.y - this.mouseOriginal.y);
+
+                // Use these differences to create a rotation axis (in camera coordinates for simplicity)
+                let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
+
+                // Compute the rotation angle based on the total movement of the mouse
+                // Compute the rotation angle based on the total movement of the mouse, and scale it by a factor for sensitivity
+                let sensitivity = 19;  // Increase this value for more sensitivity
+                let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
+
+                // Create a quaternion from this rotation
+                let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
+
+                // Apply this rotation to the original rotation of the object
+                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.originalQuaternion, quaternion);
+                item.setRotationFromQuaternion(finalQuaternion);
+
+                if (item.onRightClickMove)  item.onRightClickMove(event);
                 return
             }
             // if middle click, rotate the object
@@ -492,6 +515,7 @@ export class CustomScene extends THREE.Scene {
             // if left click, move the object
             this.intersectMovePlane(item);
             let endPos = item.position.clone().copy(this.mouse).sub(this.offset);
+
             endPos.y = Math.max(0, endPos.y);
             let diff = endPos.clone().sub(item.position);
             item.position.add(diff);
@@ -510,7 +534,10 @@ export class CustomScene extends THREE.Scene {
 
             // if right click, call context menu
             if (event.button === 2 || this.state.clickMode === "right") {
-                if (item.onRightClickUp) item.onRightClickUp(event);
+                if (item.onRightClickUp) {
+                    this.state.startPosition = null;
+                    item.onRightClickUp(event);
+                }
                 return
             }
 

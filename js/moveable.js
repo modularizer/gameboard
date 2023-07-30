@@ -2,6 +2,7 @@ export class MoveableItem{
     constructor(item){
         this.item = item;
         this.initialPosition = {x: item.position.x, y: item.position.y, z: item.position.z};
+        this.item.clickRelativePosition = null;
         this.item.movestate = {
             animation: {
                 started: false,
@@ -39,9 +40,13 @@ export class MoveableItem{
         this.item.moveFrame = this.moveFrame.bind(this);
         this.item.rotationFrame = this.rotationFrame.bind(this);
         this.item.translationFrame = this.translationFrame.bind(this);
+        this.item.flip = this.flip.bind(this);
+
 
         return this.item;
     }
+
+
     reset(){
         this.item.position.x = this.initialPosition.x;
         this.item.position.y = this.initialPosition.y;

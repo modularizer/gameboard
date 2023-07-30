@@ -200,7 +200,7 @@ export class Cube extends THREE.Group {
                 depth: dimensions.depth || minSide,
             }
             this.geometry = new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth);
-            this.geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
+//            this.geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
 
             // Create a mesh
             console.log(dimensions, Object.values(materials));
@@ -222,6 +222,11 @@ export class Cube extends THREE.Group {
             this.addWireframe();
         });
     }
+    get centerOfRotation(){
+//        return this.position.clone().add(new THREE.Vector3(0, this.geometry.parameters.height / 2, 0));
+        return this.position.clone();
+    }
+
     config = {
         castShadow: true,
         receiveShadow: true,
