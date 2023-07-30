@@ -142,7 +142,7 @@ export class CustomScene extends THREE.Scene {
         },
         items: [],
         selectedItem: null,
-        mode: "y",
+        moveMode: "normal", // "normal", "x", "y", "z"
         planeY: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
     }
     reset(){
@@ -319,7 +319,6 @@ export class CustomScene extends THREE.Scene {
             while (!this.state.items.includes(o)){
                 o = o.parent;
             }
-            this.offset.copy(intersects[0].point).sub(o.position);
         }else{
             o = null;
         }
@@ -349,13 +348,32 @@ export class CustomScene extends THREE.Scene {
         window.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
     onMouseDown(event) {
+
         let [item, p] = this.getClickedItem(event);
-        if (item && item.onMouseDown){
-            this.state.planeY.constant = p.y;
+
+
+        if (item){
+            if (this.state.moveMode === "normal"){
+                let mousePos = new THREE.Vector3(
+                    (event.clientX / window.innerWidth) * 2 - 1,
+                    -(event.clientY / window.innerHeight) * 2 + 1,
+                    0.5
+                );
+                mousePos.unproject(this.camera);
+                let planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
+                let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
+                this.raycaster.ray.intersectPlane(plane, mousePos);
+                this.offset.copy(item.position).sub(mousePos);
+            }else{
+//                this.offset.copy(p).sub(item.position);
+                this.state.planeY.constant = p.y;
+            }
+
+
             this.state.selectedItem = item;
             this.controls.enabled = false;
             this.state._isDragging = true;
-            item.onMouseDown(event);
+            if (item.onMouseDown) item.onMouseDown(event);
         }else{
             this.state.selectedItem = null;
             this.controls.enabled = true;
@@ -373,32 +391,25 @@ export class CustomScene extends THREE.Scene {
             );
             mousePos.unproject(this.camera); // this will give us position in 3D
 
-            if (this.state.mode === "y"){
+            let endPos = item.position.clone();
+            if (this.state.moveMode === "y"){
                 // get the position where the mouse position intersects the Z plane
                 this.raycaster.ray.intersectPlane(this.state.planeY, mousePos);
 
                 // adjust the z-coordinate of mousePos
                 mousePos.y = this.state.planeY.constant;
 
-                item.position.copy(mousePos).sub(this.offset);
+                endPos = endPos.copy(mousePos).sub(this.offset);
             }else{
                 let dir = mousePos.sub(this.camera.position).normalize();
-                let distance = - this.camera.position.z / dir.z;
-                let pos = this.camera.position.clone().add(dir.multiplyScalar(distance));
-
-                // Apply the offset to give the illusion of dragging the object
-                let endPos = item.position.clone().copy(pos).sub(this.offset);
-                endPos.y = Math.max(0, endPos.y);
-
-                let diff = endPos.clone().sub(item.position);
-
-
-                diff.y *= 0.2;
-
-                item.position.add(diff);
-
-
+                let planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
+                let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
+                this.raycaster.ray.intersectPlane(plane, mousePos);
+                endPos = endPos.copy(mousePos).sub(this.offset);
             }
+            endPos.y = Math.max(0, endPos.y);
+            let diff = endPos.clone().sub(item.position);
+            item.position.add(diff);
 
             event.preventDefault();
             event.stopPropagation();
