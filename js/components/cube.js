@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { DeferredPromise } from 'utils';
 
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+
 function getMaterial(v, loader){
     let loadPromise = false;
     if (v instanceof THREE.MeshStandardMaterial){
@@ -230,12 +234,48 @@ export class Cube extends THREE.Group {
             this.receiveShadow = true;
 
             this.add(cube);
+            this.makeWireframe();
         });
     }
+    makeWireframe() {
+        // create an edges geometry and pass in your cube geometry
+        let edges = new THREE.EdgesGeometry( this.children[0].geometry );
 
+        // create a LineGeometry
+        let geometry = new LineGeometry();
+        geometry.setPositions( edges.attributes.position.array );
+
+        let size = new THREE.Vector3();
+        this.children[0].geometry.computeBoundingBox();
+        this.children[0].geometry.boundingBox.getSize(size);
+        let avgSize = (size.x + size.y + size.z) / 3;
+        let s = avgSize * 5;
+
+        // create a LineMaterial and specify the color and linewidth
+        let material = new LineMaterial({
+            color: 0x00ff00,
+            linewidth: s,  // Set the line width here
+        });
+
+        // create a Line2 (Line with width) and store it
+        this.wireframeMesh = new Line2(geometry, material);
+
+        // You must call this method after any change to line properties, including the position of the camera
+        material.resolution.set(window.innerWidth, window.innerHeight);
+    }
     rotate(rx = 0, ry = 0, rz = 0) {
         this.rotation.x += rx;
         this.rotation.y += ry;
         this.rotation.z += rz;
+    }
+    onMouseDown(event) {
+        console.warn("onMouseDown", event)
+        let m = 1.2;
+        this.scale.set(1.2, 1.2, 1.2);
+        this.add( this.wireframeMesh );
+    }
+    onMouseUp(event) {
+        this.scale.set(1, 1, 1);
+        this.remove( this.wireframeMesh );
     }
 }

@@ -39,9 +39,6 @@ export class MoveableItem{
         this.item.moveFrame = this.moveFrame.bind(this);
         this.item.rotationFrame = this.rotationFrame.bind(this);
         this.item.translationFrame = this.translationFrame.bind(this);
-        this.item.onMouseDown = this.onMouseDown.bind(this);
-        this.item.onMouseUp = this.onMouseUp.bind(this);
-        this.item.onMouseMove = this.onMouseMove.bind(this);
 
         return this.item;
     }
@@ -197,13 +194,4 @@ export class MoveableItem{
         }
     }
 
-    onMouseDown(event){
-        console.warn("onMouseDown", event);
-    }
-    onMouseUp(event){
-        console.warn("onMouseUp", event);
-    }
-    onMouseMove(event){
-        console.warn("onMouseMove", event);
-    }
 }
