@@ -72,6 +72,7 @@ export class CustomScene extends THREE.Scene {
                 far: 1000,
             },
             minAngle: 0,
+//            maxAngle: 180,
             maxAngle: 70,
             position: {
                 x: 10,

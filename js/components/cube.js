@@ -133,9 +133,6 @@ export class Cube extends THREE.Group {
                 height: avgDimensions.height / meanDimension,
                 depth: avgDimensions.depth / meanDimension,
             }
-            console.log({materials, dimensions, avgDimensions, meanDimension})
-
-
 
             // resolve conflicts between explicitly specified dimensions and auto-detected dimensions
             let numDimensionInputs = dimensionNames.filter(k => dimensions[k].input != null).length;
@@ -178,49 +175,36 @@ export class Cube extends THREE.Group {
                 }
             }
 
-
-            let defaultColors = {
-                front: "gray",
-                back: "gray",
-                left: "gray",
-                right: "gray",
-                top: "white",
-                bottom: "gray",
-            }
             for (let [a, b] of pairs) {
                 console.log({[a]: materials[a], [b]: materials[b]})
                 if (materials[a] && materials[b]){
-                    console.log("both")
                     // do nothing
                 }else if (materials[a]){
-                    console.log("one", a)
                     materials[b] = underside(materials[a]);
-                    console.log("result", materials[b]);
                 }else if (materials[b]){
-                    console.log("one", b)
                     materials[a] = underside(materials[b]);
-                    console.log("result", materials[a]);
                 }else{
-                    console.log("neither")
-                    materials[a] = new THREE.MeshStandardMaterial({color: defaultColors[a]});
-                    materials[b] = new THREE.MeshStandardMaterial({color: defaultColors[b]});
+                    materials[a] = new THREE.MeshStandardMaterial({color: this.config.defaultColors[a]});
+                    materials[b] = new THREE.MeshStandardMaterial({color: this.config.defaultColors[b]});
                 }
-
             }
-
 
             // Create a geometry
+            let sizes = [dimensions.width, dimensions.height, dimensions.depth]
+            sizes.sort();
+            let avgSide = (sizes[0] + sizes[1]) / 2;
+            let minSide = this.config.minDimension * avgSide;
             dimensions = {
-                width: dimensions.width || 0.01,
-                height: dimensions.height || 0.01,
-                depth: dimensions.depth || 0.01,
+                width: dimensions.width || minSide,
+                height: dimensions.height || minSide,
+                depth: dimensions.depth || minSide,
             }
-            const geometry = new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth);
-            geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
+            this.geometry = new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth);
+            this.geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
 
             // Create a mesh
             console.log(dimensions, Object.values(materials));
-            const cube = new THREE.Mesh(geometry, [
+            const cube = new THREE.Mesh(this.geometry, [
                 materials.right,
                 materials.left,
                 materials.top,
@@ -228,40 +212,89 @@ export class Cube extends THREE.Group {
                 materials.front,
                 materials.back,
             ]);
-            cube.castShadow = true;
-            cube.receiveShadow = true;
-            this.castShadow = true;
-            this.receiveShadow = true;
+            cube.castShadow = this.config.castShadow;
+            cube.receiveShadow = this.config.receiveShadow;
+            this.castShadow = this.config.castShadow;
+            this.receiveShadow = this.config.receiveShadow;
 
             this.add(cube);
-            this.makeWireframe();
+            this.addOriginCube();
+            this.addWireframe();
         });
     }
-    makeWireframe() {
+    config = {
+        castShadow: true,
+        receiveShadow: true,
+        minDimension: 0.01,
+        wireframe: {
+            visible: false,
+            color: 0x00ff00,
+            thickness: 5,
+        },
+        originCube: {
+            visible: false,
+            color: 0x00ff00,
+            thickness: 0.1,
+        },
+        selected: {
+            scale: 1.1,
+            wireframe: true,
+            originCube: true,
+        },
+        defaultColors: {
+            front: "gray",
+            back: "gray",
+            left: "gray",
+            right: "gray",
+            top: "white",
+            bottom: "gray",
+        }
+    }
+    getRepresentativeSize(){
+        let size = new THREE.Vector3();
+        this.geometry.computeBoundingBox();
+        this.geometry.boundingBox.getSize(size);
+        let sizes = [size.x, size.y, size.z];
+        sizes.sort();
+        let avgSize = (sizes[0] + sizes[1]) / 2;
+        return avgSize;
+    }
+    addOriginCube(){
+      // Create a small cube at the object's origin
+        let s = this.getRepresentativeSize();
+        let t = this.config.originCube.thickness;
+        const geometry = new THREE.BoxGeometry(s*t, s*t, s*t);
+        const material = new THREE.MeshBasicMaterial({color: this.config.originCube.color});
+        const cube = new THREE.Mesh(geometry, material);
+        cube.visible = this.config.originCube.visible;
+        this.add(cube);
+        this.originCube = cube;
+    }
+    addWireframe() {
         // create an edges geometry and pass in your cube geometry
-        let edges = new THREE.EdgesGeometry( this.children[0].geometry );
+        let edges = new THREE.EdgesGeometry( this.geometry );
 
         // create a LineGeometry
         let geometry = new LineGeometry();
         geometry.setPositions( edges.attributes.position.array );
 
-        let size = new THREE.Vector3();
-        this.children[0].geometry.computeBoundingBox();
-        this.children[0].geometry.boundingBox.getSize(size);
-        let avgSize = (size.x + size.y + size.z) / 3;
-        let s = avgSize * 5;
+        let avgSize = this.getRepresentativeSize();
+        let s = avgSize * this.config.wireframe.thickness;
 
         // create a LineMaterial and specify the color and linewidth
         let material = new LineMaterial({
-            color: 0x00ff00,
+            color: this.config.wireframe.color,
             linewidth: s,  // Set the line width here
         });
 
         // create a Line2 (Line with width) and store it
-        this.wireframeMesh = new Line2(geometry, material);
+        let wireframeMesh = new Line2(geometry, material);
 
         // You must call this method after any change to line properties, including the position of the camera
         material.resolution.set(window.innerWidth, window.innerHeight);
+        wireframeMesh.visible = this.config.wireframe.visible;
+        this.wireframe = wireframeMesh;
+        this.add(wireframeMesh);
     }
     rotate(rx = 0, ry = 0, rz = 0) {
         this.rotation.x += rx;
@@ -270,12 +303,14 @@ export class Cube extends THREE.Group {
     }
     onMouseDown(event) {
         console.warn("onMouseDown", event)
-        let m = 1.2;
-        this.scale.set(1.2, 1.2, 1.2);
-        this.add( this.wireframeMesh );
+        let m = this.config.selected.scale;
+        this.scale.set(m, m, m);
+        this.wireframe.visible = this.config.selected.wireframe;
+        this.originCube.visible = this.config.selected.originCube;
     }
     onMouseUp(event) {
         this.scale.set(1, 1, 1);
-        this.remove( this.wireframeMesh );
+        this.wireframe.visible = false;
+        this.originCube.visible = false;
     }
 }
