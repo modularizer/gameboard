@@ -13,7 +13,7 @@ export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
         super();
         this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
+        this.mouse = new THREE.Vector3(0, 0, 0.5);
         this.offset = new THREE.Vector3();
 
         if (cameraPosition) this.state.camera.position = toXYZ(cameraPosition);
@@ -142,7 +142,8 @@ export class CustomScene extends THREE.Scene {
         },
         items: [],
         selectedItem: null,
-        moveMode: "normal", // "normal", "x", "y", "z"
+//        moveMode: "normal", // "normal", "x", "y", "z"
+        moveMode: "y",
         planeY: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
     }
     reset(){
@@ -354,12 +355,8 @@ export class CustomScene extends THREE.Scene {
 
         if (item){
             if (this.state.moveMode === "normal"){
-                let mousePos = new THREE.Vector3(
-                    (event.clientX / window.innerWidth) * 2 - 1,
-                    -(event.clientY / window.innerHeight) * 2 + 1,
-                    0.5
-                );
-                mousePos.unproject(this.camera);
+                let mousePos = this.mouse;
+//                mousePos.unproject(this.camera);
                 let planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
                 let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
                 this.raycaster.ray.intersectPlane(plane, mousePos);
@@ -384,28 +381,22 @@ export class CustomScene extends THREE.Scene {
         item = this.state.selectedItem
 
         if (this.state.selectedItem && item && item.onMouseMove) {
-            let mousePos = new THREE.Vector3(
-                (event.clientX / window.innerWidth) * 2 - 1,
-                -(event.clientY / window.innerHeight) * 2 + 1,
-                0.5
-            );
-            mousePos.unproject(this.camera); // this will give us position in 3D
 
             let endPos = item.position.clone();
             if (this.state.moveMode === "y"){
                 // get the position where the mouse position intersects the Z plane
-                this.raycaster.ray.intersectPlane(this.state.planeY, mousePos);
+                this.raycaster.ray.intersectPlane(this.state.planeY, this.mouse);
 
                 // adjust the z-coordinate of mousePos
-                mousePos.y = this.state.planeY.constant;
+                this.mouse.y = this.state.planeY.constant;
 
-                endPos = endPos.copy(mousePos).sub(this.offset);
+                endPos = endPos.copy(this.mouse).sub(this.offset);
             }else{
-                let dir = mousePos.sub(this.camera.position).normalize();
+                let dir = this.mouse.sub(this.camera.position).normalize();
                 let planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
                 let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, item.position);
-                this.raycaster.ray.intersectPlane(plane, mousePos);
-                endPos = endPos.copy(mousePos).sub(this.offset);
+                this.raycaster.ray.intersectPlane(plane, this.mouse);
+                endPos = endPos.copy(this.mouse).sub(this.offset);
             }
             endPos.y = Math.max(0, endPos.y);
             let diff = endPos.clone().sub(item.position);
