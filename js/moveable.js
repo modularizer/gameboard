@@ -18,8 +18,12 @@ export class MoveableItem{
                     x: 0,
                     y: 0,
                     z: 0,
-                }
-            }
+                },
+                lastMoveTime: null,
+                lastRotationTime: null,
+                lastTranslationTime: null,
+            },
+
         }
         this.item.reset = this.reset.bind(this);
         this.item.jumpTo = this.jumpTo.bind(this);
@@ -108,7 +112,7 @@ export class MoveableItem{
     }
     spin(dx, dy, dz, duration, speed=0.02){
         if (duration){
-            speed = dx/duration;
+            speed = dx/(duration * 60);
         }
         let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
         let sx = speed * dx/distance;
@@ -164,14 +168,16 @@ export class MoveableItem{
         this.item.movestate.animation.translation.enabled = false;
     }
     moveFrame(t){
+        this.item.movestate.animation.lastMoveTime = t;
         if (this.item.movestate.animation.rotation.enabled){
-            this.rotationFrame();
+            this.rotationFrame(t);
         }
         if (this.item.movestate.animation.translation.enabled){
-            this.translationFrame();
+            this.translationFrame(t);
         }
     }
-    rotationFrame(){
+    rotationFrame(t){
+        this.item.movestate.animation.lastRotationTime = t;
         let r = this.item.movestate.animation.rotation;
         this.rotate(r.x, r.y, r.z);
         if (r.cycles === 0){
@@ -180,13 +186,14 @@ export class MoveableItem{
             r.cycles--;
         }
     }
-    translationFrame(){
-        let t = this.item.movestate.animation.translation;
-        this.translate(t.x, t.y, t.z);
-        if (t.cycles === 0){
+    translationFrame(t){
+        this.item.movestate.animation.lastTranslationTime = t;
+        let tr = this.item.movestate.animation.translation;
+        this.translate(tr.x, tr.y, tr.z);
+        if (tr.cycles === 0){
             this.stopTranslation();
-        }else if (t.cycles != null){
-            t.cycles--;
+        }else if (tr.cycles != null){
+            tr.cycles--;
         }
     }
 

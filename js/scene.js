@@ -37,6 +37,7 @@ export class CustomScene extends THREE.Scene {
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
+        this.setCameraMode = this.setCameraMode.bind(this);
 
 
         // Add axes helper
@@ -53,8 +54,14 @@ export class CustomScene extends THREE.Scene {
     }
     config = {
         camera: {
-            type: "perspective",
-            params: {
+            mode: "orthographic",
+            orthographic: {
+                left: -10,
+                right: 10,
+                top: 16,
+                bottom: -4,
+            },
+            perspective: {
                 fov: 75,
                 aspect: window.innerWidth / window.innerHeight,
                 near: 0.1,
@@ -62,6 +69,11 @@ export class CustomScene extends THREE.Scene {
             },
             minAngle: 0,
             maxAngle: 70,
+            position: {
+                x: 10,
+                y: 10,
+                z: 10,
+            }
         },
         lights: {
             ambient: {
@@ -151,27 +163,41 @@ export class CustomScene extends THREE.Scene {
         super.lookAt(new Vector3(x, y, z));
     }
     addCamera(){
-        if (this.config.camera.type == "perspective"){
-            this.camera = new THREE.PerspectiveCamera(
-                this.config.camera.params.fov,
-                this.config.camera.params.aspect,
-                this.config.camera.params.near,
-                this.config.camera.params.far,
-            );
-        } else if (this.config.camera.type == "orthographic"){
-            this.camera = new THREE.OrthographicCamera(
-                this.config.camera.params.left,
-                this.config.camera.params.right,
-                this.config.camera.params.top,
-                this.config.camera.params.bottom,
-            );
-        }
+        this.perspectiveCamera = new THREE.PerspectiveCamera(
+            this.config.camera.perspective.fov,
+            this.config.camera.perspective.aspect,
+            this.config.camera.perspective.near,
+            this.config.camera.perspective.far,
+        );
+        let aspect = window.innerWidth / window.innerHeight;
+        this.orthographicCamera = new THREE.OrthographicCamera(
+            this.config.camera.orthographic.left * aspect,
+            this.config.camera.orthographic.right * aspect,
+            this.config.camera.orthographic.top,
+            this.config.camera.orthographic.bottom
+        );
+        this.camera = (this.config.camera.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
         this.camera.position.x = this.state.camera.position.x;
         this.camera.position.y = this.state.camera.position.y;
         this.camera.position.z = this.state.camera.position.z;
         this.state.camera.position = this.camera.position;
         this.add(this.camera);
     }
+    setCameraMode(mode){
+        let p = this.camera.position.clone();
+        let t = this.controls.target.clone();
+
+        this.remove(this.camera);
+        this.config.camera.mode = mode;
+        this.camera = (this.config.camera.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
+
+        this.camera.position.copy(p);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);  // replace your controls instance
+        this.controls.target.copy(t);
+        this.camera.lookAt(this.controls.target);
+        this.add(this.camera);
+    }
+
     add(item, position, makeMoveable=true){
         if (makeMoveable){
             if (position) item.position.set(position.x, position.y, position.z);
@@ -275,6 +301,8 @@ export class CustomScene extends THREE.Scene {
             }
         },
         "r": ()=>{this.reset()},
+        "p": ()=>{this.state.moveMode = "y"},
+        "n": ()=>{this.state.moveMode = "normal"},
     }
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
