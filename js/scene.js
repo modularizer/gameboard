@@ -159,7 +159,8 @@ export class CustomScene extends THREE.Scene {
         },
         items: [],
         selectedItem: null,
-        moveMode: "normal", // "normal", "x", "y", "z", Vector3\
+        moveMode: "normal", // "normal", "x", "y", "z", Vector3
+        clickMode: "left", // "left", "right", "middle"
     }
     reset(){
         this.state.items.map(item => item.reset());
@@ -270,14 +271,33 @@ export class CustomScene extends THREE.Scene {
                 this.state.selectedItem.dispatchEvent({ type: "keydown", key: k });
 
             }
-            if (e.shiftKey) k = "Shift+" + k;
-            if (e.altKey) k = "Alt+" + k;
-            if (e.ctrlKey) k = "Ctrl+" + k;
-            if (e.metaKey) k = "Meta+" + k;
-            if (e.fnKey) k = "Fn+" + k;
+            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
+            if (e.altKey && k != "Alt") k = "Alt+" + k;
+            if (e.ctrlKey && k != "Control") k = "Ctrl+" + k;
+            if (e.metaKey && k != "Meta") k = "Meta+" + k;
+            if (e.fnKey && k != "Fn") k = "Fn+" + k;
 
+            console.warn(k);
             if (this.keyListeners[k]) {
                 this.keyListeners[k].bind(this)(e);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        })
+        window.addEventListener('keyup', (e) => {
+            let k = e.key;
+            if (this.state.selectedItem) {
+                // fire keydown event on selected item
+                this.state.selectedItem.dispatchEvent({ type: "keyup", key: k });
+            }
+            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
+            if (e.altKey && k != "Alt") k = "Alt+" + k;
+            if (e.ctrlKey && k != "Ctrl") k = "Ctrl+" + k;
+            if (e.metaKey && k != "Meta") k = "Meta+" + k;
+            if (e.fnKey && k != "Fn") k = "Fn+" + k;
+
+            if (this.keyupListeners[k]) {
+                this.keyupListeners[k].bind(this)(e);
                 e.preventDefault();
                 e.stopPropagation();
             }
@@ -308,6 +328,12 @@ export class CustomScene extends THREE.Scene {
         "r": ()=>{this.reset()},
         "p": ()=>{this.state.moveMode = "y"},
         "n": ()=>{this.state.moveMode = "normal"},
+        "Control": ()=>{this.state.clickMode = "right"},
+        "Alt": ()=>{this.state.clickMode = "middle"},
+    }
+    keyupListeners = {
+        "Control": ()=>{this.state.clickMode = "left"},
+        "Alt": ()=>{this.state.clickMode = "left"},
     }
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
@@ -419,11 +445,28 @@ export class CustomScene extends THREE.Scene {
     onMouseDown(event) {
         let item = this.getClickedItem(event);
         if (item){
+            console.warn("clicked item", event.button, this.state.clickMode);
+            this.controls.enabled = false;
+            this.state.selectedItem = item;
+            this.state._isDragging = true;
+
+            // if right click, call context menu
+            if (event.button === 2 || this.state.clickMode === "right") {
+                this.state.clickMode = "right";
+                if (item.onRightClickDown) item.onRightClickDown(event);
+                return
+            }
+
+            // if middle click, rotate the object
+            if (event.button === 1 || this.state.clickMode === "middle") {
+                this.state.clickMode = "middle";
+                if (item.onMiddleClickDown) item.onMiddleClickDown(event);
+                return
+            }
+
+            // if left click, move the object
             this.intersectMovePlane(item);
             this.offset.copy(item.position).sub(this.mouse);
-            this.state.selectedItem = item;
-            this.controls.enabled = false;
-            this.state._isDragging = true;
             if (item.onMouseDown) item.onMouseDown(event);
         }else{
             this.state.selectedItem = null;
@@ -435,6 +478,18 @@ export class CustomScene extends THREE.Scene {
         this.getClickedItem(event);
         let item = this.state.selectedItem;
         if (item) {
+            // if right click, call context menu
+            if (event.button === 2 || this.state.clickMode === "right") {
+                if (item.onRightClickMove) item.onRightClickMove(event);
+                return
+            }
+            // if middle click, rotate the object
+            if (event.button === 1 || this.state.clickMode === "middle") {
+                if (item.onMiddleClickMove) item.onMiddleClickMove(event);
+                return
+            }
+
+            // if left click, move the object
             this.intersectMovePlane(item);
             let endPos = item.position.clone().copy(this.mouse).sub(this.offset);
             endPos.y = Math.max(0, endPos.y);
@@ -444,12 +499,27 @@ export class CustomScene extends THREE.Scene {
         }
     }
     onMouseUp(event) {
+        this.state.clickMode = "left";
+
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
             this.state.selectedFace = null;
             this.state._isDragging = false;
             this.addOrbitControls();
+
+            // if right click, call context menu
+            if (event.button === 2 || this.state.clickMode === "right") {
+                if (item.onRightClickUp) item.onRightClickUp(event);
+                return
+            }
+
+            // if middle click, rotate the object
+            if (event.button === 1 || this.state.clickMode === "middle") {
+                if (item.onMiddleClickUp) item.onMiddleClickUp(event);
+                return
+            }
+
             if (item.onMouseUp) item.onMouseUp(event);
         }
 

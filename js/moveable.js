@@ -194,4 +194,14 @@ export class MoveableItem{
         }
     }
 
+    onRightClickDown(event) {
+
+    }
+    onRightClickMove(event) {
+
+    }
+    onRightClickUp(event) {
+
+    }
+
 }

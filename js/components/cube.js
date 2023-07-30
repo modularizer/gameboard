@@ -313,4 +313,12 @@ export class Cube extends THREE.Group {
         this.wireframe.visible = false;
         this.originCube.visible = false;
     }
+    onRightClickDown(event) {
+    }
+    onRightClickMove(event) {
+
+    }
+    onRightClickUp(event) {
+
+    }
 }
