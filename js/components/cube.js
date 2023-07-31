@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { DeferredPromise } from 'utils';
+import { SnapController } from 'gameengine';
 
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { Line2 } from 'three/addons/lines/Line2.js';
@@ -40,6 +41,10 @@ function underside(material){
 export class Cube extends THREE.Group {
     constructor(sources, dimensions, loader) {
         super();
+        this.truePivot = new THREE.Object3D();
+        this.pivot = this.truePivot;
+        this.pivot.position.copy(this.position);
+
         dimensions = dimensions || {};
         sources = sources || {};
 
@@ -200,7 +205,7 @@ export class Cube extends THREE.Group {
                 depth: dimensions.depth || minSide,
             }
             this.geometry = new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth);
-//            this.geometry.translate(0, dimensions.height / 2, 0); // translate the geometry upwards by half of its height
+//            this.geometry.translate(0, dimensions.height/2, 0);
 
             // Create a mesh
             console.log(dimensions, Object.values(materials));
@@ -217,17 +222,29 @@ export class Cube extends THREE.Group {
             this.castShadow = this.config.castShadow;
             this.receiveShadow = this.config.receiveShadow;
 
-            this.add(cube);
+
+
+//            this.add(cube);
             this.addOriginCube();
             this.addWireframe();
+
+            this.truePivot.position.set(0, dimensions.height/2, 0);
+            this.truePivot.add(cube);
+            this.truePivot.add(this.wireframe);
+            this.truePivot.add(this.originCube);
+            this.snapController = new SnapController(this);
+
+            this.add(this.truePivot);
         });
     }
-    get centerOfRotation(){
-//        return this.position.clone().add(new THREE.Vector3(0, this.geometry.parameters.height / 2, 0));
-        return this.position.clone();
+    snap(){
+        if (this.config.snap){
+            this.snapController.snap();
+        }
     }
 
     config = {
+        snap: true,
         castShadow: true,
         receiveShadow: true,
         minDimension: 0.01,
@@ -242,7 +259,7 @@ export class Cube extends THREE.Group {
             thickness: 0.1,
         },
         selected: {
-            scale: 1.1,
+            scale: 1,
             wireframe: true,
             originCube: true,
         },
@@ -272,7 +289,6 @@ export class Cube extends THREE.Group {
         const material = new THREE.MeshBasicMaterial({color: this.config.originCube.color});
         const cube = new THREE.Mesh(geometry, material);
         cube.visible = this.config.originCube.visible;
-        this.add(cube);
         this.originCube = cube;
     }
     addWireframe() {
@@ -299,12 +315,11 @@ export class Cube extends THREE.Group {
         material.resolution.set(window.innerWidth, window.innerHeight);
         wireframeMesh.visible = this.config.wireframe.visible;
         this.wireframe = wireframeMesh;
-        this.add(wireframeMesh);
     }
     rotate(rx = 0, ry = 0, rz = 0) {
-        this.rotation.x += rx;
-        this.rotation.y += ry;
-        this.rotation.z += rz;
+        this.pivot.rotation.x += rx;
+        this.pivot.rotation.y += ry;
+        this.pivot.rotation.z += rz;
     }
     onMouseDown(event) {
         console.warn("onMouseDown", event)

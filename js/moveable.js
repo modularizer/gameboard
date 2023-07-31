@@ -131,9 +131,9 @@ export class MoveableItem{
 
     setRotation(x, y, z){
         // TODO: make sure it doesn't rotate below the ground (y=0)
-        this.item.rotation.x = x;
-        this.item.rotation.y = y;
-        this.item.rotation.z = z;
+        this.item.pivot.rotation.x = x;
+        this.item.pivot.rotation.y = y;
+        this.item.pivot.rotation.z = z;
     }
     translate(x, y, z){
         this.item.position.x += x;
@@ -141,9 +141,9 @@ export class MoveableItem{
         this.item.position.z += z;
     }
     rotate(x, y, z){
-        this.item.rotation.x += x;
-        this.item.rotation.y += y;
-        this.item.rotation.z += z;
+        this.item.pivot.rotation.x += x;
+        this.item.pivot.rotation.y += y;
+        this.item.pivot.rotation.z += z;
     }
 
     startRotation(speedx=0.02, speedy=0.01, speedz=0, cycles=null){

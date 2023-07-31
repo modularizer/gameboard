@@ -29,7 +29,7 @@
             bottom: './front.jpg',
             top: './back.jpg'
         });
-        scene.add(card, {x: 0, y: 2, z: 0});
+        scene.addItem(card, {x: 0, y: 2, z: 0});
 
         let cube = new Cube({
             front: './front.jpg',
@@ -42,18 +42,16 @@
             depth: 1,
             width: 1,
         });
-        scene.add(cube, {x: 0, y: 0, z: 0});
+        scene.addItem(cube, {x: 0, y: 0, z: 0});
 
         window.scene = scene;
         window.cube = cube;
         window.card = card;
 
-
-
         window.addEventListener('load', ()=>{
             scene.display(document.body);
             card.startRotation(0.02, 0.01, 0.05);
-            cube.startTranslation(0.001, 0, 0.001);
+            // cube.startTranslation(0.001, 0, 0.001);
         })
     </script>
 </body>

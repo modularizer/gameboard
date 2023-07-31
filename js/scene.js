@@ -208,14 +208,12 @@ export class CustomScene extends THREE.Scene {
         this.add(this.camera);
     }
 
-    add(item, position, makeMoveable=true){
-        if (makeMoveable){
-            if (position) item.position.set(position.x, position.y, position.z);
-            item = new MoveableItem(item);
-            this.state.items.push(item);
-            this.item = item;
-        }
-        super.add(item);
+    addItem(item, position){
+        item = new MoveableItem(item);
+        if (position) item.position.set(position.x, position.y, position.z);
+        this.state.items.push(item);
+        this.item = item;
+        this.add(item);
     }
     addRenderer(){
         this.renderer = new THREE.WebGLRenderer();
@@ -455,7 +453,7 @@ export class CustomScene extends THREE.Scene {
                 this.state.clickMode = "right";
                 // Save the original mouse position and the original quaternion
                 this.mouseOriginal = {x: this.mouse.x, y: this.mouse.y};
-                item.originalQuaternion = item.quaternion.clone();
+                item.pivot.originalQuaternion = item.pivot.quaternion.clone();
 
                 if (item.onRightClickDown) item.onRightClickDown(event);
                 return
@@ -500,8 +498,8 @@ export class CustomScene extends THREE.Scene {
                 let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
 
                 // Apply this rotation to the original rotation of the object
-                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.originalQuaternion, quaternion);
-                item.setRotationFromQuaternion(finalQuaternion);
+                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
+                item.pivot.setRotationFromQuaternion(finalQuaternion);
 
                 if (item.onRightClickMove)  item.onRightClickMove(event);
                 return
@@ -531,6 +529,7 @@ export class CustomScene extends THREE.Scene {
             this.state.selectedFace = null;
             this.state._isDragging = false;
             this.addOrbitControls();
+            if (item.snap) item.snap();
 
             // if right click, call context menu
             if (event.button === 2 || this.state.clickMode === "right") {
