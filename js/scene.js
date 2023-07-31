@@ -442,86 +442,93 @@ export class CustomScene extends THREE.Scene {
         }
         return o
     }
-    onMouseDown(event) {
-        let item = this.getClickedItem(event);
-        if (item){
-            console.warn("clicked item", event.button, this.state.clickMode);
-            this.controls.enabled = false;
-            this.state.selectedItem = item;
-            this.state._isDragging = true;
+   onMouseDown(event) {
+    let item = this.getClickedItem(event);
+    if (item){
+        console.warn("clicked item", event.button, this.state.clickMode);
+        this.controls.enabled = false;
+        this.state.selectedItem = item;
+        this.state._isDragging = true;
 
-            // if right click, call context menu
-            if (event.button === 2 || this.state.clickMode === "right") {
-                this.state.clickMode = "right";
-                // Save the original mouse position and the original quaternion
-                this.mouseOriginal = {x: this.mouse.x, y: this.mouse.y};
-                item.pivot.originalQuaternion = item.pivot.quaternion.clone();
+        this.mouseState = {
+            original: {x: this.mouse.x, y: this.mouse.y},
+            firstMove: true,
+            offset: new THREE.Vector3().copy(item.position).sub(this.mouse),
+            jumpOffset: new THREE.Vector3(),
+        };
 
-                if (item.onRightClickDown) item.onRightClickDown(event);
-                return
-            }
-
-            // if middle click, rotate the object
-            if (event.button === 1 || this.state.clickMode === "middle") {
-                this.state.clickMode = "middle";
-                if (item.onMiddleClickDown) item.onMiddleClickDown(event);
-                return
-            }
-
-            // if left click, move the object
-            this.intersectMovePlane(item);
-            this.offset.copy(item.position).sub(this.mouse);
-            if (item.onMouseDown) item.onMouseDown(event);
-        }else{
-            this.state.selectedItem = null;
-            this.state.selectedFace = null;
-            this.controls.enabled = true;
+        // if right click, call context menu
+        if (event.button === 2 || this.state.clickMode === "right") {
+            this.state.clickMode = "right";
+            // Save the original mouse position and the original quaternion
+            item.pivot.originalQuaternion = item.pivot.quaternion.clone();
+            if (item.onRightClickDown) item.onRightClickDown(event);
+            return
         }
+
+        // if middle click, rotate the object
+        if (event.button === 1 || this.state.clickMode === "middle") {
+            this.state.clickMode = "middle";
+            if (item.onMiddleClickDown) item.onMiddleClickDown(event);
+            return
+        }
+
+        // if left click, move the object
+        this.intersectMovePlane(item);
+
+        if (item.onMouseDown) item.onMouseDown(event);
+    } else {
+        this.state.selectedItem = null;
+        this.state.selectedFace = null;
+        this.controls.enabled = true;
     }
-    onMouseMove(event) {
-        this.getClickedItem(event);
-        let item = this.state.selectedItem;
-        if (item) {
-            // if right click, call context menu
-            if (event.button === 2 || this.state.clickMode === "right") {
-                // Compute the difference between the current and the original mouse positions
-                let diffX = this.mouse.x - this.mouseOriginal.x;
-                let diffY = -(this.mouse.y - this.mouseOriginal.y);
+}
 
-                // Use these differences to create a rotation axis (in camera coordinates for simplicity)
-                let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
+onMouseMove(event) {
+    this.getClickedItem(event);
+    let item = this.state.selectedItem;
+    if (item) {
+        // if right click, call context menu
+        if (event.button === 2 || this.state.clickMode === "right") {
+            let diffX = this.mouse.x - this.mouseState.original.x;
+            let diffY = -(this.mouse.y - this.mouseState.original.y);
 
-                // Compute the rotation angle based on the total movement of the mouse
-                // Compute the rotation angle based on the total movement of the mouse, and scale it by a factor for sensitivity
-                let sensitivity = 19;  // Increase this value for more sensitivity
-                let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
+            let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
 
-                // Create a quaternion from this rotation
-                let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
+            let sensitivity = 19;
+            let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
 
-                // Apply this rotation to the original rotation of the object
-                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
-                item.pivot.setRotationFromQuaternion(finalQuaternion);
+            let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
 
-                if (item.onRightClickMove)  item.onRightClickMove(event);
-                return
-            }
-            // if middle click, rotate the object
-            if (event.button === 1 || this.state.clickMode === "middle") {
-                if (item.onMiddleClickMove) item.onMiddleClickMove(event);
-                return
-            }
+            let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
+            item.pivot.setRotationFromQuaternion(finalQuaternion);
 
-            // if left click, move the object
-            this.intersectMovePlane(item);
-            let endPos = item.position.clone().copy(this.mouse).sub(this.offset);
+            if (item.onRightClickMove)  item.onRightClickMove(event);
+            return
+        }
 
-            endPos.y = Math.max(0, endPos.y);
-            let diff = endPos.clone().sub(item.position);
+        // if middle click, rotate the object
+        if (event.button === 1 || this.state.clickMode === "middle") {
+            if (item.onMiddleClickMove) item.onMiddleClickMove(event);
+            return
+        }
+
+        // if left click, move the object
+        this.intersectMovePlane(item);
+        let endPos = item.position.clone().copy(this.mouse).sub(this.mouseState.offset);
+        endPos.y = Math.max(0, endPos.y);
+
+        if (!this.mouseState.firstMove) {
+            let diff = endPos.clone().sub(item.position).sub(this.mouseState.jumpOffset);
             item.position.add(diff);
-            if (item.onMouseMove) item.onMouseMove(event);
+        } else {
+            this.mouseState.jumpOffset = endPos.clone().sub(item.position);
+            this.mouseState.firstMove = false;
         }
+        if (item.onMouseMove) item.onMouseMove(event);
     }
+}
+
     onMouseUp(event) {
         this.state.clickMode = "left";
 
