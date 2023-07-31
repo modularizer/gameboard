@@ -235,6 +235,8 @@ export class CustomScene extends THREE.Scene {
 
         // Rotate it so it's parallel to the xz plane
         floorGeometry.rotateX(-Math.PI / 2);
+        // set the y position to -0.1
+        floorGeometry.translate(0, -0.05, 0);
 
         // Create a material
         let floorMaterial = new THREE.MeshStandardMaterial({ color: this.config.floor.color }); // gray color

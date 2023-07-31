@@ -228,7 +228,7 @@ export class Cube extends THREE.Group {
             this.addOriginCube();
             this.addWireframe();
 
-            this.truePivot.position.set(0, dimensions.height/2, 0);
+            this.truePivot.position.set(dimensions.width/2, dimensions.height/2, dimensions.depth/2);
             this.truePivot.add(cube);
             this.truePivot.add(this.wireframe);
             this.truePivot.add(this.originCube);

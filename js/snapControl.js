@@ -147,12 +147,26 @@ export class LatticeNodes extends SnapNodes {
     }
 }
 
+export class GridNodes extends SnapNodes {
+    constructor(step = 1, y = 0) {
+        super();
+        this.y = y;
+        this.step = step;
+    }
+    getClosestNode(v3){
+        let step = this.step;
+        let x = Math.round(v3.x / step) * step;
+        let z = Math.round(v3.z / step) * step;
+        return new SnapNode(x, this.y, z);
+    }
+}
+
 
 export class SnapController extends SimpleSnapController {
     constructor(item, rotationNodes, positionNodes) {
         super(item);
         this.rotationNodes = rotationNodes || new CubeRotationNodes();
-        this.positionNodes = positionNodes || new LatticeNodes();
+        this.positionNodes = positionNodes || new GridNodes();
         this.snap = this.snap.bind(this);
     }
     getClosestRotation(r) {
