@@ -24,7 +24,7 @@ export class CustomScene extends THREE.Scene {
         this.getClickedItem = this.getClickedItem.bind(this);
         this.setCameraMode = this.setCameraMode.bind(this);
         this.addCamera = this.addCamera.bind(this);
-        this.addRenderer = this.addRenderer.bind(this);
+        this.configRenderer = this.configRenderer.bind(this);
 
         // Event listener for arrow keys
         this.keyListeners.addTo(window);
@@ -45,7 +45,7 @@ export class CustomScene extends THREE.Scene {
         if (lookAt) this.lookAt(lookAt);
 
         // Set up renderer
-        this.addRenderer();
+        this.configRenderer(this.config.renderer);
 
         // OrbitControls for panning, zooming, and rotating
         this.addOrbitControls();
@@ -242,11 +242,10 @@ export class CustomScene extends THREE.Scene {
         this.item = item;
         this.add(item);
     }
-    addRenderer(){
-        this.renderer = new THREE.WebGLRenderer();
-        this.renderer.setSize(this.config.renderer.size.width, this.config.renderer.size.height);
-        this.renderer.setClearColor(this.config.renderer.clearColor, this.config.renderer.clearAlpha);
-        this.renderer.shadowMap.enabled = this.config.renderer.shadows;
+    configRenderer(config){
+        this.renderer.setSize(config.size.width, config.size.height);
+        this.renderer.setClearColor(config.clearColor, config.clearAlpha);
+        this.renderer.shadowMap.enabled = config.shadows;
     }
     addOrbitControls(){
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -302,7 +301,6 @@ export class CustomScene extends THREE.Scene {
             super.add(light);
         }
     }
-
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
         "end": ()=>{this.state.shouldAnimate = true; this.state._isDragging = false},
@@ -323,14 +321,7 @@ export class CustomScene extends THREE.Scene {
         this.renderer.render(this, this.camera);
     }
 
-    addMouseListeners() {
-        window.addEventListener('mousedown', this.onMouseDown.bind(this));
-        window.addEventListener('mousemove', this.onMouseMove.bind(this));
-        window.addEventListener('mouseup', this.onMouseUp.bind(this));
-        window.addEventListener('touchstart', this.onTouchStart.bind(this));
-        window.addEventListener('touchmove', this.onTouchMove.bind(this));
-        window.addEventListener('touchend', this.onTouchEnd.bind(this));
-    }
+
 
     showRay(dir, origin, color=0x00ff00, length=10, name="rayHelper"){
         let arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
