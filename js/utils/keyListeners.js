@@ -23,7 +23,8 @@ export class KeyListeners {
         return k;
     }
     keydown(e) {
-        this.key = this.getKey(e);
+        let k = this.getKey(e);
+        this.key = k;
         if (this.keydownListeners[k]) {
             this.keydownListeners[k].bind(this)(e);
         }
