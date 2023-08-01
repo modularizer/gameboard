@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MoveableItem } from 'gameengine';
+import { KeyListeners, MouseListeners } from 'utils';
 
 
 function toXYZ(v) {
@@ -13,6 +14,7 @@ function clamp(value, min, max) {
 }
 
 
+
 export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
         super();
@@ -20,20 +22,14 @@ export class CustomScene extends THREE.Scene {
         this.display = this.display.bind(this);
         this.animate = this.animate.bind(this);
         this.getClickedItem = this.getClickedItem.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onTouchStart = this.onTouchStart.bind(this);
-        this.onTouchMove = this.onTouchMove.bind(this);
-        this.onTouchEnd = this.onTouchEnd.bind(this);
         this.setCameraMode = this.setCameraMode.bind(this);
         this.addCamera = this.addCamera.bind(this);
         this.addRenderer = this.addRenderer.bind(this);
 
         // Event listener for arrow keys
-        this.addKeyListeners();
-        this.addMouseListeners();
-
+        this.keyListeners.addTo(window);
+        this.mouseListeners = new MouseListeners(this);
+        this.mouseListeners.addTo(window);
 
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector3(0, 0, 0.5);
@@ -66,47 +62,7 @@ export class CustomScene extends THREE.Scene {
     }
 
     // key listeners
-    addKeyListeners(){
-        window.addEventListener('keydown', (e) => {
-            let k = e.key;
-            if (this.state.selectedItem) {
-                // fire keydown event on selected item
-                this.state.selectedItem.dispatchEvent({ type: "keydown", key: k });
-
-            }
-            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
-            if (e.altKey && k != "Alt") k = "Alt+" + k;
-            if (e.ctrlKey && k != "Control") k = "Ctrl+" + k;
-            if (e.metaKey && k != "Meta") k = "Meta+" + k;
-            if (e.fnKey && k != "Fn") k = "Fn+" + k;
-
-            console.warn(k);
-            if (this.keyListeners[k]) {
-                this.keyListeners[k].bind(this)(e);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        })
-        window.addEventListener('keyup', (e) => {
-            let k = e.key;
-            if (this.state.selectedItem) {
-                // fire keydown event on selected item
-                this.state.selectedItem.dispatchEvent({ type: "keyup", key: k });
-            }
-            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
-            if (e.altKey && k != "Alt") k = "Alt+" + k;
-            if (e.ctrlKey && k != "Ctrl") k = "Ctrl+" + k;
-            if (e.metaKey && k != "Meta") k = "Meta+" + k;
-            if (e.fnKey && k != "Fn") k = "Fn+" + k;
-
-            if (this.keyupListeners[k]) {
-                this.keyupListeners[k].bind(this)(e);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        })
-    }
-    keyListeners = {
+    keyListeners = new KeyListeners({
         "Ctrl+ArrowUp": ()=>{this.item.rotateX(this.config.speed)},
         "Ctrl+ArrowDown": ()=>{this.item.rotateX(-this.config.speed)},
         "Ctrl+ArrowLeft": ()=>{this.item.rotateY(this.config.speed)},
@@ -125,11 +81,10 @@ export class CustomScene extends THREE.Scene {
         "n": ()=>{this.state.moveMode = "normal"},
         "Control": ()=>{this.state.clickMode = "right"},
         "Alt": ()=>{this.state.clickMode = "middle"},
-    }
-    keyupListeners = {
+    },{
         "Control": ()=>{this.state.clickMode = "left"},
         "Alt": ()=>{this.state.clickMode = "left"},
-    }
+    });
 
 
     config = {
@@ -451,94 +406,94 @@ export class CustomScene extends THREE.Scene {
         }
         return o
     }
-   onMouseDown(event) {
-    let item = this.getClickedItem(event);
-    if (item){
-        console.warn("clicked item", event.button, this.state.clickMode);
-        this.controls.enabled = false;
-        this.state.selectedItem = item;
-        this.state._isDragging = true;
+   onMouseDown(event, button) {
+        let item = this.getClickedItem(event);
+        if (item){
+            console.warn("clicked item", event.button, this.state.clickMode);
+            this.controls.enabled = false;
+            this.state.selectedItem = item;
+            this.state._isDragging = true;
 
-        this.mouseState = {
-            original: {x: this.mouse.x, y: this.mouse.y},
-            firstMove: true,
-            offset: new THREE.Vector3().copy(item.position).sub(this.mouse),
-            jumpOffset: new THREE.Vector3(),
-        };
+            this.mouseState = {
+                original: {x: this.mouse.x, y: this.mouse.y},
+                firstMove: true,
+                offset: new THREE.Vector3().copy(item.position).sub(this.mouse),
+                jumpOffset: new THREE.Vector3(),
+            };
 
-        // if right click, call context menu
-        if (event.button === 2 || this.state.clickMode === "right") {
-            this.state.clickMode = "right";
-            // Save the original mouse position and the original quaternion
-            item.pivot.originalQuaternion = item.pivot.quaternion.clone();
-            if (item.onRightClickDown) item.onRightClickDown(event);
-            return
-        }
+            // if right click, call context menu
+            if (button === 2) {
+                this.state.clickMode = "right";
+                // Save the original mouse position and the original quaternion
+                item.pivot.originalQuaternion = item.pivot.quaternion.clone();
+                if (item.onRightClickDown) item.onRightClickDown(event);
+                return
+            }
 
-        // if middle click, rotate the object
-        if (event.button === 1 || this.state.clickMode === "middle") {
-            this.state.clickMode = "middle";
-            if (item.onMiddleClickDown) item.onMiddleClickDown(event);
-            return
-        }
+            // if middle click, rotate the object
+            if (button === 1) {
+                this.state.clickMode = "middle";
+                if (item.onMiddleClickDown) item.onMiddleClickDown(event);
+                return
+            }
 
-        // if left click, move the object
-        this.intersectMovePlane(item);
+            // if left click, move the object
+            this.intersectMovePlane(item);
 
-        if (item.onMouseDown) item.onMouseDown(event);
-    } else {
-        this.state.selectedItem = null;
-        this.state.selectedFace = null;
-        this.controls.enabled = true;
-    }
-}
-
-onMouseMove(event) {
-    this.getClickedItem(event);
-    let item = this.state.selectedItem;
-    if (item) {
-        // if right click, call context menu
-        if (event.button === 2 || this.state.clickMode === "right") {
-            let diffX = this.mouse.x - this.mouseState.original.x;
-            let diffY = -(this.mouse.y - this.mouseState.original.y);
-
-            let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
-
-            let sensitivity = 19;
-            let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
-
-            let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
-
-            let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
-            item.pivot.setRotationFromQuaternion(finalQuaternion);
-
-            if (item.onRightClickMove)  item.onRightClickMove(event);
-            return
-        }
-
-        // if middle click, rotate the object
-        if (event.button === 1 || this.state.clickMode === "middle") {
-            if (item.onMiddleClickMove) item.onMiddleClickMove(event);
-            return
-        }
-
-        // if left click, move the object
-        this.intersectMovePlane(item);
-        let endPos = item.position.clone().copy(this.mouse).sub(this.mouseState.offset);
-        endPos.y = Math.max(0, endPos.y);
-
-        if (!this.mouseState.firstMove) {
-            let diff = endPos.clone().sub(item.position).sub(this.mouseState.jumpOffset);
-            item.position.add(diff);
+            if (item.onMouseDown) item.onMouseDown(event);
         } else {
-            this.mouseState.jumpOffset = endPos.clone().sub(item.position);
-            this.mouseState.firstMove = false;
+            this.state.selectedItem = null;
+            this.state.selectedFace = null;
+            this.controls.enabled = true;
         }
-        if (item.onMouseMove) item.onMouseMove(event);
     }
-}
 
-    onMouseUp(event) {
+    onMouseMove(event, button) {
+        this.getClickedItem(event);
+        let item = this.state.selectedItem;
+        if (item) {
+            // if right click, call context menu
+            if (button === 2) {
+                let diffX = this.mouse.x - this.mouseState.original.x;
+                let diffY = -(this.mouse.y - this.mouseState.original.y);
+
+                let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
+
+                let sensitivity = 19;
+                let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
+
+                let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
+
+                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
+                item.pivot.setRotationFromQuaternion(finalQuaternion);
+
+                if (item.onRightClickMove)  item.onRightClickMove(event);
+                return
+            }
+
+            // if middle click, rotate the object
+            if (button === 1) {
+                if (item.onMiddleClickMove) item.onMiddleClickMove(event);
+                return
+            }
+
+            // if left click, move the object
+            this.intersectMovePlane(item);
+            let endPos = item.position.clone().copy(this.mouse).sub(this.mouseState.offset);
+            endPos.y = Math.max(0, endPos.y);
+
+            if (!this.mouseState.firstMove) {
+                let diff = endPos.clone().sub(item.position).sub(this.mouseState.jumpOffset);
+                item.position.add(diff);
+            } else {
+                this.mouseState.jumpOffset = endPos.clone().sub(item.position);
+                this.mouseState.firstMove = false;
+            }
+            if (item.onMouseMove) item.onMouseMove(event);
+        }
+    }
+
+    onMouseUp(event, button) {
         this.state.clickMode = "left";
 
         let item = this.state.selectedItem;
@@ -550,7 +505,7 @@ onMouseMove(event) {
             if (item.snap) item.snap();
 
             // if right click, call context menu
-            if (event.button === 2 || this.state.clickMode === "right") {
+            if (button === 2) {
                 if (item.onRightClickUp) {
                     this.state.startPosition = null;
                     item.onRightClickUp(event);
@@ -559,39 +514,15 @@ onMouseMove(event) {
             }
 
             // if middle click, rotate the object
-            if (event.button === 1 || this.state.clickMode === "middle") {
+            if (button === 1) {
                 if (item.onMiddleClickUp) item.onMiddleClickUp(event);
                 return
             }
 
             if (item.onMouseUp) item.onMouseUp(event);
         }
-
     }
 
-
-    onTouchStart(event) {
-        event.preventDefault();
-        if(event.touches) { // Check if this is a touch event
-            // Update event to use first touch event
-            event.clientX = event.touches[0].clientX;
-            event.clientY = event.touches[0].clientY;
-        }
-        this.onMouseDown(event);
-    }
-    onTouchMove(event) {
-        event.preventDefault();
-        if(event.touches) { // Check if this is a touch event
-            // Update event to use first touch event
-            event.clientX = event.touches[0].clientX;
-            event.clientY = event.touches[0].clientY;
-        }
-        this.onMouseMove(event);
-    }
-    onTouchEnd(event) {
-        event.preventDefault();
-        this.onMouseUp(event);
-    }
 }
 
 
