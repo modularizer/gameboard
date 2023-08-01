@@ -44,23 +44,14 @@ export class CustomScene extends THREE.Scene {
         this.axesHelper = new THREE.AxesHelper();
 
 
-        this.setConfig = this.setConfig(this.config, cameraPosition, lookAt);
+        this.setConfig(this.config, cameraPosition, lookAt);
 
 
         super.add(this.gridHelper);
         super.add(this.axesHelper);
 
     }
-    setConfig(config, cameraPosition, lookAt) {
-        // Set up camera
-        this.configCamera(this.config.camera, cameraPosition, lookAt);
-        this.configRenderer(this.config.renderer);
-        this.configAxesHelper(this.config.axes);
-        this.configGridHelper(this.config.grid);
-        this.configFloor(this.config.floor);
-        this.configLights(this.config.lights);
-        this.config = config;
-    }
+
 
     // key listeners
     keyListeners = new KeyListeners({
@@ -73,8 +64,8 @@ export class CustomScene extends THREE.Scene {
         "ArrowLeft": ()=>{this.camera.position.x -= this.config.speed},
         "ArrowRight": ()=>{this.camera.position.x += this.config.speed},
         " ": ()=>{
-            if (!this.state._isDragging) {
-                this.state.shouldAnimate = !this.state.shouldAnimate; // Toggle rotation
+            if (!this.state.dragging) {
+                this.state.animate = !this.state.animate; // Toggle rotation
             }
         },
         "r": ()=>{this.reset()},
@@ -166,6 +157,7 @@ export class CustomScene extends THREE.Scene {
             show: true,
             width: 100,
             height: 100,
+            y: -0.05,
             color: 0xcccccc,
         },
         speed: 0.1,
@@ -179,23 +171,15 @@ export class CustomScene extends THREE.Scene {
             show: true,
         }
     }
-    state = {
-        _isDragging: false,
-        shouldAnimate: true,
-        camera: {
-            position: {
-                x: 0,
-                y: 0,
-                z: 5,
-            },
-        },
-        items: [],
-        selectedItem: null,
-        moveMode: "normal", // "normal", "x", "y", "z", Vector3
-        clickMode: "left", // "left", "right", "middle"
-    }
-    reset(){
-        this.state.items.map(item => item.reset());
+    setConfig(config, cameraPosition, lookAt) {
+        // Set up camera
+        this.configCamera(this.config.camera, cameraPosition, lookAt);
+        this.configRenderer(this.config.renderer);
+        this.configAxesHelper(this.config.axes);
+        this.configGridHelper(this.config.grid);
+        this.configFloor(this.config.floor);
+        this.configLights(this.config.lights);
+        this.config = config;
     }
     configRenderer(config){
         this.renderer.setSize(config.size.width, config.size.height);
@@ -219,9 +203,9 @@ export class CustomScene extends THREE.Scene {
         );
 
         if (cameraPosition) {
-            this.state.camera.position = toXYZ(cameraPosition);
+            cameraPosition = toXYZ(cameraPosition);
         }else if (this.camera){
-            this.state.camera.position = this.camera.position.clone();
+            cameraPosition = this.camera.position.clone();
         }
         if ((!lookAt) && this.controls && this.controls.target){
             lookAt = this.controls.target.clone();
@@ -229,9 +213,7 @@ export class CustomScene extends THREE.Scene {
 
         if (this.camera && this.camera.parent) this.remove(this.camera);
         this.camera = (config.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
-        let p = this.state.camera.position;
-        this.camera.position.set(p.x, p.y, p.z);
-        this.state.camera.position = this.camera.position;
+        if (cameraPosition) this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         this.add(this.camera);
 
         this.addOrbitControls();
@@ -250,20 +232,14 @@ export class CustomScene extends THREE.Scene {
             this.controls.addEventListener(k, v.bind(this));
         }
     }
+    orbitListeners = {
+        "start": ()=>{this.state.animate = false; this.state.dragging = true},
+        "end": ()=>{this.state.animate = true; this.state.dragging = false},
+    }
     setCameraMode(mode){
         this.config.camera.mode = mode;
         this.configCamera(this.config.camera);
     }
-
-    addItem(item, position){
-        item = new MoveableItem(item);
-        if (position) item.position.set(position.x, position.y, position.z);
-        this.state.items.push(item);
-        this.item = item;
-        this.add(item);
-    }
-
-
     configAxesHelper(config){
         this.axesHelper.size = config.size;
         this.config.axes = config;
@@ -281,7 +257,7 @@ export class CustomScene extends THREE.Scene {
         // Rotate it so it's parallel to the xz plane
         floorGeometry.rotateX(-Math.PI / 2);
         // set the y position to -0.1
-        floorGeometry.translate(0, -0.05, 0);
+        floorGeometry.translate(0, config.y, 0);
 
         // Create a material
         let floorMaterial = new THREE.MeshStandardMaterial({ color: config.color }); // gray color
@@ -320,19 +296,33 @@ export class CustomScene extends THREE.Scene {
         this.config.lights = config;
     }
 
-
-    orbitListeners = {
-        "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
-        "end": ()=>{this.state.shouldAnimate = true; this.state._isDragging = false},
+    state = {
+        dragging: false,
+        animate: true,
+        items: [],
+        selectedItem: null,
+        selectedFace: null,
+        moveMode: "normal", // "normal", "x", "y", "z", Vector3
+        mouseState: null,
     }
 
     display(parentElement) {
         parentElement.appendChild(this.renderer.domElement);
         this.animate();
     }
+    addItem(item, position){
+        item = new MoveableItem(item);
+        if (position) item.position.set(position.x, position.y, position.z);
+        this.state.items.push(item);
+        this.item = item;
+        this.add(item);
+    }
+    reset(){
+        this.state.items.map(item => item.reset());
+    }
     animate(t) {
         requestAnimationFrame(this.animate.bind(this));
-        if (this.state.shouldAnimate){
+        if (this.state.animate){
             this.state.items.forEach(item => {
                 item.moveFrame(t);
             })
@@ -341,20 +331,11 @@ export class CustomScene extends THREE.Scene {
         this.renderer.render(this, this.camera);
     }
 
-
-
     showRay(dir, origin, color=0x00ff00, length=10, name="rayHelper"){
         let arrowHelper = new THREE.ArrowHelper(dir, origin, length, color);
-
-        // remove the old arrow from the scene if it exists
         this.remove(this.getObjectByName(name));
-
-        // assign name to the arrow object
         arrowHelper.name = name;
-
-        // add the arrow to the scene
         super.add(arrowHelper);
-
     }
     intersectMovePlane(item){
         let planeNormal;
@@ -417,120 +398,109 @@ export class CustomScene extends THREE.Scene {
         }
         return o
     }
-   onMouseDown(event, button) {
+    onMouseDown(event, button) {
         let item = this.getClickedItem(event);
         if (item){
             console.warn("clicked item", event.button, this.state.clickMode);
             this.controls.enabled = false;
             this.state.selectedItem = item;
-            this.state._isDragging = true;
+            this.state.dragging = true;
 
-            this.mouseState = {
+            this.state.mouseState = {
                 original: {x: this.mouse.x, y: this.mouse.y},
                 firstMove: true,
                 offset: new THREE.Vector3().copy(item.position).sub(this.mouse),
                 jumpOffset: new THREE.Vector3(),
             };
 
-            // if right click, call context menu
             if (button === 2) {
-                this.state.clickMode = "right";
-                // Save the original mouse position and the original quaternion
-                item.pivot.originalQuaternion = item.pivot.quaternion.clone();
+                this.itemRotateClick(item);
                 if (item.onRightClickDown) item.onRightClickDown(event);
-                return
-            }
-
-            // if middle click, rotate the object
-            if (button === 1) {
-                this.state.clickMode = "middle";
+            }else if (button === 1) {
                 if (item.onMiddleClickDown) item.onMiddleClickDown(event);
-                return
+            }else{
+                this.itemDragClick(item);
+                if (item.onMouseDown) item.onMouseDown(event);
             }
-
-            // if left click, move the object
-            this.intersectMovePlane(item);
-
-            if (item.onMouseDown) item.onMouseDown(event);
         } else {
             this.state.selectedItem = null;
             this.state.selectedFace = null;
             this.controls.enabled = true;
         }
     }
-
     onMouseMove(event, button) {
         this.getClickedItem(event);
         let item = this.state.selectedItem;
         if (item) {
             // if right click, call context menu
             if (button === 2) {
-                let diffX = this.mouse.x - this.mouseState.original.x;
-                let diffY = -(this.mouse.y - this.mouseState.original.y);
-
-                let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
-
-                let sensitivity = 19;
-                let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
-
-                let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
-
-                let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
-                item.pivot.setRotationFromQuaternion(finalQuaternion);
-
-                if (item.onRightClickMove)  item.onRightClickMove(event);
-                return
-            }
-
-            // if middle click, rotate the object
-            if (button === 1) {
+                this.itemRotateMove(item);
+                if (item.onRightClickMove) item.onRightClickMove(event);
+            }else if (button === 1) {
                 if (item.onMiddleClickMove) item.onMiddleClickMove(event);
-                return
+            }else{
+                this.itemDragMove(item);
+                if (item.onMouseMove) item.onMouseMove(event);
             }
-
-            // if left click, move the object
-            this.intersectMovePlane(item);
-            let endPos = item.position.clone().copy(this.mouse).sub(this.mouseState.offset);
-            endPos.y = Math.max(0, endPos.y);
-
-            if (!this.mouseState.firstMove) {
-                let diff = endPos.clone().sub(item.position).sub(this.mouseState.jumpOffset);
-                item.position.add(diff);
-            } else {
-                this.mouseState.jumpOffset = endPos.clone().sub(item.position);
-                this.mouseState.firstMove = false;
-            }
-            if (item.onMouseMove) item.onMouseMove(event);
         }
     }
-
     onMouseUp(event, button) {
-        this.state.clickMode = "left";
-
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
             this.state.selectedFace = null;
-            this.state._isDragging = false;
+            this.state.dragging = false;
             this.addOrbitControls();
             if (item.snap) item.snap();
 
             // if right click, call context menu
             if (button === 2) {
-                if (item.onRightClickUp) {
-                    this.state.startPosition = null;
-                    item.onRightClickUp(event);
-                }
-                return
-            }
-
-            // if middle click, rotate the object
-            if (button === 1) {
+                this.itemRotateEnd(item);
+                if (item.onRightClickUp) item.onRightClickUp(event);
+            }else if (button === 1) {
                 if (item.onMiddleClickUp) item.onMiddleClickUp(event);
-                return
+            }else{
+                if (item.onMouseUp) item.onMouseUp(event);
             }
+        }
+    }
+    itemRotateClick(item){
+        // Save the original mouse position and the original quaternion
+        item.pivot.originalQuaternion = item.pivot.quaternion.clone();
+    }
+    itemRotateMove(item){
+        let diffX = this.mouse.x - this.state.mouseState.original.x;
+        let diffY = -(this.mouse.y - this.state.mouseState.original.y);
 
-            if (item.onMouseUp) item.onMouseUp(event);
+        let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
+
+        let sensitivity = 19;
+        let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
+
+        let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
+
+        let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
+        item.pivot.setRotationFromQuaternion(finalQuaternion);
+    }
+    itemRotateEnd(item){
+        this.state.startPosition = null;
+    }
+    itemDragClick(item){
+        // if left click, move the object
+        this.intersectMovePlane(item);
+    }
+    itemDragMove(item){
+        // if left click, move the object
+        this.intersectMovePlane(item);
+        let endPos = item.position.clone().copy(this.mouse).sub(this.state.mouseState.offset);
+        endPos.y = Math.max(0, endPos.y);
+
+        if (!this.state.mouseState.firstMove) {
+            let diff = endPos.clone().sub(item.position).sub(this.state.mouseState.jumpOffset);
+            item.position.add(diff);
+        } else {
+            this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
+            this.state.mouseState.firstMove = false;
         }
     }
 

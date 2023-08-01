@@ -7,6 +7,7 @@ export class KeyListeners {
         this.keydown = this.keydown.bind(this);
         this.keyup = this.keyup.bind(this);
         this.addTo = this.addTo.bind(this);
+        this.key = null;
     }
     addTo(element) {
         element.addEventListener("keydown", this.keydown);
@@ -22,12 +23,13 @@ export class KeyListeners {
         return k;
     }
     keydown(e) {
-        let k = this.getKey(e);
+        this.key = this.getKey(e);
         if (this.keydownListeners[k]) {
             this.keydownListeners[k].bind(this)(e);
         }
     }
     keyup(e) {
+        this.key = null;
         let k = this.getKey(e);
         if (this.keyupListeners[k]) {
             this.keyupListeners[k].bind(this)(e);
