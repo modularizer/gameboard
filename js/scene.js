@@ -16,10 +16,32 @@ function clamp(value, min, max) {
 export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
         super();
+
+        this.display = this.display.bind(this);
+        this.animate = this.animate.bind(this);
+        this.getClickedItem = this.getClickedItem.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onTouchStart = this.onTouchStart.bind(this);
+        this.onTouchMove = this.onTouchMove.bind(this);
+        this.onTouchEnd = this.onTouchEnd.bind(this);
+        this.setCameraMode = this.setCameraMode.bind(this);
+        this.addCamera = this.addCamera.bind(this);
+        this.addRenderer = this.addRenderer.bind(this);
+
+        // Event listener for arrow keys
+        this.addKeyListeners();
+        this.addMouseListeners();
+
+
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector3(0, 0, 0.5);
         this.offset = new THREE.Vector3();
+        this.renderer = new THREE.WebGLRenderer();
 
+
+        // Set up camera
         if (cameraPosition) this.state.camera.position = toXYZ(cameraPosition);
 
         // Set up camera
@@ -32,22 +54,6 @@ export class CustomScene extends THREE.Scene {
         // OrbitControls for panning, zooming, and rotating
         this.addOrbitControls();
 
-        // Event listener for arrow keys
-        this.addKeyListeners();
-
-        this.display = this.display.bind(this);
-        this.animate = this.animate.bind(this);
-        this.getClickedItem = this.getClickedItem.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onTouchStart = this.onTouchStart.bind(this);
-        this.onTouchMove = this.onTouchMove.bind(this);
-        this.onTouchEnd = this.onTouchEnd.bind(this);
-
-        this.setCameraMode = this.setCameraMode.bind(this);
-
-
         // Add axes helper
         if (this.config.axes.show) this.addAxesHelper();
 
@@ -57,9 +63,75 @@ export class CustomScene extends THREE.Scene {
         if (this.config.floor.show) this.addFloor();
         this.addLights();
 
-        this.addMouseListeners();
-
     }
+
+    // key listeners
+    addKeyListeners(){
+        window.addEventListener('keydown', (e) => {
+            let k = e.key;
+            if (this.state.selectedItem) {
+                // fire keydown event on selected item
+                this.state.selectedItem.dispatchEvent({ type: "keydown", key: k });
+
+            }
+            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
+            if (e.altKey && k != "Alt") k = "Alt+" + k;
+            if (e.ctrlKey && k != "Control") k = "Ctrl+" + k;
+            if (e.metaKey && k != "Meta") k = "Meta+" + k;
+            if (e.fnKey && k != "Fn") k = "Fn+" + k;
+
+            console.warn(k);
+            if (this.keyListeners[k]) {
+                this.keyListeners[k].bind(this)(e);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        })
+        window.addEventListener('keyup', (e) => {
+            let k = e.key;
+            if (this.state.selectedItem) {
+                // fire keydown event on selected item
+                this.state.selectedItem.dispatchEvent({ type: "keyup", key: k });
+            }
+            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
+            if (e.altKey && k != "Alt") k = "Alt+" + k;
+            if (e.ctrlKey && k != "Ctrl") k = "Ctrl+" + k;
+            if (e.metaKey && k != "Meta") k = "Meta+" + k;
+            if (e.fnKey && k != "Fn") k = "Fn+" + k;
+
+            if (this.keyupListeners[k]) {
+                this.keyupListeners[k].bind(this)(e);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        })
+    }
+    keyListeners = {
+        "Ctrl+ArrowUp": ()=>{this.item.rotateX(this.config.speed)},
+        "Ctrl+ArrowDown": ()=>{this.item.rotateX(-this.config.speed)},
+        "Ctrl+ArrowLeft": ()=>{this.item.rotateY(this.config.speed)},
+        "Ctrl+ArrowRight": ()=>{this.item.rotateY(-this.config.speed)},
+        "ArrowUp": ()=>{this.camera.position.y += this.config.speed},
+        "ArrowDown": ()=>{this.camera.position.y -= this.config.speed},
+        "ArrowLeft": ()=>{this.camera.position.x -= this.config.speed},
+        "ArrowRight": ()=>{this.camera.position.x += this.config.speed},
+        " ": ()=>{
+            if (!this.state._isDragging) {
+                this.state.shouldAnimate = !this.state.shouldAnimate; // Toggle rotation
+            }
+        },
+        "r": ()=>{this.reset()},
+        "p": ()=>{this.state.moveMode = "y"},
+        "n": ()=>{this.state.moveMode = "normal"},
+        "Control": ()=>{this.state.clickMode = "right"},
+        "Alt": ()=>{this.state.clickMode = "middle"},
+    }
+    keyupListeners = {
+        "Control": ()=>{this.state.clickMode = "left"},
+        "Alt": ()=>{this.state.clickMode = "left"},
+    }
+
+
     config = {
         camera: {
             mode: "perspective",
@@ -221,6 +293,14 @@ export class CustomScene extends THREE.Scene {
         this.renderer.setClearColor(this.config.renderer.clearColor, this.config.renderer.clearAlpha);
         this.renderer.shadowMap.enabled = this.config.renderer.shadows;
     }
+    addOrbitControls(){
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.minPolarAngle = (this.config.camera.minAngle * Math.PI / 180); // radians
+        this.controls.maxPolarAngle = (this.config.camera.maxAngle * Math.PI / 180); // radians
+        for (let [k, v] of Object.entries(this.orbitListeners)){
+            this.controls.addEventListener(k, v.bind(this));
+        }
+    }
     addGridHelper(){
         this.gridHelper = new THREE.GridHelper(this.config.grid.size, this.config.grid.divisions);
         super.add(this.gridHelper);
@@ -267,78 +347,7 @@ export class CustomScene extends THREE.Scene {
             super.add(light);
         }
     }
-    addKeyListeners(){
-        window.addEventListener('keydown', (e) => {
-            let k = e.key;
-            if (this.state.selectedItem) {
-                // fire keydown event on selected item
-                this.state.selectedItem.dispatchEvent({ type: "keydown", key: k });
 
-            }
-            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
-            if (e.altKey && k != "Alt") k = "Alt+" + k;
-            if (e.ctrlKey && k != "Control") k = "Ctrl+" + k;
-            if (e.metaKey && k != "Meta") k = "Meta+" + k;
-            if (e.fnKey && k != "Fn") k = "Fn+" + k;
-
-            console.warn(k);
-            if (this.keyListeners[k]) {
-                this.keyListeners[k].bind(this)(e);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        })
-        window.addEventListener('keyup', (e) => {
-            let k = e.key;
-            if (this.state.selectedItem) {
-                // fire keydown event on selected item
-                this.state.selectedItem.dispatchEvent({ type: "keyup", key: k });
-            }
-            if (e.shiftKey && k != "Shift") k = "Shift+" + k;
-            if (e.altKey && k != "Alt") k = "Alt+" + k;
-            if (e.ctrlKey && k != "Ctrl") k = "Ctrl+" + k;
-            if (e.metaKey && k != "Meta") k = "Meta+" + k;
-            if (e.fnKey && k != "Fn") k = "Fn+" + k;
-
-            if (this.keyupListeners[k]) {
-                this.keyupListeners[k].bind(this)(e);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        })
-    }
-    addOrbitControls(){
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.minPolarAngle = (this.config.camera.minAngle * Math.PI / 180); // radians
-        this.controls.maxPolarAngle = (this.config.camera.maxAngle * Math.PI / 180); // radians
-        for (let [k, v] of Object.entries(this.orbitListeners)){
-            this.controls.addEventListener(k, v.bind(this));
-        }
-    }
-    keyListeners = {
-        "Ctrl+ArrowUp": ()=>{this.item.rotateX(this.config.speed)},
-        "Ctrl+ArrowDown": ()=>{this.item.rotateX(-this.config.speed)},
-        "Ctrl+ArrowLeft": ()=>{this.item.rotateY(this.config.speed)},
-        "Ctrl+ArrowRight": ()=>{this.item.rotateY(-this.config.speed)},
-        "ArrowUp": ()=>{this.camera.position.y += this.config.speed},
-        "ArrowDown": ()=>{this.camera.position.y -= this.config.speed},
-        "ArrowLeft": ()=>{this.camera.position.x -= this.config.speed},
-        "ArrowRight": ()=>{this.camera.position.x += this.config.speed},
-        " ": ()=>{
-            if (!this.state._isDragging) {
-                this.state.shouldAnimate = !this.state.shouldAnimate; // Toggle rotation
-            }
-        },
-        "r": ()=>{this.reset()},
-        "p": ()=>{this.state.moveMode = "y"},
-        "n": ()=>{this.state.moveMode = "normal"},
-        "Control": ()=>{this.state.clickMode = "right"},
-        "Alt": ()=>{this.state.clickMode = "middle"},
-    }
-    keyupListeners = {
-        "Control": ()=>{this.state.clickMode = "left"},
-        "Alt": ()=>{this.state.clickMode = "left"},
-    }
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
         "end": ()=>{this.state.shouldAnimate = true; this.state._isDragging = false},
