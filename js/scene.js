@@ -23,8 +23,13 @@ export class CustomScene extends THREE.Scene {
         this.animate = this.animate.bind(this);
         this.getClickedItem = this.getClickedItem.bind(this);
         this.setCameraMode = this.setCameraMode.bind(this);
-        this.addCamera = this.addCamera.bind(this);
+        this.setConfig = this.setConfig.bind(this);
+        this.configCamera = this.configCamera.bind(this);
         this.configRenderer = this.configRenderer.bind(this);
+        this.configAxesHelper = this.configAxesHelper.bind(this);
+        this.configGridHelper = this.configGridHelper.bind(this);
+        this.configFloor = this.configFloor.bind(this);
+        this.configLights = this.configLights.bind(this);
 
         // Event listener for arrow keys
         this.keyListeners.addTo(window);
@@ -35,30 +40,26 @@ export class CustomScene extends THREE.Scene {
         this.mouse = new THREE.Vector3(0, 0, 0.5);
         this.offset = new THREE.Vector3();
         this.renderer = new THREE.WebGLRenderer();
+        this.gridHelper = new THREE.GridHelper();
+        this.axesHelper = new THREE.AxesHelper();
 
 
+        this.setConfig = this.setConfig(this.config, cameraPosition, lookAt);
+
+
+        super.add(this.gridHelper);
+        super.add(this.axesHelper);
+
+    }
+    setConfig(config, cameraPosition, lookAt) {
         // Set up camera
-        if (cameraPosition) this.state.camera.position = toXYZ(cameraPosition);
-
-        // Set up camera
-        this.addCamera();
-        if (lookAt) this.lookAt(lookAt);
-
-        // Set up renderer
+        this.configCamera(this.config.camera, cameraPosition, lookAt);
         this.configRenderer(this.config.renderer);
-
-        // OrbitControls for panning, zooming, and rotating
-        this.addOrbitControls();
-
-        // Add axes helper
-        if (this.config.axes.show) this.addAxesHelper();
-
-        // Add grid helper
-        if (this.config.grid.show) this.addGridHelper();
-
-        if (this.config.floor.show) this.addFloor();
-        this.addLights();
-
+        this.configAxesHelper(this.config.axes);
+        this.configGridHelper(this.config.grid);
+        this.configFloor(this.config.floor);
+        this.configLights(this.config.lights);
+        this.config = config;
     }
 
     // key listeners
@@ -196,56 +197,50 @@ export class CustomScene extends THREE.Scene {
     reset(){
         this.state.items.map(item => item.reset());
     }
-    lookAt(x, y, z) {
-        super.lookAt(new Vector3(x, y, z));
-    }
-    addCamera(){
-        this.perspectiveCamera = new THREE.PerspectiveCamera(
-            this.config.camera.perspective.fov,
-            this.config.camera.perspective.aspect,
-            this.config.camera.perspective.near,
-            this.config.camera.perspective.far,
-        );
-        let aspect = window.innerWidth / window.innerHeight;
-        this.orthographicCamera = new THREE.OrthographicCamera(
-            this.config.camera.orthographic.left * aspect,
-            this.config.camera.orthographic.right * aspect,
-            this.config.camera.orthographic.top,
-            this.config.camera.orthographic.bottom
-        );
-        this.camera = (this.config.camera.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
-        this.camera.position.x = this.state.camera.position.x;
-        this.camera.position.y = this.state.camera.position.y;
-        this.camera.position.z = this.state.camera.position.z;
-        this.state.camera.position = this.camera.position;
-        this.add(this.camera);
-    }
-    setCameraMode(mode){
-        let p = this.camera.position.clone();
-        let t = this.controls.target.clone();
-
-        this.remove(this.camera);
-        this.config.camera.mode = mode;
-        this.camera = (this.config.camera.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
-
-        this.camera.position.copy(p);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);  // replace your controls instance
-        this.controls.target.copy(t);
-        this.camera.lookAt(this.controls.target);
-        this.add(this.camera);
-    }
-
-    addItem(item, position){
-        item = new MoveableItem(item);
-        if (position) item.position.set(position.x, position.y, position.z);
-        this.state.items.push(item);
-        this.item = item;
-        this.add(item);
-    }
     configRenderer(config){
         this.renderer.setSize(config.size.width, config.size.height);
         this.renderer.setClearColor(config.clearColor, config.clearAlpha);
         this.renderer.shadowMap.enabled = config.shadows;
+        this.config.renderer = config;
+    }
+    configCamera(config, cameraPosition, lookAt){
+        this.perspectiveCamera = new THREE.PerspectiveCamera(
+            config.perspective.fov,
+            config.perspective.aspect,
+            config.perspective.near,
+            config.perspective.far,
+        );
+        let aspect = window.innerWidth / window.innerHeight;
+        this.orthographicCamera = new THREE.OrthographicCamera(
+            config.orthographic.left * aspect,
+            config.orthographic.right * aspect,
+            config.orthographic.top,
+            config.orthographic.bottom
+        );
+
+        if (cameraPosition) {
+            this.state.camera.position = toXYZ(cameraPosition);
+        }else if (this.camera){
+            this.state.camera.position = this.camera.position.clone();
+        }
+        if ((!lookAt) && this.controls && this.controls.target){
+            lookAt = this.controls.target.clone();
+        }
+
+        if (this.camera && this.camera.parent) this.remove(this.camera);
+        this.camera = (config.mode === "perspective")?this.perspectiveCamera:this.orthographicCamera;
+        let p = this.state.camera.position;
+        this.camera.position.set(p.x, p.y, p.z);
+        this.state.camera.position = this.camera.position;
+        this.add(this.camera);
+
+        this.addOrbitControls();
+
+        if (lookAt){
+            this.controls.target.copy(lookAt);
+            this.camera.lookAt(this.controls.target);
+        }
+        this.config.camera = config;
     }
     addOrbitControls(){
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -255,17 +250,33 @@ export class CustomScene extends THREE.Scene {
             this.controls.addEventListener(k, v.bind(this));
         }
     }
-    addGridHelper(){
-        this.gridHelper = new THREE.GridHelper(this.config.grid.size, this.config.grid.divisions);
-        super.add(this.gridHelper);
+    setCameraMode(mode){
+        this.config.camera.mode = mode;
+        this.configCamera(this.config.camera);
     }
-    addAxesHelper(){
-        this.axesHelper = new THREE.AxesHelper(this.config.axes.size);
-        super.add(this.axesHelper);
+
+    addItem(item, position){
+        item = new MoveableItem(item);
+        if (position) item.position.set(position.x, position.y, position.z);
+        this.state.items.push(item);
+        this.item = item;
+        this.add(item);
     }
-    addFloor(){
+
+
+    configAxesHelper(config){
+        this.axesHelper.size = config.size;
+        this.config.axes = config;
+    }
+    configGridHelper(config){
+        this.gridHelper.visible = config.show;
+        this.gridHelper.size = config.size;
+        this.gridHelper.divisions = config.divisions;
+        this.config.grid = config;
+    }
+    configFloor(config){
         // Create a geometry
-        let floorGeometry = new THREE.PlaneGeometry(this.config.floor.width, this.config.floor.height, 1, 1);
+        let floorGeometry = new THREE.PlaneGeometry(config.width, config.height, 1, 1);
 
         // Rotate it so it's parallel to the xz plane
         floorGeometry.rotateX(-Math.PI / 2);
@@ -273,17 +284,21 @@ export class CustomScene extends THREE.Scene {
         floorGeometry.translate(0, -0.05, 0);
 
         // Create a material
-        let floorMaterial = new THREE.MeshStandardMaterial({ color: this.config.floor.color }); // gray color
+        let floorMaterial = new THREE.MeshStandardMaterial({ color: config.color }); // gray color
 
 
         // Create a mesh and add it to the scene
+        if (this.floor && this.floor.parent) this.remove(this.floor);
         this.floor = new THREE.Mesh(floorGeometry, floorMaterial);
         this.floor.receiveShadow = true;
+        this.floor.visible = config.show;
         super.add(this.floor);
-
+        this.config.floor = config;
     }
-    addLights(){
-        for (let [lightName, spec] of Object.entries(this.config.lights)){
+    configLights(config){
+        if (!this.lights){this.lights = {};}
+
+        for (let [lightName, spec] of Object.entries(config)){
             let light = null;
             if (spec.enabled == false) continue;
             if (spec.type == "ambient"){
@@ -298,9 +313,14 @@ export class CustomScene extends THREE.Scene {
                 light.position.set(spec.position.x, spec.position.y, spec.position.z);
                 light.castShadow = spec.castShadow;
             }
+            if (this.lights[lightName] && this.lights[lightName].parent) this.remove(this.lights[lightName]);
+            this.lights[lightName] = light;
             super.add(light);
         }
+        this.config.lights = config;
     }
+
+
     orbitListeners = {
         "start": ()=>{this.state.shouldAnimate = false; this.state._isDragging = true},
         "end": ()=>{this.state.shouldAnimate = true; this.state._isDragging = false},
