@@ -23,7 +23,7 @@ export class CustomScene extends THREE.Scene {
         this.animate = this.animate.bind(this);
         this.getClickedItem = this.getClickedItem.bind(this);
         this.setCameraMode = this.setCameraMode.bind(this);
-        this.setConfig = this.setConfig.bind(this);
+        this.configure = this.configure.bind(this);
         this.configCamera = this.configCamera.bind(this);
         this.configRenderer = this.configRenderer.bind(this);
         this.configAxesHelper = this.configAxesHelper.bind(this);
@@ -44,14 +44,49 @@ export class CustomScene extends THREE.Scene {
         this.axesHelper = new THREE.AxesHelper();
 
 
-        this.setConfig(this.config, cameraPosition, lookAt);
+        this.configure(this.config, cameraPosition, lookAt);
 
 
         super.add(this.gridHelper);
         super.add(this.axesHelper);
 
+        let d = {
+            "camera": this.configCamera,
+            "renderer": this.configRenderer,
+            "axes": this.configAxesHelper,
+            "grid": this.configGridHelper,
+            "floor": this.configFloor,
+            "lights": this.configLights,
+        };
+        this._config = new Proxy(this.config, {
+            get: (target, key) => {
+                return new Proxy(target[key], {
+                    get: (target2, key2) => {
+                        let value2 = target2[key2];
+                        if (typeof value2 === "object"){
+                            return new Proxy(value2, {
+                                get: (target3, key3)=>target3[key3],
+                                set: (target3, key3, value3)=>{
+                                    target3[key3] = value3;
+                                    d[key](target2);
+                                }
+                            })
+                        }
+                        return target2[key2];
+                    },
+                    set: (target2, key2, value2) => {
+                        target2[key2] = value2;
+                        d[key](target2);
+                        return true;
+                    }
+                })
+            },
+            set: (target, key, value) => {
+                d[key](value);
+                return true;
+            }
+        })
     }
-
 
     // key listeners
     keyListeners = new KeyListeners({
@@ -79,7 +114,7 @@ export class CustomScene extends THREE.Scene {
     });
 
 
-    config = {
+    _config = {
         camera: {
             mode: "perspective",
             orthographic: {
@@ -141,7 +176,6 @@ export class CustomScene extends THREE.Scene {
                 },
                 castShadow: true,
             }
-
         },
         renderer: {
             clearColor: 0xffffff,
@@ -171,7 +205,14 @@ export class CustomScene extends THREE.Scene {
             show: true,
         }
     }
-    setConfig(config, cameraPosition, lookAt) {
+    get config() {
+        return this._config;
+    }
+    set config(value) {
+        this._config = value;
+        this.configure(this._config);
+    }
+    configure(config, cameraPosition, lookAt) {
         // Set up camera
         this.configCamera(this.config.camera, cameraPosition, lookAt);
         this.configRenderer(this.config.renderer);
@@ -179,13 +220,11 @@ export class CustomScene extends THREE.Scene {
         this.configGridHelper(this.config.grid);
         this.configFloor(this.config.floor);
         this.configLights(this.config.lights);
-        this.config = config;
     }
     configRenderer(config){
         this.renderer.setSize(config.size.width, config.size.height);
         this.renderer.setClearColor(config.clearColor, config.clearAlpha);
         this.renderer.shadowMap.enabled = config.shadows;
-        this.config.renderer = config;
     }
     configCamera(config, cameraPosition, lookAt){
         this.perspectiveCamera = new THREE.PerspectiveCamera(
@@ -222,7 +261,6 @@ export class CustomScene extends THREE.Scene {
             this.controls.target.copy(lookAt);
             this.camera.lookAt(this.controls.target);
         }
-        this.config.camera = config;
     }
     addOrbitControls(){
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -242,13 +280,11 @@ export class CustomScene extends THREE.Scene {
     }
     configAxesHelper(config){
         this.axesHelper.size = config.size;
-        this.config.axes = config;
     }
     configGridHelper(config){
         this.gridHelper.visible = config.show;
         this.gridHelper.size = config.size;
         this.gridHelper.divisions = config.divisions;
-        this.config.grid = config;
     }
     configFloor(config){
         // Create a geometry
@@ -269,7 +305,6 @@ export class CustomScene extends THREE.Scene {
         this.floor.receiveShadow = true;
         this.floor.visible = config.show;
         super.add(this.floor);
-        this.config.floor = config;
     }
     configLights(config){
         if (!this.lights){this.lights = {};}
@@ -293,7 +328,6 @@ export class CustomScene extends THREE.Scene {
             this.lights[lightName] = light;
             super.add(light);
         }
-        this.config.lights = config;
     }
 
     state = {
