@@ -36,7 +36,7 @@ function makeChessBoard(lightColor = "#CD853F", darkColor = "#8B4513", borderCol
 
     let chessboardPieces = placeModels(elements);
     let chessboard = new THREE.Group();
-    Object.values(chessboardPieces).map((piece) => {chessboard.add(piece)});
+    Object.values(chessboardPieces).map((piece) => {chessboard.add(piece); piece.receiveShadow = true;})
     chessboard.snapNodes = new SnapNodes(listOfSquares.map((square) => {new SnapNode(square.position.x, square.position.y, square.position.z)}));
     return chessboard;
 }
@@ -74,6 +74,17 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
         if (name.startsWith("black")){
             model.pivot.rotation.set(0, Math.PI, 0);
         }
+        model.castShadow = true;
+        model.receiveShadow = true;
+        if (model.model){
+            model.model.castShadow = true;
+            model.model.receiveShadow = true;
+        }else{
+            model.loadPromise.then((model) => {
+                model.castShadow = true;
+                model.receiveShadow = true;
+            })
+        }
     }
 
 
@@ -85,6 +96,7 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
             model.setColor(black);
         }
         model.setSnapController(y, 2, new THREE.Vector3(0.25, 0, 0));
+
     }
     return pieces;
 }
@@ -101,6 +113,7 @@ function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor
         for (let [name, model] of Object.entries(chessPieces)){
             scene.addItem(model);
         }
+        scene.state.moveMode = "y";
     }
     window.addEventListener('load', ()=>{
         let setSnaps = ()=>{

@@ -52,6 +52,8 @@ export class BaseModel extends THREE.Group {
             this.truePivot.position.set(size.x/2, size.y/2, size.z/2);
 
             this.snapController = new SnapController(this);
+
+            this.setShadow(this.config.castShadow, this.config.receiveShadow);
         }).bind(this))
     }
     setSnapNodes(nodes){
@@ -62,6 +64,19 @@ export class BaseModel extends THREE.Group {
         if (!this.model){return this.loadPromise.then(this.setSnapController.bind(this, ...args))}
 //        console.warn(args);
         this.snapController = new SnapController(this, ...args);
+    }
+    setShadow(cast = true, receive = true){
+        this.castShadow = cast;
+        this.receiveShadow = receive;
+        if (!this.model){return this.loadPromise.then(this.setShadow.bind(this, cast, receive))}
+        if (this.model){
+            this.model.castShadow = cast;
+            this.model.receiveShadow = receive;
+            for (let child of this.model.children){
+                child.castShadow = cast;
+                child.receiveShadow = receive;
+            }
+        }
     }
     snap(){
         if (this.config.snap){
@@ -76,7 +91,7 @@ export class BaseModel extends THREE.Group {
         wireframe: {
             visible: false,
             color: 0x00ff00,
-            thickness: 5,
+            thickness: 2,
         },
         originCube: {
             visible: false,

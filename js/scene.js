@@ -60,26 +60,30 @@ export class CustomScene extends THREE.Scene {
         };
         this._config = new Proxy(this.config, {
             get: (target, key) => {
-                return new Proxy(target[key], {
-                    get: (target2, key2) => {
-                        let value2 = target2[key2];
-                        if (typeof value2 === "object"){
-                            return new Proxy(value2, {
-                                get: (target3, key3)=>target3[key3],
-                                set: (target3, key3, value3)=>{
-                                    target3[key3] = value3;
-                                    d[key](target2);
-                                }
-                            })
+                let value = target[key];
+                if (typeof value === "object") {
+                    return new Proxy(target[key], {
+                        get: (target2, key2) => {
+                            let value2 = target2[key2];
+                            if (typeof value2 === "object"){
+                                return new Proxy(value2, {
+                                    get: (target3, key3)=>target3[key3],
+                                    set: (target3, key3, value3)=>{
+                                        target3[key3] = value3;
+                                        d[key](target2);
+                                    }
+                                })
+                            }
+                            return value2;
+                        },
+                        set: (target2, key2, value2) => {
+                            target2[key2] = value2;
+                            d[key](target2);
+                            return true;
                         }
-                        return target2[key2];
-                    },
-                    set: (target2, key2, value2) => {
-                        target2[key2] = value2;
-                        d[key](target2);
-                        return true;
-                    }
-                })
+                    })
+                }
+                return value;
             },
             set: (target, key, value) => {
                 d[key](value);
@@ -207,7 +211,8 @@ export class CustomScene extends THREE.Scene {
         axes: {
             size: 5,
             show: true,
-        }
+        },
+        clickSelect: "jump", // false, true, "jump"
     }
     get config() {
         return this._config;
@@ -340,6 +345,7 @@ export class CustomScene extends THREE.Scene {
         items: [],
         selectedItem: null,
         selectedFace: null,
+        releaseItem: true,
         moveMode: "normal", // "normal", "x", "y", "z", Vector3
         mouseState: null,
     }
@@ -410,7 +416,8 @@ export class CustomScene extends THREE.Scene {
         // this.showRay();
 
         // Calculate objects intersecting the picking ray
-        let intersects = this.raycaster.intersectObjects( this.state.items, true);
+        let items = this.state.items.map(item => item.model).filter(v=>v)
+        let intersects = this.raycaster.intersectObjects( items, true);
 
         // keep the same object selected as it passes behind other objects
         if (this.state.selectedFace){
@@ -428,8 +435,12 @@ export class CustomScene extends THREE.Scene {
             this.state.selectedFace = intersects[0].face;
             p = intersects[0].point;
 
-            while (!this.state.items.includes(o)){
+            while (!items.includes(o)){
                 o = o.parent;
+            }
+            o = o.parent.parent;
+            if (!this.state.items.includes(o)){
+                console.error("clicked object not in items", o);
             }
             o.clickPoint = o.worldToLocal(p);
         }else{
@@ -438,10 +449,21 @@ export class CustomScene extends THREE.Scene {
         return o
     }
     onMouseDown(event, button) {
+        if (this.config.clickSelect){
+            if (this.state.selectedItem){
+                this.state.releaseItem = true;
+                this.state.dragging = true;
+                return
+            }else{
+                this.state.releaseItem = false;
+            }
+        }
         let item = this.getClickedItem(event);
         if (item){
             console.warn("clicked item", event.button, this.state.clickMode);
             this.controls.enabled = false;
+
+
             this.state.selectedItem = item;
             this.state.dragging = true;
 
@@ -462,12 +484,14 @@ export class CustomScene extends THREE.Scene {
                 if (item.onMouseDown) item.onMouseDown(event);
             }
         } else {
+            this.state.dragging = false;
             this.state.selectedItem = null;
             this.state.selectedFace = null;
             this.controls.enabled = true;
         }
     }
-    onMouseMove(event, button) {
+    onMouseMove(event, button, force=false) {
+        if (!this.state.dragging){return}
         this.getClickedItem(event);
         let item = this.state.selectedItem;
         if (item) {
@@ -478,12 +502,17 @@ export class CustomScene extends THREE.Scene {
             }else if (button === 1) {
                 if (item.onMiddleClickMove) item.onMiddleClickMove(event);
             }else{
-                this.itemDragMove(item);
+                this.itemDragMove(item, force);
                 if (item.onMouseMove) item.onMouseMove(event);
             }
         }
     }
     onMouseUp(event, button) {
+        if (!this.state.releaseItem){return}
+        if (this.config.clickSelect === "jump"){
+//            this.onMouseMove(event, button, true);
+            this.onMouseMove(event, button, true)
+        };
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
@@ -532,7 +561,7 @@ export class CustomScene extends THREE.Scene {
         this.intersectMovePlane(item);
         item.startDragPosition = item.position.clone();
     }
-    itemDragMove(item){
+    itemDragMove(item, force=false){
         // if left click, move the object
         this.intersectMovePlane(item);
         let endPos = item.position.clone().copy(this.mouse).sub(this.state.mouseState.offset);
@@ -540,6 +569,7 @@ export class CustomScene extends THREE.Scene {
 
         if (!this.state.mouseState.firstMove) {
             let diff = endPos.clone().sub(item.position).sub(this.state.mouseState.jumpOffset);
+            if (!force && this.config.clickSelect === "jump"){return}
             item.position.add(diff);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
