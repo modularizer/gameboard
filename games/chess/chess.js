@@ -32,7 +32,7 @@ function makeChessBoard(lightColor = "#CD853F", darkColor = "#8B4513", borderCol
     elements.label = {src: {text: "Pieces by Asif Mahmud", size: 0.25, color: darkColor}, position: {x: -9, y: 0.6, z: 9}};
     elements.link = {src: {text: "https://grabcad.com/library/chess-pieces-23", size: 0.25, color: darkColor}, position: {x: -9, y: 0.6, z: 9.5}};
     elements.label2 = {src: {text: "Game by Torin Halsted", size: 0.25, color: darkColor}, position: {x: 5.5, y: 0.6, z: 9}};
-    elements.link2 = {src: {text: "https://github.io/modularizer/gameboard/chess", size: 0.25, color: darkColor}, position: {x: 1.5, y: 0.6, z: 9.5}};
+    elements.link2 = {src: {text: " https://modularizer.github.io/gameboard/games/chess/chess.html", size: 0.25, color: darkColor}, position: {x: 1, y: 0.6, z: 9.5}};
 
     let chessboardPieces = placeModels(elements);
     let chessboard = new THREE.Group();
