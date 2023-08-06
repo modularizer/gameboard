@@ -86,6 +86,10 @@ export class CustomScene extends THREE.Scene {
                 return true;
             }
         })
+
+        window.addEventListener('load', ()=>{
+           this.display(document.body);
+        })
     }
 
     // key listeners
@@ -345,6 +349,7 @@ export class CustomScene extends THREE.Scene {
         this.animate();
     }
     addItem(item, position){
+        if (item.addToScene) {return item.addToScene(this)};
         item = new MoveableItem(item);
         if (position) item.position.set(position.x, position.y, position.z);
         this.state.items.push(item);

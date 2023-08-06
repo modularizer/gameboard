@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chess</title>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.132.2/examples/jsm/",
+          "three/loaders": "https://unpkg.com/three@0.132.2/examples/jsm/loaders/",
+          "utils": "../../js/utils/index.js",
+          "gameengine": "../../js/index.js"
+        }
+      }
+    </script>
+
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        window.THREE = THREE;
+        import { CustomScene } from 'gameengine';
+        import { makeChessSet } from './chessboard.js';
+
+        // Create a scene
+        var scene = new CustomScene({x: 5, y: 5, z: 5});
+
+        var chessSet = makeChessSet();
+        scene.addItem(chessSet);
+
+        window.chessSet = chessSet;
+        window.scene = scene;
+
+
+    </script>
+</body>
+</html>

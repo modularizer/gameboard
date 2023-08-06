@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Card</title>
+    <title>Cube</title>
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
     <script type="importmap">
       {
@@ -19,19 +19,19 @@
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE;
-        import { Cube, CustomScene } from 'gameengine';
+        import { Model, CustomScene } from 'gameengine';
 
         // Create a scene
         var scene = new CustomScene({x: 5, y: 5, z: 5});
 
         // Add both cards to the scene
-        let card = new Cube({
+        let card = new Model({
             bottom: './front.jpg',
             top: './back.jpg'
         });
         scene.addItem(card, {x: 0, y: 2, z: 0});
 
-        let cube = new Cube({
+        let cube = new Model({
             front: './front.jpg',
             back: './back.jpg',
             left: "green",
