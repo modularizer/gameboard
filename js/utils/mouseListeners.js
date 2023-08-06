@@ -28,21 +28,21 @@ export class MouseListeners {
         clickedButton: null,
         simulatedMouseButton: null,
     }
-    onMouseDown(event) {
+    onMouseDown(event, touch) {
         event.preventDefault();
         let button = this.state.simulatedMouseButton != null ? this.state.simulatedMouseButtom : event.button;
         this.state.clickedButton = button;
-        this.parent.onMouseDown(event, button);
+        this.parent.onMouseDown(event, button, touch);
     }
-    onMouseMove(event) {
+    onMouseMove(event, touch) {
         event.preventDefault();
-        this.parent.onMouseMove(event, this.state.clickedButton);
+        this.parent.onMouseMove(event, this.state.clickedButton, touch);
     }
-    onMouseUp(event) {
+    onMouseUp(event, touch) {
         event.preventDefault();
         let button = this.state.clickedButton;
         this.state.clickedButton = null;
-        this.parent.onMouseUp(event, button);
+        this.parent.onMouseUp(event, button, touch);
     }
     onTouchStart(event) {
         event.preventDefault();
@@ -51,7 +51,7 @@ export class MouseListeners {
             event.clientX = event.touches[0].clientX;
             event.clientY = event.touches[0].clientY;
         }
-        this.onMouseDown(event);
+        this.onMouseDown(event, true);
     }
     onTouchMove(event) {
         event.preventDefault();
@@ -60,10 +60,10 @@ export class MouseListeners {
             event.clientX = event.touches[0].clientX;
             event.clientY = event.touches[0].clientY;
         }
-        this.onMouseMove(event);
+        this.onMouseMove(event, true);
     }
     onTouchEnd(event) {
         event.preventDefault();
-        this.onMouseUp(event);
+        this.onMouseUp(event, true);
     }
 }

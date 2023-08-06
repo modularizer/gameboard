@@ -448,8 +448,8 @@ export class CustomScene extends THREE.Scene {
         }
         return o
     }
-    onMouseDown(event, button) {
-        if (this.config.clickSelect){
+    onMouseDown(event, button, touch) {
+        if (!touch && this.config.clickSelect){
             if (this.state.selectedItem){
                 this.state.releaseItem = true;
                 this.state.dragging = true;
@@ -502,14 +502,18 @@ export class CustomScene extends THREE.Scene {
             }else if (button === 1) {
                 if (item.onMiddleClickMove) item.onMiddleClickMove(event);
             }else{
+                if (event.buttons === 1){
+                    force = true;
+                    this.state.releaseItem = true;
+                }
                 this.itemDragMove(item, force);
                 if (item.onMouseMove) item.onMouseMove(event);
             }
         }
     }
-    onMouseUp(event, button) {
+    onMouseUp(event, button, touch) {
         if (!this.state.releaseItem){return}
-        if (this.config.clickSelect === "jump"){
+        if (!touch && this.config.clickSelect === "jump"){
 //            this.onMouseMove(event, button, true);
             this.onMouseMove(event, button, true)
         };
