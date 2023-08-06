@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MoveableItem } from 'gameengine';
 import { KeyListeners, MouseListeners } from 'utils';
+import { DeferredPromise } from 'utils';
 
 
 function toXYZ(v) {
@@ -18,6 +19,10 @@ function clamp(value, min, max) {
 export class CustomScene extends THREE.Scene {
     constructor(cameraPosition, lookAt) {
         super();
+        this.loaded = false;
+        this.loadDeferredPromise = new DeferredPromise();
+        this.loadPromise = this.loadDeferredPromise.promise;
+        this.sceneLoaded = false;
 
         this.display = this.display.bind(this);
         this.animate = this.animate.bind(this);
@@ -93,6 +98,7 @@ export class CustomScene extends THREE.Scene {
 
         window.addEventListener('load', ()=>{
            this.display(document.body);
+           this.sceneLoaded = true;
         })
     }
 
@@ -168,7 +174,7 @@ export class CustomScene extends THREE.Scene {
                     y: 0,
                     z: 0,
                 },
-                castShadow: true,
+                castShadow: window.shadows,
             },
             point: {
                 enabled: true,
@@ -182,7 +188,7 @@ export class CustomScene extends THREE.Scene {
                     y: 10,
                     z: 10,
                 },
-                castShadow: true,
+                castShadow: window.shadows,
             }
         },
         renderer: {
@@ -192,7 +198,7 @@ export class CustomScene extends THREE.Scene {
                 width: window.innerWidth,
                 height: window.innerHeight,
             },
-            shadows: true,
+            shadows: window.shadows,
 
         },
         floor: {
@@ -349,12 +355,33 @@ export class CustomScene extends THREE.Scene {
         moveMode: "normal", // "normal", "x", "y", "z", Vector3
         mouseState: null,
     }
+    checkIfFullyLoaded(){
+
+        if (!this.loaded){
+            if (this.state.items.every(item => item.loaded)){
+                this.loaded = true;
+                this.loadDeferredPromise.resolve(this);
+            }
+        }
+    }
 
     display(parentElement) {
         parentElement.appendChild(this.renderer.domElement);
         this.animate();
     }
     addItem(item, position){
+        if (item.loadPromise) {
+            if (!item.loaded){
+                if (this.loaded){
+                    this.loaded = false;
+                    this.loadDeferredPromise = new DeferredPromise();
+                    this.loadPromise = this.loadDeferredPromise.promise;
+                }
+                item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
+            }else{
+                this.checkIfFullyLoaded();
+            }
+        }
         if (item.addToScene) {return item.addToScene(this)};
         item = new MoveableItem(item);
         if (position) item.position.set(position.x, position.y, position.z);

@@ -18,6 +18,7 @@ export class BaseModel extends THREE.Group {
 
 
         this.loadPromise = loadPromise;
+        this.loaded = false;
         this.loadPromise.then(((model) => {
 //            console.log('model loaded', model);
             this.model = model;
@@ -54,6 +55,7 @@ export class BaseModel extends THREE.Group {
             this.snapController = new SnapController(this);
 
             this.setShadow(this.config.castShadow, this.config.receiveShadow);
+            this.loaded = true;
         }).bind(this))
     }
     setSnapNodes(nodes){

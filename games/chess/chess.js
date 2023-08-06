@@ -29,10 +29,9 @@ function makeChessBoard(lightColor = "#CD853F", darkColor = "#8B4513", borderCol
 
 
     elements.base = {src: {"top": borderColor, dimensions: {height: baseThickness, width: 20, depth: 20}}, position: {x: -10, y: 0, z: -10}};
-    elements.label = {src: {text: "Pieces by Asif Mahmud", size: 0.25, color: darkColor}, position: {x: -9, y: 0.6, z: 9}};
-    elements.link = {src: {text: "https://grabcad.com/library/chess-pieces-23", size: 0.25, color: darkColor}, position: {x: -9, y: 0.6, z: 9.5}};
-    elements.label2 = {src: {text: "Game by Torin Halsted", size: 0.25, color: darkColor}, position: {x: 5.5, y: 0.6, z: 9}};
-    elements.link2 = {src: {text: " https://modularizer.github.io/gameboard/games/chess/chess.html", size: 0.25, color: darkColor}, position: {x: 1, y: 0.6, z: 9.5}};
+    elements.label = {src: {text: "Pieces by Asif Mahmud", size: 0.25, color: 0x000000}, position: {x: -9, y: 0.6, z: 9}};
+    elements.link = {src: {text: "https://grabcad.com/library/chess-pieces-23", size: 0.25, color: 0x000000}, position: {x: -9, y: 0.6, z: 9.5}};
+    elements.label2 = {src: {text: "Game by Torin Halsted", size: 0.25, color: 0x000000}, position: {x: 5.5, y: 0.6, z: 9.5}};
 
     let chessboardPieces = placeModels(elements);
     let chessboard = new THREE.Group();
@@ -114,15 +113,17 @@ function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor
             scene.addItem(model);
         }
         scene.state.moveMode = "y";
+        scene.loadPromise.then(() => {
+            let setSnaps = ()=>{
+                console.log("setting snap controllers");
+                Object.values(chessSet.pieces).forEach(piece => {piece.setSnapController(1, 2, new THREE.Vector3(0.25, 0, 0));piece.snap();});
+            }
+            setSnaps();
+            setTimeout(setSnaps, 3000);
+            setTimeout(setSnaps, 6000);
+        })
     }
-    window.addEventListener('load', ()=>{
-        let setSnaps = ()=>{
-            console.log("setting snap controllers");
-            Object.values(chessSet.pieces).forEach(piece => {piece.setSnapController(1, 2, new THREE.Vector3(0.25, 0, 0));piece.snap();});
-        }
-        setTimeout(setSnaps, 3000);
-        setTimeout(setSnaps, 6000);
-    })
+
     return chessSet;
 }
 
