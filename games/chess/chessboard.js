@@ -70,6 +70,12 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
         chessPieceLocations[`blackPawn${i + 1}`] = {src: srcs.pawn, position: {x: (i - 4) * size, y: y, z: 2 * size}};
     }
     var pieces = placeModels(chessPieceLocations);
+    for (let [name, model] of Object.entries(pieces)){
+        if (name.startsWith("black")){
+            model.pivot.rotation.set(0, Math.PI, 0);
+        }
+    }
+
 
     console.warn({pieces});
     for (let [name, model] of Object.entries(pieces)){
@@ -84,7 +90,7 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
 }
 
 
-function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", white = 0xe0e0e0, black = 0x000000,
+function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", white = 0xe0e0e0, black = 0x404040,
                       size = 2, border = "size", baseThickness = 0.75, thickness = 0.25){
     let chessboard = makeChessBoard(lightColor, darkColor, borderColor, size, border, baseThickness, thickness);
     let chessPieces = makeChessPieces(white, black, size);
@@ -99,7 +105,7 @@ function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor
     window.addEventListener('load', ()=>{
         let setSnaps = ()=>{
             console.log("setting snap controllers");
-            Object.values(chessSet.pieces).forEach(piece => {piece.setSnapController(1, 2, new THREE.Vector3(0.25, 0, 0));});
+            Object.values(chessSet.pieces).forEach(piece => {piece.setSnapController(1, 2, new THREE.Vector3(0.25, 0, 0));piece.snap();});
         }
         setTimeout(setSnaps, 3000);
         setTimeout(setSnaps, 6000);

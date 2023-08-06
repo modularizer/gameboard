@@ -490,7 +490,6 @@ export class CustomScene extends THREE.Scene {
             this.state.selectedFace = null;
             this.state.dragging = false;
             this.addOrbitControls();
-            if (item.snap) item.snap();
 
             // if right click, call context menu
             if (button === 2) {
@@ -499,6 +498,7 @@ export class CustomScene extends THREE.Scene {
             }else if (button === 1) {
                 if (item.onMiddleClickUp) item.onMiddleClickUp(event);
             }else{
+                this.itemDragEnd(item);
                 if (item.onMouseUp) item.onMouseUp(event);
             }
         }
@@ -522,11 +522,15 @@ export class CustomScene extends THREE.Scene {
         item.pivot.setRotationFromQuaternion(finalQuaternion);
     }
     itemRotateEnd(item){
+        if (item.snap){
+            item.snap();
+        }
         this.state.startPosition = null;
     }
     itemDragClick(item){
         // if left click, move the object
         this.intersectMovePlane(item);
+        item.startDragPosition = item.position.clone();
     }
     itemDragMove(item){
         // if left click, move the object
@@ -540,6 +544,16 @@ export class CustomScene extends THREE.Scene {
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
             this.state.mouseState.firstMove = false;
+        }
+    }
+    itemDragEnd(item){
+        if (item.snap){
+            try{
+                item.snap();
+            }catch{
+                item.position.copy(item.startDragPosition);
+            }
+
         }
     }
 

@@ -48,9 +48,9 @@ export class SimpleSnapController {
         if (this.config.position.enabled) this.snapPosition();
     }
     checkCollision(newP){
-        if (positions[this.item.lastPositionString]){ delete positions[this.item.lastPositionString];}
         let s = `${newP.x}, ${newP.y}, ${newP.z}`;
-        if (positions[s]) return true;
+        if (positions[s] && positions[s] !== this.item) return true;
+        if (positions[this.item.lastPositionString]){ delete positions[this.item.lastPositionString];}
         positions[s] = this.item;
         this.item.lastPositionString = s;
         return false;
