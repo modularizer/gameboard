@@ -27,29 +27,24 @@ export function load3DModel(path, delay = 0) {
     let o = loadPaths[path];
     if (o) {
         console.time(name);
-        console.warn("loading model from memory", path);
         const obj = objectLoader.parse(o);
         promise.resolve(obj);
         return promise.promise;
     }
-    console.log("loading model", path, delay)
     setTimeout(() => {
         console.time(name);
         o = loadPaths[path];
         if (o) {
-            console.warn("loading model from memory", path);
             const obj = objectLoader.parse(o);
             promise.resolve(obj);
         }else{
             db.getItem(path).then((o) => {
                 if (o) {
-                    console.warn("loading model from db", path);
                     loadPaths[path] = o;
                     const obj = objectLoader.parse(o);
                     promise.resolve(obj);
                     return;
                 }
-                console.warn("loading model from source", path);
                 promise.promise.then((object) => {
                     o = object.toJSON();
                     loadPaths[path] = o;

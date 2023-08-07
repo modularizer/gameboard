@@ -81,7 +81,7 @@ function makeChessPieces(scene, white = 0xe0e0e0, black = 0x000000, size = 2){
         piece.setColor((name.includes("white")) ? white : black);
         pieces[name] = piece;
         if (name.includes("black")){
-            piece.pivot.rotateY(Math.PI);
+            piece.pivot.rotation.set(0, Math.PI, 0)
         }
         scene.addModel(piece);
         return piece.loadPromise;
@@ -123,7 +123,6 @@ function makeChessPieces(scene, white = 0xe0e0e0, black = 0x000000, size = 2){
         } else if (name.startsWith("black")){
             model.setColor(black);
         }
-        model.setSnapController(y, 2, new THREE.Vector3(0.25, 0, 0));
 
     }
     return pieces;
@@ -134,6 +133,22 @@ function makeChessSet(scene, lightColor = "#CD853F", darkColor = "#8B4513", bord
                       size = 2, border = "size", baseThickness = 0.75, thickness = 0.25){
     let chessboard = makeChessBoard(scene, lightColor, darkColor, borderColor, size, border, baseThickness, thickness);
     let chessPieces = makeChessPieces(scene, white, black, size);
+
+
+
+        scene.loadPromise.then(() => {
+            let setSnaps = ()=>{
+                console.log("setting snap controllers");
+                Object.values(chessSet.pieces).forEach(piece => {
+                    piece.setSnapController(1, 2, new THREE.Vector3(0.25, 0, 0));
+                    piece.snap();});
+            }
+            setSnaps();
+            setTimeout(setSnaps, 3000);
+            setTimeout(setSnaps, 6000);
+        })
+
+
     return finishChessSet(chessboard, chessPieces);
 }
 
