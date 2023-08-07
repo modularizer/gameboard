@@ -369,7 +369,7 @@ export class CustomScene extends THREE.Scene {
         parentElement.appendChild(this.renderer.domElement);
         this.animate();
     }
-    addItem(item, position){
+    addModel(item, position){
         if (item.loadPromise) {
             if (!item.loaded){
                 if (this.loaded){

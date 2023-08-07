@@ -3,67 +3,90 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader';
 import { STLLoader } from 'three/addons/loaders/STLLoader';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 
-import { DeferredPromise } from 'utils';
+import { DeferredPromise, IndexedDBBackend } from 'utils';
 
 let loadPaths = {}
+let objectLoader = new THREE.ObjectLoader();
 
+const db = new IndexedDBBackend();
+window.db = db;
+window.loadPaths = loadPaths;
 
+let i = 0;
 
-
-export function load3DModel(path) {
+export function load3DModel(path, delay = 0) {
     var loader;
 
     let fileType = path.toLowerCase().split('.').pop();
 
     let promise = new DeferredPromise();
-    if (loadPaths[path]) {
-        loadPaths[path].then((object) => {
-            // clone the object and material so that they can be used multiple times
-            let clone = object.clone();
-            clone.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.geometry = child.geometry.clone();
-                    child.material = Array.isArray(child.material)
-                        ? child.material.map(m => m.clone())
-                        : child.material.clone();
-                }
-            });
-            clone.position.set(0, 0, 0);
+    i += 1;
+    let name = path + "-" + i;
 
-
-            promise.resolve(clone);
-        });
+    promise.promise.then(()=>{console.timeEnd(name);})
+    let o = loadPaths[path];
+    if (o) {
+        console.time(name);
+        console.warn("loading model from memory", path);
+        const obj = objectLoader.parse(o);
+        promise.resolve(obj);
         return promise.promise;
     }
-    loadPaths[path] = promise.promise;
-    switch (fileType.toLowerCase()) {
-        case 'gltf':
-          loader = new THREE.GLTFLoader();
-          loader.load(path, function (gltf) {
-            promise.resolve(gltf.scene);
-          });
-          break;
+    console.log("loading model", path, delay)
+    setTimeout(() => {
+        console.time(name);
+        o = loadPaths[path];
+        if (o) {
+            console.warn("loading model from memory", path);
+            const obj = objectLoader.parse(o);
+            promise.resolve(obj);
+        }else{
+            db.getItem(path).then((o) => {
+                if (o) {
+                    console.warn("loading model from db", path);
+                    loadPaths[path] = o;
+                    const obj = objectLoader.parse(o);
+                    promise.resolve(obj);
+                    return;
+                }
+                console.warn("loading model from source", path);
+                promise.promise.then((object) => {
+                    o = object.toJSON();
+                    loadPaths[path] = o;
+                    db.setItem(path, o);
+                })
 
-        case 'obj':
-          loader = new OBJLoader();
-          loader.load(path, function (object) {
-            promise.resolve(object);
-          });
-          break;
+                switch (fileType.toLowerCase()) {
+                    case 'gltf':
+                      loader = new THREE.GLTFLoader();
+                      loader.load(path, function (gltf) {
+                        promise.resolve(gltf.scene);
+                      });
+                      break;
 
-        case 'stl':
-          loader = new THREE.STLLoader();
-          loader.load(path, function (geometry) {
-            let material = new THREE.MeshPhongMaterial({ color: 0xff5533, specular: 0x111111, shininess: 200 });
-            var mesh = new THREE.Mesh(geometry, material);
-            promise.resolve(mesh);
-          });
-          break;
+                    case 'obj':
+                      loader = new OBJLoader();
+                      loader.load(path, function (object) {
+                        promise.resolve(object);
+                      });
+                      break;
 
-        default:
-          promise.reject('Unsupported file type:' + fileType);
-          return;
-    }
+                    case 'stl':
+                      loader = new THREE.STLLoader();
+                      loader.load(path, function (geometry) {
+                        let material = new THREE.MeshPhongMaterial({ color: 0xff5533, specular: 0x111111, shininess: 200 });
+                        var mesh = new THREE.Mesh(geometry, material);
+                        promise.resolve(mesh);
+                      });
+                      break;
+
+                    default:
+                      promise.reject('Unsupported file type:' + fileType);
+                      return;
+                }
+            });
+        }
+    }, delay);
     return promise.promise;
 }
 

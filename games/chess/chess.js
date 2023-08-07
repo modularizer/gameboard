@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { placeModels, Model, CustomScene, SnapNode, SnapNodes } from 'gameengine';
 
 
-function makeChessBoard(lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", size = 2, border = "size",
+function makeChessBoard(
+                    scene,
+                    lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", size = 2, border = "size",
                    baseThickness = 0.75, thickness = 0.25){
     border = (border === "size") ? size: border;
     let tileColors = [lightColor, darkColor];
@@ -35,13 +37,14 @@ function makeChessBoard(lightColor = "#CD853F", darkColor = "#8B4513", borderCol
 
     let chessboardPieces = placeModels(elements);
     let chessboard = new THREE.Group();
+    scene.add(chessboard);
     Object.values(chessboardPieces).map((piece) => {chessboard.add(piece); piece.receiveShadow = true;})
     chessboard.snapNodes = new SnapNodes(listOfSquares.map((square) => {new SnapNode(square.position.x, square.position.y, square.position.z)}));
     return chessboard;
 }
 
 
-function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
+function makeChessPieces(scene, white = 0xe0e0e0, black = 0x000000, size = 2){
     const srcs = {
         pawn: "./assets/pawn.obj",
         rook: "./assets/rook.obj",
@@ -68,7 +71,33 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
         chessPieceLocations[`whitePawn${i + 1}`] = {src: srcs.pawn, position: {x: (i - 4) * size, y: y, z: -3 * size}};
         chessPieceLocations[`blackPawn${i + 1}`] = {src: srcs.pawn, position: {x: (i - 4) * size, y: y, z: 2 * size}};
     }
-    var pieces = placeModels(chessPieceLocations);
+
+    let pieces = {};
+    function makeChessPiece(name){
+        let info = chessPieceLocations[name];
+        let piece = new Model(info.src);
+        let position = info.position;
+        piece.position.set(position.x, position.y, position.z);
+        piece.setColor((name.includes("white")) ? white : black);
+        pieces[name] = piece;
+        if (name.includes("black")){
+            piece.pivot.rotateY(Math.PI);
+        }
+        scene.addModel(piece);
+        return piece.loadPromise;
+    }
+    let chains = {
+        whiteKnight1: ["whiteKnight2", "blackKnight1", "blackKnight2"],
+        whiteRook1: ["whiteRook2", "blackRook1", "blackRook2"],
+        whiteKing: ["whiteKing", "blackKing"],
+        whiteBishop1: ["whiteBishop2", "blackBishop1", "blackBishop2"],
+        whiteQueen: ["whiteQueen", "blackQueen"],
+        whitePawn1: [ "whitePawn2", "whitePawn3", "whitePawn4", "whitePawn5", "whitePawn6", "whitePawn7", "whitePawn8", "blackPawn1", "blackPawn2", "blackPawn3", "blackPawn4", "blackPawn5", "blackPawn6", "blackPawn7", "blackPawn8"],
+    }
+    for (let [first, others] of Object.entries(chains)){
+        makeChessPiece(first).then(()=>others.map(makeChessPiece));
+    }
+
     for (let [name, model] of Object.entries(pieces)){
         if (name.startsWith("black")){
             model.pivot.rotation.set(0, Math.PI, 0);
@@ -101,16 +130,29 @@ function makeChessPieces(white = 0xe0e0e0, black = 0x000000, size = 2){
 }
 
 
-function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", white = 0xe0e0e0, black = 0x404040,
+function makeChessSet(scene, lightColor = "#CD853F", darkColor = "#8B4513", borderColor = "#D2B48C", white = 0xe0e0e0, black = 0x404040,
                       size = 2, border = "size", baseThickness = 0.75, thickness = 0.25){
-    let chessboard = makeChessBoard(lightColor, darkColor, borderColor, size, border, baseThickness, thickness);
-    let chessPieces = makeChessPieces(white, black, size);
+    let chessboard = makeChessBoard(scene, lightColor, darkColor, borderColor, size, border, baseThickness, thickness);
+    let chessPieces = makeChessPieces(scene, white, black, size);
+    return finishChessSet(chessboard, chessPieces);
+}
 
+function finishChessSet(chessboard, chessPieces){
     let chessSet = {board: chessboard, pieces: chessPieces};
+    chessSet.toJSON = () => {
+        let json = {
+            board: chessboard.toJSON(),
+            pieces: {}
+        };
+        for (let [name, model] of Object.entries(chessPieces)){
+            json.pieces[name] = model.toJSON();
+        }
+        return json;
+    }
     chessSet.addToScene = (scene) => {
         scene.add(chessboard);
         for (let [name, model] of Object.entries(chessPieces)){
-            scene.addItem(model);
+            scene.addModel(model);
         }
         scene.state.moveMode = "y";
         scene.loadPromise.then(() => {
@@ -123,8 +165,17 @@ function makeChessSet(lightColor = "#CD853F", darkColor = "#8B4513", borderColor
             setTimeout(setSnaps, 6000);
         })
     }
-
     return chessSet;
+}
+
+function chessSetFromJSON(json){
+    let loader = new THREE.ObjectLoader();
+    let chessboard = loader.parse(json.board);
+    let chessPieces = {};
+    for (let [name, model] of Object.entries(json.pieces)){
+        chessPieces[name] = new Model(model);
+    }
+    return finishChessSet(chessboard, chessPieces);
 }
 
 export {makeChessBoard, makeChessPieces, makeChessSet}

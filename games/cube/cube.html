@@ -29,7 +29,7 @@
             bottom: './front.jpg',
             top: './back.jpg'
         });
-        scene.addItem(card, {x: 0, y: 2, z: 0});
+        scene.addModel(card, {x: 0, y: 2, z: 0});
 
         let cube = new Model({
             front: './front.jpg',
@@ -42,7 +42,7 @@
             depth: 1,
             width: 1,
         });
-        scene.addItem(cube, {x: 0, y: 0, z: 0});
+        scene.addModel(cube, {x: 0, y: 0, z: 0});
 
         window.scene = scene;
         window.cube = cube;

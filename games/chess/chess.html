@@ -23,12 +23,15 @@
 
         import * as THREE from 'three';
         window.THREE = THREE;
-        import { CustomScene } from 'gameengine';
+        import * as gameengine from 'gameengine';
+        import { CustomScene, Model } from 'gameengine';
         import { makeChessSet } from './chess.js';
 
+        window.gameengine = gameengine;
+
+
         var scene = new CustomScene({x: 15, y: 25, z: 15});
-        var chessSet = makeChessSet();
-        scene.addItem(chessSet);
+        var chessSet = makeChessSet(scene);
         window.chessSet = chessSet;
         window.scene = scene;
 

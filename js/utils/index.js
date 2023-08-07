@@ -1,3 +1,4 @@
-export { DeferredPromise } from '../../js/utils/deferredPromise.js';
-export { KeyListeners } from '../../js/utils/keyListeners.js';
-export { MouseListeners } from '../../js/utils/mouseListeners.js';
+export { DeferredPromise } from './deferredPromise.js';
+export { KeyListeners } from './keyListeners.js';
+export { MouseListeners } from './mouseListeners.js';
+export { IndexedDBProxy, IndexedDBBackend } from './db.js';

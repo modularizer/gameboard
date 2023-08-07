@@ -19,44 +19,94 @@ export class BaseModel extends THREE.Group {
 
         this.loadPromise = loadPromise;
         this.loaded = false;
+
+        this.wireframe = null;
+        this.originCube = null;
+
+        // make a simple cube that we will replace with the model when it loads
+        this.cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+//        this.add(this.cube);
+        this.truePivot.add(this.cube);
+
+
+
         this.loadPromise.then(((model) => {
-//            console.log('model loaded', model);
-            this.model = model;
+            if (typeof model === "object" && model.config && model.model) {
+                console.warn("loading model from cache", model)
+                this.config = model.config;
+                this.position.set(model.position.x, model.position.y, model.position.z);
+                this.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z);
+                this.truePivot.position.set(model.pivotPosition.x, model.pivotPosition.y, model.pivotPosition.z);
+                this.truePivot.rotation.set(model.pivotRotation.x, model.pivotRotation.y, model.pivotRotation.z);
 
-            model.castShadow = this.config.castShadow;
-            model.receiveShadow = this.config.receiveShadow;
+                let loader = new THREE.ObjectLoader();
+                model = loader.parse(model.model);
+                this.model = model;
+                this.add(model);
+
+                // Add the model to the truePivot group
+
+                this.truePivot.add(this.model);
+                this.add(this.truePivot);
+                this.addOriginCube();
+                this.addWireframe();
+                this.truePivot.add(this.wireframe);
+                this.truePivot.add(this.originCube);
+
+                this.snapController = new SnapController(this);
+                this.setShadow(this.config.castShadow, this.config.receiveShadow);
+            }else{
+                this.model = model;
+
+                model.castShadow = this.config.castShadow;
+                model.receiveShadow = this.config.receiveShadow;
+
+                this.add(model);
+                let box = this.getBoundingBox();
+                let size = this.getSize();
+
+                // Compute the center of the bounding box
+                let center = box.getCenter(new THREE.Vector3());
+
+                // move the model so that its origin is at the center of the bounding box
+                model.position.set(-center.x, -center.y, -center.z);
+
+                // Add the model to the truePivot group
 
 
+                this.truePivot.add(this.model);
+                this.add(this.truePivot);
+                this.addOriginCube();
+                this.addWireframe();
+                this.truePivot.add(this.wireframe);
+                this.truePivot.add(this.originCube);
 
-            this.add(model);
+                // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
+                this.truePivot.position.set(size.x/2, size.y/2, size.z/2);
 
+                this.snapController = new SnapController(this);
 
-            let box = this.getBoundingBox();
-            let size = this.getSize();
+                this.setShadow(this.config.castShadow, this.config.receiveShadow);
 
-            // Compute the center of the bounding box
-            let center = box.getCenter(new THREE.Vector3());
+            }
 
-            // move the model so that its origin is at the center of the bounding box
-            model.position.set(-center.x, -center.y, -center.z);
-
-
-            // Add the model to the truePivot group
-            this.truePivot.add(this.model);
-            this.add(this.truePivot);
-            this.addOriginCube();
-            this.addWireframe();
-            this.truePivot.add(this.wireframe);
-            this.truePivot.add(this.originCube);
-
-            // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
-            this.truePivot.position.set(size.x/2, size.y/2, size.z/2);
-
-            this.snapController = new SnapController(this);
-
-            this.setShadow(this.config.castShadow, this.config.receiveShadow);
             this.loaded = true;
+
+            this.remove(this.cube);
+            this.truePivot.remove(this.cube);
+            delete this.cube;
         }).bind(this))
+    }
+    toJSON(){
+        return {
+            isModelCopy: true,
+            position: this.position,
+            rotation: this.rotation,
+            config: this.config,
+            model: this.model.toJSON(),
+            pivotPosition: this.truePivot.position,
+            pivotRotation: this.truePivot.rotation,
+        }
     }
     setSnapNodes(nodes){
         if (!this.model){return this.loadPromise.then(this.setSnapNodes.bind(this, nodes))}
@@ -185,7 +235,10 @@ export class BaseModel extends THREE.Group {
         this.wireframe = wireframeMesh;
     }
     setColor(color){
-        if (!this.model){return this.loadPromise.then(() => {this.setColor(color)})};
+        if (!this.model){
+            this.cube.material.color.set(color);
+            return this.loadPromise.then(() => {this.setColor(color)})
+        };
 
         this.model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
@@ -201,6 +254,14 @@ export class BaseModel extends THREE.Group {
                 }
             }
         });
+    }
+    setPosition(p){
+        if (!this.model){
+            this.cube.position.set(p.x, p.y, p.z);
+            return this.loadPromise.then(() => {this.setPosition(p)})
+        };
+        this.model.position.set(p.x, p.y, p.z);
+
     }
     rotate(rx = 0, ry = 0, rz = 0) {
         this.pivot.rotation.x += rx;
