@@ -4,12 +4,10 @@ import {load3DModel} from '../../js/components/3d_model.js';
 import {loadText} from '../../js/components/text.js';
 
 
-function loadModel(source, delay) {
+function loadModel(source) {
         if (typeof source === "string" && source.startsWith("{") && source.endsWith("}")) {
             source = JSON.parse(source);
         }
-
-
         if (source.isModelCopy){
             return Promise.resolve(source);
         }
@@ -18,16 +16,16 @@ function loadModel(source, delay) {
         }else if (typeof source === "string"  && source.endsWith(".json")|| (typeof source === "object" && source.text)){
             return loadText(source);
         }else{
-            return load3DModel(source, delay);
+            return load3DModel(source);
         }
     }
 
 class Model extends BaseModel {
-    constructor(source, delay) {
+    constructor(source) {
         if (source instanceof Promise){
             super(source);
         }else{
-            super(loadModel(source, delay));
+            super(loadModel(source));
         }
 
     }
@@ -39,7 +37,7 @@ function placeModels(sourcePositions, spacing = 0){
     let delay = 0;
     for (let [name, details] of Object.entries(sourcePositions)){
         delay += spacing;
-        let model = new Model(details.src, delay);
+        let model = new Model(details.src);
         if (details.position) model.position.set(details.position.x, details.position.y, details.position.z);
         models[name] = model;
     }
