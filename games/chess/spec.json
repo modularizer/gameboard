@@ -1,0 +1,1455 @@
+{
+  "scene": {
+    "camera": {
+      "position": {
+        "x": 15,
+        "y": 20,
+        "z": 15
+      }
+    },
+    "renderer": {
+      "shadows": true
+    }
+  },
+  "snaps": {
+      "2x2": {
+        "y": 1,
+        "step": 2,
+        "offset": 0.25
+      }
+  },
+  "base": {
+    "src": {
+      "top": "#D2B48C",
+      "dimensions": {
+    "depth": 20,
+    "width": 20,
+    "height": 0.75
+      }
+    },
+    "position": {
+      "x": -10,
+      "y": 0,
+      "z": -10
+    },
+    "moveable": false
+  },
+  "label": {
+    "src": {
+      "text": "Pieces by Asif Mahmud",
+      "size": 0.25
+    },
+    "position": {
+      "x": -9,
+      "y": 0.6,
+      "z": 9
+    },
+    "color": "0x000000",
+    "moveable": false
+  },
+  "link": {
+    "src": {
+      "text": "https://grabcad.com/library/chess-pieces-23",
+      "size": 0.25
+    },
+    "color": "0x000000",
+    "position": {
+      "x": -9,
+      "y": 0.6,
+      "z": 9.5
+    },
+    "moveable": false
+  },
+  "label2": {
+    "src": {
+      "text": "Game by Torin Halsted",
+      "size": 0.25
+    },
+    "color": "0x000000",
+    "position": {
+      "x": 5.5,
+      "y": 0.6,
+      "z": 9.5
+    },
+    "moveable": false
+  },
+  "A1": {
+    "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+    "position": {"x": -8, "y": 0.75, "z": -8},
+    "moveable": false
+  },
+  "A2": {
+    "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+    "position": {"x": -6, "y": 0.75, "z": -8},
+    "moveable": false
+  },
+    "A3": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -4, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "A4": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -2, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "A5": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 0, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "A6": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 2, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "A7": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 4, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "A8": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 6, "y": 0.75, "z": -8},
+        "moveable": false
+    },
+    "B1": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -8, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B2": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -6, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B3": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -4, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B4": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -2, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+
+    "B5": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 0, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B6": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 2, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B7": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 4, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "B8": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 6, "y": 0.75, "z": -6},
+        "moveable": false
+    },
+    "C1": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -8, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C2": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -6, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C3": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -4, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C4": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -2, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C5": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 0, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C6": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 2, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C7": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 4, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "C8": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": 6, "y": 0.75, "z": -4},
+        "moveable": false
+    },
+    "D1": {
+        "src": {"top": "#CD853F", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -8, "y": 0.75, "z": -2},
+        "moveable": false
+    },
+    "D2": {
+        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.25}},
+        "position": {"x": -6, "y": 0.75, "z": -2},
+        "moveable": false
+    },
+    "D3": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -4,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "D4": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -2,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "D5": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "D6": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 2,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "D7": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 4,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "D8": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0.75,
+        "z": -2
+      },
+      "moveable": false
+    },
+    "E1": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -8,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E2": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -6,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E3": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -4,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E4": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -2,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E5": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E6": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 2,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E7": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 4,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "E8": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0.75,
+        "z": 0
+      },
+      "moveable": false
+    },
+    "F1": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -8,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F2": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -6,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F3": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -4,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F4": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -2,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F5": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F6": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 2,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F7": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 4,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "F8": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0.75,
+        "z": 2
+      },
+      "moveable": false
+    },
+    "G1": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -8,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G2": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -6,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G3": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -4,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G4": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -2,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G5": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G6": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 2,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G7": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 4,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "G8": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0.75,
+        "z": 4
+      },
+      "moveable": false
+    },
+    "H1": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -8,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H2": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -6,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H3": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -4,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H4": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": -2,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H5": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H6": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 2,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H7": {
+      "src": {
+        "top": "#CD853F",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 4,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+    "H8": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.25
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0.75,
+        "z": 6
+      },
+      "moveable": false
+    },
+  "whitepawn0": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -8,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+    "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whiterook0": {
+    "src": "GAME/rook.obj",
+    "position": {
+      "x": -8,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+    "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "rook"
+    }
+  },
+  "blackpawn0": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -8,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackrook0": {
+    "src": "GAME/rook.obj",
+    "position": {
+      "x": -8,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "rook"
+    }
+  },
+  "whitepawn1": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -6,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whiteknight0": {
+    "src": "GAME/knight.obj",
+    "position": {
+      "x": -6,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "knight"
+    }
+  },
+  "blackpawn1": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -6,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackknight0": {
+    "src": "GAME/knight.obj",
+    "position": {
+      "x": -6,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "knight"
+    }
+  },
+  "whitepawn2": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -4,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whitebishop0": {
+    "src": "GAME/bishop.obj",
+    "position": {
+      "x": -4,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "bishop"
+    }
+  },
+  "blackpawn2": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -4,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackbishop0": {
+    "src": "GAME/bishop.obj",
+    "position": {
+      "x": -4,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "bishop"
+    }
+  },
+  "whitepawn3": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -2,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whitequeen0": {
+    "src": "GAME/queen.obj",
+    "position": {
+      "x": -2,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "queen"
+    }
+  },
+  "blackpawn3": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": -2,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackqueen0": {
+    "src": "GAME/queen.obj",
+    "position": {
+      "x": -2,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "queen"
+    }
+  },
+  "whitepawn4": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 0,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whiteking0": {
+    "src": "GAME/king.obj",
+    "position": {
+      "x": 0,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "king"
+    }
+  },
+  "blackpawn4": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 0,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackking0": {
+    "src": "GAME/king.obj",
+    "position": {
+      "x": 0,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "king"
+    }
+  },
+  "whitepawn5": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 2,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whitebishop1": {
+    "src": "GAME/bishop.obj",
+    "position": {
+      "x": 2,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "bishop"
+    }
+  },
+  "blackpawn5": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 2,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackbishop1": {
+    "src": "GAME/bishop.obj",
+    "position": {
+      "x": 2,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "bishop"
+    }
+  },
+  "whitepawn6": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 4,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whiteknight1": {
+    "src": "GAME/knight.obj",
+    "position": {
+      "x": 4,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "knight"
+    }
+  },
+  "blackpawn6": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 4,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackknight1": {
+    "src": "GAME/knight.obj",
+    "position": {
+      "x": 4,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "knight"
+    }
+  },
+  "whitepawn7": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 6,
+      "y": 1,
+      "z": 4
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "pawn"
+    }
+  },
+  "whiterook1": {
+    "src": "GAME/rook.obj",
+    "position": {
+      "x": 6,
+      "y": 1,
+      "z": 6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 3.141592653589793,
+      "z": 0
+    },
+    "color": 14737632,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "white",
+      "type": "rook"
+    }
+  },
+  "blackpawn7": {
+    "src": "GAME/pawn.obj",
+    "position": {
+      "x": 6,
+      "y": 1,
+      "z": -6
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "pawn"
+    }
+  },
+  "blackrook1": {
+    "src": "GAME/rook.obj",
+    "position": {
+      "x": 6,
+      "y": 1,
+      "z": -8
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "color": 0,
+     "moveable": true,
+    "snap": "2x2",
+    "metadata": {
+      "side": "black",
+      "type": "rook"
+    }
+  }
+}

@@ -10,8 +10,8 @@
           "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
           "three/addons/": "https://unpkg.com/three@0.132.2/examples/jsm/",
           "three/loaders": "https://unpkg.com/three@0.132.2/examples/jsm/loaders/",
-          "utils": "../../js/utils/index.js",
-          "gameengine": "../../js/index.js"
+          "utils": "./js/utils/index.js",
+          "gameengine": "./js/index.js"
         }
       }
     </script>
@@ -19,20 +19,18 @@
 </head>
 <body style="width:100%;height:100%;overflow:hidden">
     <script type="module">
-        window.shadows = true;
-
         import * as THREE from 'three';
         window.THREE = THREE;
         import * as gameengine from 'gameengine';
-        import { CustomScene, Model } from 'gameengine';
-        import { ChessSet } from './chess.js';
+        import { CustomScene, loadJSON } from 'gameengine';
+
 
         window.gameengine = gameengine;
-
-
-        window.scene = new CustomScene({x: 15, y: 25, z: 15});
-        window.chessSet = new ChessSet(scene);
-
+        window.scene = new CustomScene();
+        window.game = location.hash.replace("#", "");
+        loadJSON(scene, "./games/" + window.game + "/spec.json").then(models => {
+            window.models = models;
+        });
 
     </script>
 </body>

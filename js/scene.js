@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MoveableItem } from 'gameengine';
-import { KeyListeners, MouseListeners } from 'utils';
-import { DeferredPromise } from 'utils';
+import { KeyListeners, MouseListeners, DeferredPromise, merge } from 'utils';
 
 
 function toXYZ(v) {
@@ -76,6 +75,7 @@ export class CustomScene extends THREE.Scene {
                                     set: (target3, key3, value3)=>{
                                         target3[key3] = value3;
                                         d[key](target2);
+                                        return true;
                                     }
                                 })
                             }
@@ -218,7 +218,7 @@ export class CustomScene extends THREE.Scene {
             size: 5,
             show: true,
         },
-        clickSelect: "jump", // false, true, "jump"
+        clickSelect: "jump", //"jump", // false, true, "jump"
     }
     get config() {
         return this._config;
@@ -226,6 +226,12 @@ export class CustomScene extends THREE.Scene {
     set config(value) {
         this._config = value;
         this.configure(this._config);
+    }
+    updateConfig(value) {
+        console.log("merging config", this.config, value)
+        let o = merge(this.config, value);
+        console.log("merged config", o)
+        this.configure(o, o.camera.position, o.camera.lookAt?o.camera.lookAt:{x:0,y:0,z:0});
     }
     configure(config, cameraPosition, lookAt) {
         // Set up camera
@@ -236,6 +242,7 @@ export class CustomScene extends THREE.Scene {
         this.configFloor(this.config.floor);
         this.configLights(this.config.lights);
     }
+
     configRenderer(config){
         this.renderer.setSize(config.size.width, config.size.height);
         this.renderer.setClearColor(config.clearColor, config.clearAlpha);

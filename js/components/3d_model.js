@@ -25,7 +25,10 @@ export function load3DModel(path) {
     i += 1;
     let name = path + "-" + i;
 
-    promise.promise.then(()=>{console.timeEnd(name);})
+    promise.promise.then((model)=>{
+        model.name = path;
+        console.timeEnd(name);
+    })
     let o = loadPaths[path];
     if (o) {
         if (o instanceof Promise) {
@@ -66,6 +69,7 @@ export function load3DModel(path) {
 }
 
 function loadFile(promise, path, fileType){
+    let loader;
     switch (fileType.toLowerCase()) {
         case 'gltf':
           loader = new THREE.GLTFLoader();
