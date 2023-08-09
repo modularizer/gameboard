@@ -18,6 +18,11 @@
 
 </head>
 <body style="width:100%;height:100%;overflow:hidden">
+    <select id="game" style="position: absolute; z-index:9999;">
+        <option>chess</option>
+        <option>card</option>
+        <option>cube</option>
+    </select>
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE;
@@ -27,7 +32,13 @@
 
         window.gameengine = gameengine;
         window.scene = new CustomScene();
-        window.game = location.hash.replace("#", "");
+
+        let gameSelect = document.getElementById("game");
+        gameSelect.addEventListener("change", (e) => {
+            location.hash = e.target.value;
+            location.reload();
+        });
+        window.game = location.hash.replace("#", "") || "chess";
         loadJSON(scene, "./games/" + window.game + "/spec.json").then(models => {
             window.models = models;
         });

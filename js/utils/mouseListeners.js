@@ -29,23 +29,24 @@ export class MouseListeners {
         simulatedMouseButton: null,
     }
     onMouseDown(event, touch) {
-        event.preventDefault();
+//        event.preventDefault();
+        if (event.button == 2) {event.preventDefault();}
         let button = this.state.simulatedMouseButton != null ? this.state.simulatedMouseButtom : event.button;
         this.state.clickedButton = button;
         this.parent.onMouseDown(event, button, touch);
     }
     onMouseMove(event, touch) {
-        event.preventDefault();
+//        event.preventDefault();
         this.parent.onMouseMove(event, this.state.clickedButton, touch);
     }
     onMouseUp(event, touch) {
-        event.preventDefault();
+//        event.preventDefault();
         let button = this.state.clickedButton;
         this.state.clickedButton = null;
         this.parent.onMouseUp(event, button, touch);
     }
     onTouchStart(event) {
-        event.preventDefault();
+//        event.preventDefault();
         if(event.touches) { // Check if this is a touch event
             // Update event to use first touch event
             event.clientX = event.touches[0].clientX;
@@ -54,7 +55,7 @@ export class MouseListeners {
         this.onMouseDown(event, true);
     }
     onTouchMove(event) {
-        event.preventDefault();
+//        event.preventDefault();
         if(event.touches) { // Check if this is a touch event
             // Update event to use first touch event
             event.clientX = event.touches[0].clientX;
@@ -63,7 +64,7 @@ export class MouseListeners {
         this.onMouseMove(event, true);
     }
     onTouchEnd(event) {
-        event.preventDefault();
+//        event.preventDefault();
         this.onMouseUp(event, true);
     }
 }
