@@ -147,12 +147,44 @@ export class CubeRotationNodes extends SnapNodes {
             new SnapRotationNode(Math.PI / 2, 0, 0),
             new SnapRotationNode(Math.PI, 0, 0),
             new SnapRotationNode(Math.PI * 1.5, 0, 0),
+            new SnapRotationNode(Math.PI * 2, 0, 0),
             new SnapRotationNode(0, Math.PI / 2, 0),
             new SnapRotationNode(0, Math.PI, 0),
             new SnapRotationNode(0, Math.PI * 1.5, 0),
+            new SnapRotationNode(0, Math.PI * 2, 0),
             new SnapRotationNode(0, 0, Math.PI / 2),
             new SnapRotationNode(0, 0, Math.PI),
             new SnapRotationNode(0, 0, Math.PI * 1.5),
+            new SnapRotationNode(0, 0, Math.PI * 2),
+        ], lockedAxes, freeAxes);
+    }
+    getClosestRotation(v3){
+        let node = this._getClosestRotation(v3);
+        if (this.lockedAxes.x !== undefined) node.x = v3.x;
+        if (this.lockedAxes.y !== undefined) node.y = v3.y;
+        if (this.lockedAxes.z !== undefined) node.z = v3.z;
+        if (this.freeAxes.x) node.x = v3.x;
+        if (this.freeAxes.y) node.y = v3.y;
+        if (this.freeAxes.z) node.z = v3.z;
+        return node
+    }
+    _getClosestRotation(v3){
+        let step = Math.PI / 2;
+        let x = Math.round(v3.x / step) * step;
+        let y = Math.round(v3.y / step) * step;
+        let z = Math.round(v3.z / step) * step;
+        return new SnapRotationNode(x, y, z);
+    }
+}
+
+
+export class GridRotationNodes extends SnapNodes {
+    constructor(lockedAxes = false, freeAxes = false) {
+        super([
+            new SnapRotationNode(0, Math.PI / 2, 0),
+            new SnapRotationNode(0, Math.PI, 0),
+            new SnapRotationNode(0, Math.PI * 1.5, 0),
+            new SnapRotationNode(0, Math.PI * 2, 0),
         ], lockedAxes, freeAxes);
     }
     getClosestRotation(v3){
@@ -214,6 +246,7 @@ export class SnapController extends SimpleSnapController {
         if (positionNodes === "grid") positionNodes = new GridNodes(step, offset, (lockedAxes === "default") ? {y} : lockedAxes, freeAxes);
         if (positionNodes === "lattice") positionNodes = new LatticeNodes(step, offset, lockedAxes, freeAxes);
         if (rotationNodes === "cube") rotationNodes = new CubeRotationNodes(rotationLockedAxes, rotationFreeAxes);
+        if (rotationNodes === "grid") rotationNodes = new GridRotationNodes(rotationLockedAxes, rotationFreeAxes);
         if (rotationNodes === "up") rotationNodes = new SnapNodes([new SnapRotationNode(0, 0, 0)], rotationLockedAxes, rotationFreeAxes);
         if (rotationNodes === "flip") rotationNodes = new SnapNodes([new SnapRotationNode(0, 0, 0), new SnapRotationNode(0, Math.PI, 0)], rotationLockedAxes, rotationFreeAxes);
         this.rotationNodes = rotationNodes;

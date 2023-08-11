@@ -569,6 +569,9 @@ export class CustomScene extends THREE.Scene {
                 this.itemDragEnd(item);
                 if (item.onMouseUp) item.onMouseUp(event);
             }
+            if (item.snap){
+                item.snap();
+            }
         }
     }
     itemRotateClick(item){
@@ -581,7 +584,7 @@ export class CustomScene extends THREE.Scene {
 
         let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
 
-        let sensitivity = 19;
+        let sensitivity = 5;
         let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
 
         let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
