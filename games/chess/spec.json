@@ -16,7 +16,8 @@
       "2x2": {
         "y": 1,
         "step": 2,
-        "offset": 0.25
+        "offset": 0.25,
+        "lockedAxis": "y"
       }
   },
   "base": {

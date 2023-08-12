@@ -675,7 +675,9 @@ export class CustomScene extends THREE.Scene {
         if (!this.state.mouseState.firstMove) {
             let diff = endPos.clone().sub(item.position).sub(this.state.mouseState.jumpOffset);
             if (!force && this.config.clickSelect === "jump"){return}
-            item.position.add(diff);
+            endPos = item.position.clone().add(diff);
+            endPos = item.snapController.enforcePositionLocks(endPos);
+            item.position.set(endPos.x, endPos.y, endPos.z);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
             this.state.mouseState.firstMove = false;
