@@ -218,6 +218,7 @@ export function loadCube(sources){
             materials.front,
             materials.back,
         ]);
+        cube.position.set(0, dimensions.height/2, 0);
         promise.resolve(cube);
     });
 

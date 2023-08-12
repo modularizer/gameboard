@@ -54,6 +54,10 @@ function placeModels(sourcePositions, spacing = 0){
 function loadJSON(scene, src){
     let folder = src.substring(0, src.lastIndexOf("/")+1);
     return fetch(src).then(r => r.json()).then(json => {
+        let metadata = json.metadata || {};
+        if (json.metadata){
+            delete json.metadata;
+        }
         let snaps = json.snaps;
         delete json.snaps;
         let sceneSpec = json.scene;
@@ -102,7 +106,7 @@ function loadJSON(scene, src){
                 }
             }
         })
-        return models;
+        return {models, metadata};
     })
 }
 

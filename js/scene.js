@@ -137,7 +137,10 @@ export class CustomScene extends THREE.Scene {
                 this.state.animate = !this.state.animate; // Toggle rotation
             }
             if (this.state.selectedItem) {
+                let item = this.state.selectedItem;
                 this.state.selectedItem.pivot.rotateY(Math.PI/2);
+                this.itemRotateEnd(item);
+                if (item.onRightClickUp) item.onRightClickUp(event);
             }
         },
         "r": ()=>{this.reset()},
@@ -153,6 +156,31 @@ export class CustomScene extends THREE.Scene {
         "Control": ()=>{this.state.clickMode = "left"},
         "Alt": ()=>{this.state.clickMode = "left"},
         "default": (e, k)=>{if (this.state.selectedItem) this.state.selectedItem.keyup(e, k)},
+        "ArrowUp": (event)=>{
+            if (this.state.selectedItem) {
+                this.state.releaseItem = true;
+                this.onMouseUp(event, 0, false)
+            }
+        },
+        "ArrowDown": (event)=>{
+            if (this.state.selectedItem) {
+                this.state.releaseItem = true;
+                this.onMouseUp(event, 0, false)
+            }
+        },
+        "ArrowLeft": (event)=>{
+            if (this.state.selectedItem) {
+                this.state.releaseItem = true;
+                this.onMouseUp(event, 0, false)
+            }
+        },
+        "ArrowRight": (event)=>{
+            if (this.state.selectedItem) {
+                this.state.releaseItem = true;
+                this.onMouseUp(event, 0, false)
+            }
+        }
+
     });
 
 
@@ -236,7 +264,7 @@ export class CustomScene extends THREE.Scene {
             y: -0.05,
             color: 0xcccccc,
         },
-        speed: 0.25,
+        speed: 0.5,
         grid: {
             size: 10,
             divisions: 10,
@@ -579,7 +607,6 @@ export class CustomScene extends THREE.Scene {
         if (!button){
             if (!this.state.releaseItem){return}
             if (!touch && this.config.clickSelect === "jump"){
-    //            this.onMouseMove(event, button, true);
                 this.onMouseMove(event, button, true)
             };
         }

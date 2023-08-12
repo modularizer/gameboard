@@ -24,6 +24,19 @@
         <option>card</option>
         <option>cube</option>
     </select>
+    <div style="position: absolute; border-radius: 5px; right: 1em; top: 1em; z-index:9999; background-color: #fff; padding: 5px;">
+        <button id="q" style="float:right; border-radius: 5px; display: block" onclick="showInstructions()">?</button>
+        <button id = "x" style="display: none;float:right; border-radius: 5px;" onclick="hideInstructions()">x</button>
+        <div id="instructions"  style="display: none">
+            <pre/>To Move:
+	1. Click & drag (then it will snap to position) OR
+	2. Click the use arrow keys (then it will snap)
+
+To Rotate:
+	1. Click and use spacebar OR
+	2. Right Click and drag to rotate </pre>
+        </div>
+    </div>
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE;
@@ -31,19 +44,47 @@
         import { CustomScene, loadJSON } from 'gameengine';
 
 
+
+
         window.gameengine = gameengine;
         window.scene = new CustomScene();
+
+        window.hideInstructions = () => {
+            document.getElementById("instructions").style.display = "none";
+            document.getElementById("q").style.display = "block";
+            document.getElementById("x").style.display = "none";
+            localStorage.setItem(game + "Instructions", window.metadata.instructions);
+        }
+        window.showInstructions = () => {
+            document.getElementById("instructions").style.display = "block";
+            document.getElementById("q").style.display = "none";
+            document.getElementById("x").style.display = "block";
+            localStorage.removeItem(game + "Instructions");
+        }
 
         let gameSelect = document.getElementById("game");
         gameSelect.addEventListener("change", (e) => {
             location.hash = e.target.value;
             location.reload();
         });
-        window.game = location.hash.replace("#", "") || "chess";
+        window.game = location.hash.replace("#", "") || localStorage.getItem("game") || "chess";
+        localStorage.setItem("game", window.game);
         location.hash = "#" + window.game;
         document.title = window.game;
         gameSelect.value = window.game;
-        loadJSON(scene, "./games/" + window.game + "/spec.json").then(models => {
+        loadJSON(scene, "./games/" + window.game + "/spec.json").then(({models, metadata}) => {
+            window.metadata = metadata;
+            if (metadata.instructions) {
+                let i = localStorage.getItem(game + "Instructions");
+                console.warn("found instructions", i);
+                if (i === metadata.instructions) {
+                    hideInstructions();
+                }else {
+                    showInstructions();
+                }
+
+                document.getElementById("instructions").innerHTML = metadata.instructions;
+            }
             window.models = models;
         });
 

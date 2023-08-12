@@ -1,4 +1,7 @@
 {
+  "metadata": {
+    "instructions": "Click and drag pieces to move"
+  },
   "scene": {
     "camera": {
       "position": {"x": 5, "y": 5, "z": 5},

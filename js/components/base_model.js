@@ -80,7 +80,7 @@ export class BaseModel extends THREE.Group {
 
                 // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
                 this.truePivot.position.set(size.x/2, 0, size.z/2);
-                this.model.position.set(0, size.y/2, 0);
+//                this.model.position.set(0, size.y/2, 0);
 
                 this.addOriginCube();
                 this.addWireframe();
@@ -159,6 +159,7 @@ export class BaseModel extends THREE.Group {
         }
     }
     snap(){
+        if (!this.model){return this.loadPromise.then(this.snap.bind(this))}
         if (this.config.snap){
             this.snapController.snap();
         }
