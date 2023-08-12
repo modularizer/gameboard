@@ -40,6 +40,9 @@
             location.reload();
         });
         window.game = location.hash.replace("#", "") || "chess";
+        location.hash = "#" + window.game;
+        document.title = window.game;
+        gameSelect.value = window.game;
         loadJSON(scene, "./games/" + window.game + "/spec.json").then(models => {
             window.models = models;
         });

@@ -45,13 +45,26 @@ export class SnapNodes {
         if (this.freeAxes.z) node.z = v3.z;
         return node
     }
-    _getClosestNode(v3){
+    sortNodesByDistance(v3){
         // reorder nodes
-        let distances = this.nodes.map(n => n.distanceTo(v3));
-        let min = Math.min(...distances);
-        let index = distances.indexOf(min);
-        let closest = this.nodes[index];
-        return closest
+        let nodesWithDistances = this.nodes.map(n => {
+          return {
+            node: n,
+            distance: n.distanceTo(v3)
+          };
+        });
+
+        // Sorting by distance
+        nodesWithDistances.sort((a, b) => a.distance - b.distance);
+
+        // Extracting the sorted nodes
+        let sortedNodes = nodesWithDistances.map(n => n.node);
+        return sortedNodes
+    }
+    _getClosestNode(v3){
+        // Extracting the sorted nodes
+        let sortedNodes = this.sortNodesByDistance(v3);
+        return sortedNodes[0]
     }
     enforceLocks(v3){
         console.log("enforceLocks", v3, this.lockedAxes);
