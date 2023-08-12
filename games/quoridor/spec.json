@@ -1,15 +1,22 @@
 {
   "scene": {
     "camera": {
-      "position": {"x": 5, "y": 5, "z": 5},
+      "position": {"x": 25, "y": 50, "z": 40},
       "lookAt": {"x": 0, "y": 0, "z": 0}
     }
   },
   "snaps": {
       "walls": {
         "y": 0.75,
-        "step": 1,
-        "offset": 1,
+        "step": 3,
+        "offset": {"x":  1, "z": -1},
+        "rotationLockedAxes": ["x", "z"],
+        "rotationNodes": "grid"
+      },
+      "pieces": {
+        "y": 1.25,
+        "step": 3,
+        "offset": -0.75,
         "rotationNodes": "grid"
       }
   },
@@ -419,124 +426,250 @@
         "moveable": false
     },
     "base": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 40, "width": 36, "height": 0.75}},
-        "position": {"x": -18, "y": 0, "z": -20},
+        "src": {"top": "#3E2723", "dimensions": {"depth": 38, "width": 32, "height": 0.75}},
+        "position": {"x": -16, "y": 0, "z": -19},
         "moveable": false
     },
     "Y1": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -13, "y": 0.75, "z": -20},
+        "position": {"x": -13, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y2": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -10, "y": 0.75, "z": -20},
+        "position": {"x": -10, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y3": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -7, "y": 0.75, "z": -20},
+        "position": {"x": -7, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y4": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -4, "y": 0.75, "z": -20},
+        "position": {"x": -4, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y5": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -1, "y": 0.75, "z": -20},
+        "position": {"x": -1, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y6": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 2, "y": 0.75, "z": -20},
+        "position": {"x": 2, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y7": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 5, "y": 0.75, "z": -20},
+        "position": {"x": 5, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y8": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 8, "y": 0.75, "z": -20},
+        "position": {"x": 8, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Y9": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 11, "y": 0.75, "z": -20},
+        "position": {"x": 11, "y": 0.75, "z": -19},
         "moveable": false
     },
     "X1": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -13, "y": 0.75, "z": 15},
+        "position": {"x": -13, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X2": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -10, "y": 0.75, "z": 15},
+        "position": {"x": -10, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X3": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -7, "y": 0.75, "z": 15},
+        "position": {"x": -7, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X4": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -4, "y": 0.75, "z": 15},
+        "position": {"x": -4, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X5": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -1, "y": 0.75, "z": 15},
+        "position": {"x": -1, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X6": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 2, "y": 0.75, "z": 15},
+        "position": {"x": 2, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X7": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 5, "y": 0.75, "z": 15},
+        "position": {"x": 5, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X8": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 8, "y": 0.75, "z": 15},
+        "position": {"x": 8, "y": 0.75, "z": 14},
         "moveable": false
     },
     "X9": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 11, "y": 0.75, "z": 15},
+        "position": {"x": 11, "y": 0.75, "z": 14},
         "moveable": false
     },
     "Corner1": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 4, "height":0.75}},
-        "position": {"x": -18, "y": 0.75, "z": -20},
+        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
+        "position": {"x": -16, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Corner2": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 4, "height":0.75}},
-        "position": {"x": -18, "y": 0.75, "z": 15},
+        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
+        "position": {"x": -16, "y": 0.75, "z": 14},
         "moveable": false
     },
     "Corner3": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 4, "height":0.75}},
-        "position": {"x": 14, "y": 0.75, "z": -20},
+        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
+        "position": {"x": 14, "y": 0.75, "z": -19},
         "moveable": false
     },
     "Corner4": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 4, "height":0.75}},
-        "position": {"x": 14, "y": 0.75, "z": 15},
+        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
+        "position": {"x": 14, "y": 0.75, "z": 14},
         "moveable": false
     },
     "Wall1": {
         "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -14, "y": 0.75, "z": -20},
+        "position": {"x": -14, "y": 0.75, "z": -19},
         "snap": "walls",
+        "moveable": true
+    },
+    "Wall2": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -11, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall3": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -8, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall4": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -5, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall5": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -2, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall6": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 1, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall7": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 4, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall8": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 7, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall9": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 10, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall10": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right": "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 13, "y": 0.75, "z": -19},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall11": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -14, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall12": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -11, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall13": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -8, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall14": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -5, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall15": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": -2, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall16": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 1, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall17": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 4, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall18": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 7, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall19": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 10, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Wall20": {
+        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
+        "position": {"x": 13, "y": 0.75, "z": 14},
+        "snap": "walls",
+        "moveable": true
+    },
+    "Piece1": {
+      "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 1.5, "width": 1.5, "height": 1}},
+        "position": {"x": 0, "y": 0.75, "z": -12.5},
+        "snap": "pieces",
+        "moveable": true
+    },
+    "Piece2": {
+      "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 1.5, "width": 1.5, "height": 1}},
+        "position": {"x": 0, "y": 0.75, "z": 11.75},
+        "snap": "pieces",
         "moveable": true
     }
 

@@ -4,90 +4,8 @@ import * as THREE from 'three';
 let positions = {}
 
 
-
-export class CubeRotator extends THREE.Object3D {
-    // This class is used to snap the rotation of a cube to a 90 degree increment.
-    constructor(parent) {
-        super();
-        this.parent = parent;
-        setInterval(this.snap.bind(this), 10);
-    }
-    snap() {
-        let step = Math.PI / 2;
-        let x = Math.round(this.rotation.x / step) * step;
-        let y = Math.round(this.rotation.y / step) * step;
-        let z = Math.round(this.rotation.z / step) * step;
-        this.parent.rotation.set(x, y, z);
-    }
-}
-
-export class SimpleSnapController {
-    // This class is used to snap the rotation of a cube to a 90 degree increment.'
-    constructor(item) {
-        this.item = item;
-        this.snap = this.snap.bind(this);
-        this.snapRotation = this.snapRotation.bind(this);
-        this.snapPosition = this.snapPosition.bind(this);
-        this.getClosestRotation = this.getClosestRotation.bind(this);
-        this.getClosestPosition = this.getClosestPosition.bind(this);
-    }
-    config = {
-        enabled: true,
-        rotation: {
-            enabled: true,
-            step: Math.PI / 2,
-        },
-        position: {
-            enabled: true,
-            step: 1,
-        }
-    }
-    snap(){
-        if (!this.config.enabled) return;
-        if (this.config.rotation.enabled) this.snapRotation();
-        if (this.config.position.enabled) this.snapPosition();
-    }
-    checkCollision(newP){
-        let s = `${newP.x}, ${newP.y}, ${newP.z}`;
-        if (positions[s] && positions[s] !== this.item) return true;
-        if (positions[this.item.lastPositionString]){ delete positions[this.item.lastPositionString];}
-        positions[s] = this.item;
-        this.item.lastPositionString = s;
-        return false;
-    }
-    getClosestRotation(r){
-        let step = this.config.rotation.step;
-        let x = Math.round(r.x / step) * step;
-        let y = Math.round(r.y / step) * step;
-        let z = Math.round(r.z / step) * step;
-        return new THREE.Vector3(x, y, z);
-    }
-    snapRotation() {
-        let r = this.item.pivot.rotation;
-        let closest = this.getClosestRotation(r);
-        console.log("closest rotation", closest, r);
-        r.set(closest.x, closest.y, closest.z);
-    }
-    getClosestPosition(p){
-        let step = this.config.position.step;
-        let x = Math.round(p.x / step) * step;
-        let y = Math.round(p.y / step) * step;
-        let z = Math.round(p.z / step) * step;
-        let newP = new THREE.Vector3(x, y, z);
-        if (this.checkCollision(newP)) throw new Error("collision");
-        return newP;
-    }
-    snapPosition() {
-        let p = this.item.position;
-        let closest = this.getClosestPosition(p, this.item);
-        console.log("closest position", closest, p);
-        p.set(closest.x, closest.y, closest.z);
-    }
-}
-
 export class SnapNode extends THREE.Vector3 {
 }
-
 export class SnapRotationNode extends SnapNode {
     distanceTo(node) {
         // account for 360 degree rotation wrap around when calculating distance
@@ -106,7 +24,7 @@ export class SnapRotationNode extends SnapNode {
         return d;
     }
 }
-
+// =======================================================================================================
 export class SnapNodes {
     constructor(nodes = [], lockedAxes = false, freeAxes = false) {
         this.nodes = nodes;
@@ -121,9 +39,7 @@ export class SnapNodes {
     }
     getClosestNode(v3){
         let node = this._getClosestNode(v3);
-        if (this.lockedAxes.x !== undefined) node.x = this.lockedAxes.x;
-        if (this.lockedAxes.y !== undefined) node.y = this.lockedAxes.y;
-        if (this.lockedAxes.z !== undefined) node.z = this.lockedAxes.z;
+        this.enforceLocks(node);
         if (this.freeAxes.x) node.x = v3.x;
         if (this.freeAxes.y) node.y = v3.y;
         if (this.freeAxes.z) node.z = v3.z;
@@ -137,10 +53,20 @@ export class SnapNodes {
         let closest = this.nodes[index];
         return closest
     }
+    enforceLocks(v3){
+        console.log("enforceLocks", v3, this.lockedAxes);
+        if (this.lockedAxes.x !== undefined) v3.x = this.lockedAxes.x;
+        if (this.lockedAxes.y !== undefined) v3.y = this.lockedAxes.y;
+        if (this.lockedAxes.z !== undefined) v3.z = this.lockedAxes.z;
+        return v3
+    }
 }
 
+export class PositionSnapNodes extends SnapNodes {}
+export class RotationSnapNodes extends SnapNodes {}
 
-export class CubeRotationNodes extends SnapNodes {
+// =======================================================================================================
+export class CubeRotationNodes extends RotationSnapNodes {
     constructor(lockedAxes = false, freeAxes = false) {
         super([
             new SnapRotationNode(0, 0, 0),
@@ -177,8 +103,7 @@ export class CubeRotationNodes extends SnapNodes {
     }
 }
 
-
-export class GridRotationNodes extends SnapNodes {
+export class GridRotationNodes extends RotationSnapNodes {
     constructor(lockedAxes = false, freeAxes = false) {
         super([
             new SnapRotationNode(0, Math.PI / 2, 0),
@@ -205,8 +130,8 @@ export class GridRotationNodes extends SnapNodes {
         return new SnapRotationNode(x, y, z);
     }
 }
-
-export class LatticeNodes extends SnapNodes {
+// =======================================================================================================
+export class LatticeNodes extends PositionSnapNodes {
     constructor(step = 1,
                 offset = 0,
                 lockedAxes = false,
@@ -236,13 +161,40 @@ export class GridNodes extends LatticeNodes {
     }
 }
 
+// =======================================================================================================
 
-export class SnapController extends SimpleSnapController {
+
+export class SnapController {
     constructor(item, y = 0, step = 1, offset = 0,
                 lockedAxes = "default", freeAxes = false,
                 rotationLockedAxes = false, rotationFreeAxes = false,
                 positionNodes = "grid", rotationNodes = "cube") {
-        super(item);
+        this.item = item;
+        this.snap = this.snap.bind(this);
+        this.enforceRotationLocks = this.enforceRotationLocks.bind(this);
+        this.enforcePositionLocks = this.enforcePositionLocks.bind(this);
+        this.snapRotation = this.snapRotation.bind(this);
+        this.snapPosition = this.snapPosition.bind(this);
+        this.getClosestRotation = this.getClosestRotation.bind(this);
+        this.getClosestPosition = this.getClosestPosition.bind(this);
+
+        if (rotationLockedAxes){
+            if (typeof rotationLockedAxes === "string") rotationLockedAxes = { [rotationLockedAxes]: true };
+            if (Array.isArray(rotationLockedAxes)) rotationLockedAxes = rotationLockedAxes.reduce((obj, axis) => { obj[axis] = true; return obj; }, {})
+            for (let axis in rotationLockedAxes){
+                if (rotationLockedAxes[axis] === true) rotationLockedAxes[axis] = item.pivot.rotation[axis];
+            }
+        }
+        if (lockedAxes){
+            if (lockedAxes === "default") lockedAxes = {y: y};
+            if (typeof lockedAxes === "string") lockedAxes = { [lockedAxes]: true };
+            if (Array.isArray(lockedAxes)) lockedAxes = lockedAxes.reduce((obj, axis) => { obj[axis] = true; return obj; }, {})
+            for (let axis in lockedAxes){
+                if (lockedAxes[axis] === true) lockedAxes[axis] = item.pivot.position[axis];
+            }
+        }
+
+
         if (positionNodes === "grid") positionNodes = new GridNodes(step, offset, (lockedAxes === "default") ? {y} : lockedAxes, freeAxes);
         if (positionNodes === "lattice") positionNodes = new LatticeNodes(step, offset, lockedAxes, freeAxes);
         if (rotationNodes === "cube") rotationNodes = new CubeRotationNodes(rotationLockedAxes, rotationFreeAxes);
@@ -251,20 +203,65 @@ export class SnapController extends SimpleSnapController {
         if (rotationNodes === "flip") rotationNodes = new SnapNodes([new SnapRotationNode(0, 0, 0), new SnapRotationNode(0, Math.PI, 0)], rotationLockedAxes, rotationFreeAxes);
         this.rotationNodes = rotationNodes;
         this.positionNodes = positionNodes;
-        this.snap = this.snap.bind(this);
+    }
+
+    config = {
+        enabled: true,
+        rotation: {
+            enabled: true,
+            step: Math.PI / 2,
+        },
+        position: {
+            enabled: true,
+            step: 1,
+        }
     }
     setNodes(positionNodes, rotationNodes) {
         this.rotationNodes = rotationNodes;
         this.positionNodes = positionNodes;
     }
-    getClosestRotation(r) {
-       return this.rotationNodes.getClosestNode(r);
+    snap(){
+        if (!this.config.enabled) return;
+        if (this.config.rotation.enabled) this.snapRotation();
+        if (this.config.position.enabled) this.snapPosition();
+    }
+    snapPosition() {
+        let p = this.item.position;
+        console.log("snap position", this.item.position, this.item.originCube.position);
+        let closest = this.getClosestPosition(p);
+        console.log("closest position", closest, p);
+        this.item.position.set(closest.x, closest.y, closest.z);
     }
     getClosestPosition(p) {
         let newP = this.positionNodes.getClosestNode(p);
-        console.warn("newP", newP);
         if (this.checkCollision(newP)) throw new Error("collision");
-        console.warn("no collision")
         return newP;
     }
+    getClosestRotation(r) {
+       return this.rotationNodes.getClosestNode(r);
+    }
+    snapRotation() {
+        let r = this.item.pivot.rotation;
+        let closest = this.getClosestRotation(r);
+        console.log("closest rotation", closest, r);
+        r.set(closest.x, closest.y, closest.z);
+    }
+    enforceRotationLocks(newRotation){
+        console.log("enforceRotationLocks", newRotation);
+        return this.rotationNodes.enforceLocks(newRotation);
+    }
+    enforcePositionLocks(newPosition){
+        console.log("enforcePositionLocks", newPosition);
+        return this.positionNodes.enforceLocks(newPosition);
+    }
+
+    checkCollision(newP){
+        let s = `${newP.x}, ${newP.y}, ${newP.z}`;
+        if (positions[s] && positions[s] !== this.item) return true;
+        if (positions[this.item.lastPositionString]){ delete positions[this.item.lastPositionString];}
+        positions[s] = this.item;
+        this.item.lastPositionString = s;
+        return false;
+    }
+
 }

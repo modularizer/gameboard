@@ -1,7 +1,7 @@
 export class MoveableItem{
     constructor(item){
         this.item = item;
-        this.initialPosition = {x: item.position.x, y: item.position.y, z: item.position.z};
+        this.initialPosition = {x: item.originCube.position.x, y: item.originCube.position.y, z: item.originCube.position.z};
         this.item.clickRelativePosition = null;
         this.item.movestate = {
             animation: {
@@ -48,9 +48,9 @@ export class MoveableItem{
 
 
     reset(){
-        this.item.position.x = this.initialPosition.x;
-        this.item.position.y = this.initialPosition.y;
-        this.item.position.z = this.initialPosition.z;
+        this.item.originCube.position.x = this.initialPosition.x;
+        this.item.originCube.position.y = this.initialPosition.y;
+        this.item.originCube.position.z = this.initialPosition.z;
         this.item.movestate = {
             animation: {
                 rotation: {
@@ -72,18 +72,18 @@ export class MoveableItem{
         this.item.rotation.x += Math.PI;
     }
     jumpTo(x, y, z){
-        this.item.position.x = x;
-        this.item.position.y = Math.max(y, 0);// TODO: make sure it doesn't rotate below the ground (y=0)
-        this.item.position.z = z;
+        this.item.originCube.position.x = x;
+        this.item.originCube.position.y = Math.max(y, 0);// TODO: make sure it doesn't rotate below the ground (y=0)
+        this.item.originCube.position.z = z;
     }
     moveTo(x, y, z, duration, speed=0.01){
-        let dx = x-this.item.position.x;
-        let dy = y-Math.max(this.item.position.y, 0);
-        let dz = z-this.item.position.z;
+        let dx = x-this.item.originCube.position.x;
+        let dy = y-Math.max(this.item.originCube.position.y, 0);
+        let dz = z-this.item.originCube.position.z;
         this.move(dx, dy, dz, duration, speed);
     }
     move(dx, dy, dz, duration, speed=0.01){
-        dy = Math.max(dy, -this.item.position.y); // TODO: make sure it doesn't rotate below the ground (y=0)
+        dy = Math.max(dy, -this.item.originCube.position.y); // TODO: make sure it doesn't rotate below the ground (y=0)
         let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
         let fps=60; // FIXME: use timestamp or actual fps
         if (duration){
@@ -136,9 +136,9 @@ export class MoveableItem{
         this.item.pivot.rotation.z = z;
     }
     translate(x, y, z){
-        this.item.position.x += x;
-        this.item.position.y = Math.max(0, this.item.position.y + y) // TODO: make sure it doesn't rotate below the ground (y=0)
-        this.item.position.z += z;
+        this.item.originCube.position.x += x;
+        this.item.originCube.position.y = Math.max(0, this.item.originCube.position.y + y) // TODO: make sure it doesn't rotate below the ground (y=0)
+        this.item.originCube.position.z += z;
     }
     rotate(x, y, z){
         this.item.pivot.rotation.x += x;
@@ -198,6 +198,7 @@ export class MoveableItem{
             tr.cycles--;
         }
     }
+
 
     onRightClickDown(event) {
 

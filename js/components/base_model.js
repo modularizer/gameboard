@@ -69,20 +69,23 @@ export class BaseModel extends THREE.Group {
                 let center = box.getCenter(new THREE.Vector3());
 
                 // move the model so that its origin is at the center of the bounding box
-                model.position.set(-center.x, -center.y, -center.z);
+//                model.position.set(-center.x, 0, -center.z);
 
                 // Add the model to the truePivot group
 
 
                 this.truePivot.add(this.model);
                 this.add(this.truePivot);
+
+
+                // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
+                this.truePivot.position.set(size.x/2, 0, size.z/2);
+                this.model.position.set(0, size.y/2, 0);
+
                 this.addOriginCube();
                 this.addWireframe();
                 this.truePivot.add(this.wireframe);
                 this.truePivot.add(this.originCube);
-
-                // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
-                this.truePivot.position.set(size.x/2, size.y/2, size.z/2);
 
                 this.snapController = new SnapController(this);
 
@@ -97,6 +100,31 @@ export class BaseModel extends THREE.Group {
             delete this.cube;
         }).bind(this))
     }
+
+    keydown(event, k){
+        if (this.keydownListeners[k]){
+            this.keydownListeners[k](event);
+        }
+    }
+    keyup(event, k){
+        if (this.keyupListeners[k]){
+            this.keyupListeners[k](event);
+        }
+    }
+    keydownListeners = {
+        "ArrowRight": (event) => {
+            this.pivot.rotateY(Math.PI/2);
+        },
+        "ArrowLeft": (event) => {
+            this.pivot.rotateY(-Math.PI/2);
+        }
+    }
+    keyupListeners = {
+
+
+    }
+
+
     toJSON(){
         return {
             isModelCopy: true,
@@ -147,8 +175,8 @@ export class BaseModel extends THREE.Group {
         },
         originCube: {
             visible: false,
-            color: 0x00ff00,
-            thickness: 0.1,
+            color: 0x00ffff,
+            thickness: 0.2,
         },
         selected: {
             scale: 1,
@@ -281,11 +309,13 @@ export class BaseModel extends THREE.Group {
         this.originCube.visible = false;
     }
     onRightClickDown(event) {
+        this.onMouseDown(event);
     }
     onRightClickMove(event) {
 
     }
     onRightClickUp(event) {
+        this.onMouseUp(event);
 
     }
 }

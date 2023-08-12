@@ -104,17 +104,40 @@ export class CustomScene extends THREE.Scene {
 
     // key listeners
     keyListeners = new KeyListeners({
-        "Ctrl+ArrowUp": ()=>{this.item.rotateX(this.config.speed)},
-        "Ctrl+ArrowDown": ()=>{this.item.rotateX(-this.config.speed)},
-        "Ctrl+ArrowLeft": ()=>{this.item.rotateY(this.config.speed)},
-        "Ctrl+ArrowRight": ()=>{this.item.rotateY(-this.config.speed)},
-        "ArrowUp": ()=>{this.camera.position.y += this.config.speed},
-        "ArrowDown": ()=>{this.camera.position.y -= this.config.speed},
-        "ArrowLeft": ()=>{this.camera.position.x -= this.config.speed},
-        "ArrowRight": ()=>{this.camera.position.x += this.config.speed},
+        "ArrowUp": ()=>{
+            if (this.state.selectedItem){
+                this.state.selectedItem.position.z -= this.config.speed;
+            }else{
+                this.camera.position.x += this.config.speed
+            }
+        },
+        "ArrowDown": ()=>{
+            if (this.state.selectedItem){
+                this.state.selectedItem.position.z += this.config.speed;
+            }else{
+                this.camera.position.x -= this.config.speed
+            }
+        },
+        "ArrowLeft": ()=>{
+            if (this.state.selectedItem){
+                this.state.selectedItem.position.x -= this.config.speed;
+            }else{
+                this.camera.position.y -= this.config.speed
+            }
+        },
+        "ArrowRight": ()=>{
+            if (this.state.selectedItem){
+                this.state.selectedItem.position.x += this.config.speed;
+            }else{
+                this.camera.position.y += this.config.speed
+            }
+        },
         " ": ()=>{
             if (!this.state.dragging) {
                 this.state.animate = !this.state.animate; // Toggle rotation
+            }
+            if (this.state.selectedItem) {
+                this.state.selectedItem.pivot.rotateY(Math.PI/2);
             }
         },
         "r": ()=>{this.reset()},
@@ -122,9 +145,14 @@ export class CustomScene extends THREE.Scene {
         "n": ()=>{this.state.moveMode = "normal"},
         "Control": ()=>{this.state.clickMode = "right"},
         "Alt": ()=>{this.state.clickMode = "middle"},
+        "default": (e, k)=>{
+            console.warn("Unhandled key:", k);
+            if (this.state.selectedItem) this.state.selectedItem.keydown(e, k)
+        },
     },{
         "Control": ()=>{this.state.clickMode = "left"},
         "Alt": ()=>{this.state.clickMode = "left"},
+        "default": (e, k)=>{if (this.state.selectedItem) this.state.selectedItem.keyup(e, k)},
     });
 
 
@@ -208,7 +236,7 @@ export class CustomScene extends THREE.Scene {
             y: -0.05,
             color: 0xcccccc,
         },
-        speed: 0.1,
+        speed: 0.25,
         grid: {
             size: 10,
             divisions: 10,
@@ -377,7 +405,6 @@ export class CustomScene extends THREE.Scene {
         this.animate();
     }
     addModel(item, position){
-
         if (item.loadPromise) {
             if (!item.loaded){
                 if (this.loaded){
@@ -386,6 +413,8 @@ export class CustomScene extends THREE.Scene {
                     this.loadPromise = this.loadDeferredPromise.promise;
                 }
                 item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
+                item.loadPromise.then(()=>{this.addModel.bind(this)(item)});
+                return
             }else{
                 this.checkIfFullyLoaded();
             }
@@ -547,11 +576,13 @@ export class CustomScene extends THREE.Scene {
         }
     }
     onMouseUp(event, button, touch) {
-        if (!this.state.releaseItem){return}
-        if (!touch && this.config.clickSelect === "jump"){
-//            this.onMouseMove(event, button, true);
-            this.onMouseMove(event, button, true)
-        };
+        if (!button){
+            if (!this.state.releaseItem){return}
+            if (!touch && this.config.clickSelect === "jump"){
+    //            this.onMouseMove(event, button, true);
+                this.onMouseMove(event, button, true)
+            };
+        }
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
@@ -584,16 +615,21 @@ export class CustomScene extends THREE.Scene {
 
         let rotationAxis = new THREE.Vector3(diffY, diffX, 0).normalize();
 
-        let sensitivity = 5;
+        let sensitivity = 20;
         let angle = sensitivity * Math.sqrt(diffX * diffX + diffY * diffY);
 
         let quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxis, angle);
 
         let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
-        item.pivot.setRotationFromQuaternion(finalQuaternion);
+        let euler = new THREE.Euler();
+        euler.setFromQuaternion(finalQuaternion);
+
+        euler = item.snapController.enforceRotationLocks(euler);
+        item.pivot.rotation.set(euler.x, euler.y, euler.z);
     }
     itemRotateEnd(item){
         if (item.snap){
+            console.warn("rotate end snap", item)
             item.snap();
         }
         this.state.startPosition = null;

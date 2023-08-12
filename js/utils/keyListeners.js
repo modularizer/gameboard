@@ -27,6 +27,8 @@ export class KeyListeners {
         this.key = k;
         if (this.keydownListeners[k]) {
             this.keydownListeners[k].bind(this)(e);
+        }else{
+            this.keydownListeners["default"].bind(this)(e, k);
         }
     }
     keyup(e) {
@@ -34,6 +36,8 @@ export class KeyListeners {
         let k = this.getKey(e);
         if (this.keyupListeners[k]) {
             this.keyupListeners[k].bind(this)(e);
+        }else{
+            this.keyupListeners["default"].bind(this)(e, k);
         }
     }
 
