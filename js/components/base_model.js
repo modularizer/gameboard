@@ -160,7 +160,7 @@ export class BaseModel extends THREE.Group {
     }
     snap(){
         if (!this.model){return this.loadPromise.then(this.snap.bind(this))}
-        if (this.config.snap){
+        if (this.config.snap && this.snapController){
             this.snapController.snap();
         }
     }

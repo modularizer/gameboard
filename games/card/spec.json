@@ -14,6 +14,7 @@
     "animation": {
       "rotation": {"x": 0.01, "y": 0, "z": 0.02}
     },
+    "snap": false,
     "moveable": true
   }
 }

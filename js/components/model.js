@@ -91,8 +91,8 @@ function loadJSON(scene, src){
                     let s = snaps[details.snap];
                     model.setSnapController(s.y, s.step, s.offset, s.lockedAxes, s.freeAxes, s.rotationLockedAxes, s.rotationFreeAxes, s.positionNodes, s.rotationNodes);
                     model.snap();
-
-
+                }else if (details.snap === false){
+                    model.snapController = null;
                 }
                 if (details.animation){
                     if (details.animation.rotation) {
