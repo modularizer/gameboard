@@ -28,7 +28,9 @@ function makeText(text, size = 1, color = 0x000000, height = 0.1,
         const textMaterial = new THREE.MeshBasicMaterial({ color: color });
         let mesh = new THREE.Mesh(textGeometry, textMaterial);
         mesh.rotation.set(rotation.x, rotation.y, rotation.z);
-        promise.resolve(mesh);
+        let g = new THREE.Group();
+        g.add(mesh);
+        promise.resolve(g);
     });
     return promise.promise;
 }
