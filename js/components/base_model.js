@@ -302,17 +302,24 @@ export class BaseModel extends THREE.Group {
         console.warn("onMouseDown", event)
         let m = this.config.selected.scale;
         this.scale.set(m, m, m);
-        this.model.position.add(this.config.selected.offset);
-        this.wireframe.position.add(this.config.selected.offset);
-        this.originCube.position.add(this.config.selected.offset);
+        if (!this.offset){
+            this.offset = true;
+            this.model.position.add(this.config.selected.offset);
+            this.wireframe.position.add(this.config.selected.offset);
+            this.originCube.position.add(this.config.selected.offset);
+        }
+
         this.wireframe.visible = this.config.selected.wireframe;
         this.originCube.visible = this.config.selected.originCube;
     }
     onMouseUp(event) {
         this.scale.set(1, 1, 1);
-        this.model.position.sub(this.config.selected.offset);
-        this.wireframe.position.sub(this.config.selected.offset);
-        this.originCube.position.sub(this.config.selected.offset);
+        if (this.offset) {
+            this.offset = false;
+            this.model.position.sub(this.config.selected.offset);
+            this.wireframe.position.sub(this.config.selected.offset);
+            this.originCube.position.sub(this.config.selected.offset);
+        }
         this.wireframe.visible = false;
         this.originCube.visible = false;
     }

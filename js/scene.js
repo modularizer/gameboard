@@ -632,6 +632,12 @@ export class CustomScene extends THREE.Scene {
             }
         }
     }
+    onDblClick(event) {
+        let item = this.getClickedItem(event);
+        if (item) {
+            item.pivot.rotateY(Math.PI/2);
+        }
+    }
     itemRotateClick(item){
         // Save the original mouse position and the original quaternion
         item.pivot.originalQuaternion = item.pivot.quaternion.clone();

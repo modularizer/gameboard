@@ -22,6 +22,8 @@ export class MouseListeners {
         element.addEventListener("touchstart", this.onTouchStart.bind(this));
         element.addEventListener("touchmove", this.onTouchMove.bind(this));
         element.addEventListener("touchend", this.onTouchEnd.bind(this));
+        element.addEventListener("touchcancel", this.onTouchEnd.bind(this));
+        element.addEventListener("dblclick", this.onDblClick.bind(this));
     }
 
     state = {
@@ -29,24 +31,20 @@ export class MouseListeners {
         simulatedMouseButton: null,
     }
     onMouseDown(event, touch) {
-//        event.preventDefault();
         if (event.button == 2) {event.preventDefault();}
         let button = this.state.simulatedMouseButton != null ? this.state.simulatedMouseButtom : event.button;
         this.state.clickedButton = button;
         this.parent.onMouseDown(event, button, touch);
     }
     onMouseMove(event, touch) {
-//        event.preventDefault();
         this.parent.onMouseMove(event, this.state.clickedButton, touch);
     }
     onMouseUp(event, touch) {
-//        event.preventDefault();
         let button = this.state.clickedButton;
         this.state.clickedButton = null;
         this.parent.onMouseUp(event, button, touch);
     }
     onTouchStart(event) {
-//        event.preventDefault();
         if(event.touches) { // Check if this is a touch event
             // Update event to use first touch event
             event.clientX = event.touches[0].clientX;
@@ -55,7 +53,6 @@ export class MouseListeners {
         this.onMouseDown(event, true);
     }
     onTouchMove(event) {
-//        event.preventDefault();
         if(event.touches) { // Check if this is a touch event
             // Update event to use first touch event
             event.clientX = event.touches[0].clientX;
@@ -64,7 +61,13 @@ export class MouseListeners {
         this.onMouseMove(event, true);
     }
     onTouchEnd(event) {
-//        event.preventDefault();
         this.onMouseUp(event, true);
+    }
+    onTouchCancel(event) {
+        this.onMouseUp(event, true);
+    }
+    onDblClick(event) {
+        event.preventDefault();
+        this.parent.onDblClick(event);
     }
 }
