@@ -1,7 +1,5 @@
 {
-  "metadata": {
-    "instructions": "<pre/>To Move:\n\t1. Click & drag (then it will snap to position) OR\n\t2. Click the use arrow keys (then it will snap)\n\nTo Rotate:\n\t1. Click and use spacebar OR\n\t2. Right Click and drag to rotate </pre>"
-  },
+
   "scene": {
     "camera": {
       "position": {"x": 25, "y": 50, "z": 40},
