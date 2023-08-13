@@ -221,3 +221,37 @@ export function loadCube(sources){
 
     return promise.promise;
 }
+
+
+export function loadCylinder(sources, minDimension = 0.1) {
+  let loader = new THREE.TextureLoader();
+
+  let materials = Object.assign({
+    top: "white",
+    bottom: "black",
+    side: "gray"
+  }, sources);
+
+  let promises = [];
+  let promise = new DeferredPromise();
+
+  for (let [k, v] of Object.entries(materials)) {
+    let [mat, loadPromise] = getMaterial(materials[k], loader);
+      materials[k] = mat;
+      promises.push(loadPromise);
+  }
+
+  Promise.all(promises).then(() => {
+    let radius = sources.dimensions.radius || 1;
+    let height = sources.dimensions.height || 1;
+    let segments = 32;
+
+    // Sides
+  let sideGeometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+  let sideMesh = new THREE.Mesh(sideGeometry, [materials.side, materials.top, materials.bottom]);
+  sideMesh.position.set(-radius, height/2, -radius);
+  promise.resolve(sideMesh);
+    });
+
+  return promise.promise;
+}

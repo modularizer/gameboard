@@ -185,6 +185,7 @@ export class BaseModel extends THREE.Group {
         }
     }
     getBoundingBox() {
+
       var box = new THREE.Box3();
 
       this.traverse(function (child) {

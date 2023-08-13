@@ -1,5 +1,5 @@
 import {BaseModel} from './base_model.js';
-import {loadCube} from '../../js/components/cube.js';
+import {loadCube, loadCylinder} from '../../js/components/cube.js';
 import {load3DModel} from '../../js/components/3d_model.js';
 import {loadText} from '../../js/components/text.js';
 
@@ -11,6 +11,9 @@ function loadModel(source) {
             return Promise.resolve(source);
         }
         if ((typeof source === "object" && !source.text ) || (typeof source === "string" && source.toLowerCase().endsWith(".png"))){
+            if (source.dimensions && source.dimensions.radius){
+                return loadCylinder(source);
+            }
             return loadCube(source);
         }else if (typeof source === "string"  && source.endsWith(".json")|| (typeof source === "object" && source.text)){
             return loadText(source);

@@ -653,8 +653,10 @@ export class CustomScene extends THREE.Scene {
         let finalQuaternion = new THREE.Quaternion().multiplyQuaternions(item.pivot.originalQuaternion, quaternion);
         let euler = new THREE.Euler();
         euler.setFromQuaternion(finalQuaternion);
+        if (item.snapController){
+            euler = item.snapController.enforceRotationLocks(euler);
+        }
 
-        euler = item.snapController.enforceRotationLocks(euler);
         item.pivot.rotation.set(euler.x, euler.y, euler.z);
     }
     itemRotateEnd(item){
@@ -678,7 +680,10 @@ export class CustomScene extends THREE.Scene {
             let diff = endPos.clone().sub(item.position).sub(this.state.mouseState.jumpOffset);
             if (!force && this.config.clickSelect === "jump"){return}
             endPos = item.position.clone().add(diff);
-            endPos = item.snapController.enforcePositionLocks(endPos);
+            if (item.snapController){
+                endPos = item.snapController.enforcePositionLocks(endPos);
+            }
+
             item.position.set(endPos.x, endPos.y, endPos.z);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);

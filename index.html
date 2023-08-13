@@ -16,15 +16,16 @@
       }
     </script>
 
+
 </head>
-<body style="width:100%;height:100%;overflow:hidden">
-    <select id="game" style="position: absolute; z-index:9999;">
+<body style="width:100%;height:100%;overflow:hidden;">
+    <select id="game" style="position: absolute; z-index:9999;font-size:1.5em;">
         <option>chess</option>
         <option>quoridor</option>
         <option>card</option>
         <option>cube</option>
     </select>
-    <div style="position: absolute; border-radius: 5px; right: 1em; top: 1em; z-index:9999; background-color: #fff; padding: 5px;">
+    <div style="font-size: 1.5em;position: absolute; border-radius: 5px; right: 1em; top: 1em; z-index:9999; background-color: #fff; padding: 5px;">
         <button id="q" style="float:right; border-radius: 5px; display: block" onclick="showInstructions()">?</button>
         <button id = "x" style="display: none;float:right; border-radius: 5px;" onclick="hideInstructions()">x</button>
         <div id="instructions"  style="display: none">

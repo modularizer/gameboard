@@ -17,7 +17,7 @@
       "pieces": {
         "y": 1.25,
         "step": 3,
-        "offset": -0.75,
+        "offset": 0,
         "rotationNodes": "grid"
       }
   },
@@ -662,13 +662,13 @@
         "moveable": true
     },
     "Piece1": {
-      "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 1.5, "width": 1.5, "height": 1}},
+      "src": {"top": "rgb(130, 22, 5)", "side":"rgb(130, 22, 5)","dimensions": {"radius": 0.75, "height": 1}},
         "position": {"x": 0, "y": 0.75, "z": -12.5},
         "snap": "pieces",
         "moveable": true
     },
     "Piece2": {
-      "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 1.5, "width": 1.5, "height": 1}},
+      "src": {"top": "#CD853F", "side":"#CD853F","dimensions": {"radius":  0.75, "height": 1}},
         "position": {"x": 0, "y": 0.75, "z": 11.75},
         "snap": "pieces",
         "moveable": true
