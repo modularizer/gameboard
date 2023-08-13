@@ -284,9 +284,7 @@ export class CustomScene extends THREE.Scene {
         this.configure(this._config);
     }
     updateConfig(value) {
-        console.log("merging config", this.config, value)
         let o = merge(this.config, value);
-        console.log("merged config", o)
         this.configure(o, o.camera.position, o.camera.lookAt?o.camera.lookAt:{x:0,y:0,z:0});
     }
     configure(config, cameraPosition, lookAt) {
@@ -552,7 +550,6 @@ export class CustomScene extends THREE.Scene {
         }
         let item = this.getClickedItem(event);
         if (item){
-            console.warn("clicked item", event.button, this.state.clickMode);
             this.controls.enabled = false;
 
 
@@ -662,7 +659,6 @@ export class CustomScene extends THREE.Scene {
     }
     itemRotateEnd(item){
         if (item.snap){
-            console.warn("rotate end snap", item)
             item.snap();
         }
         this.state.startPosition = null;

@@ -67,7 +67,6 @@ export class SnapNodes {
         return sortedNodes[0]
     }
     enforceLocks(v3){
-//        console.log("enforceLocks", v3, this.lockedAxes);
         if (this.lockedAxes.x !== undefined) v3.x = this.lockedAxes.x;
         if (this.lockedAxes.y !== undefined) v3.y = this.lockedAxes.y;
         if (this.lockedAxes.z !== undefined) v3.z = this.lockedAxes.z;
@@ -240,9 +239,7 @@ export class SnapController {
     }
     snapPosition() {
         let p = this.item.position;
-//        console.log("snap position", this.item.position, this.item.originCube.position);
         let closest = this.getClosestPosition(p);
-//        console.log("closest position", closest, p);
         this.item.position.set(closest.x, closest.y, closest.z);
     }
     getClosestPosition(p) {
@@ -256,15 +253,12 @@ export class SnapController {
     snapRotation() {
         let r = this.item.pivot.rotation;
         let closest = this.getClosestRotation(r);
-//        console.log("closest rotation", closest, r);
         r.set(closest.x, closest.y, closest.z);
     }
     enforceRotationLocks(newRotation){
-//        console.log("enforceRotationLocks", newRotation);
         return this.rotationNodes.enforceLocks(newRotation);
     }
     enforcePositionLocks(newPosition){
-//        console.log("enforcePositionLocks", newPosition);
         return this.positionNodes.enforceLocks(newPosition);
     }
 

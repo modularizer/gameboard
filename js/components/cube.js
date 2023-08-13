@@ -172,7 +172,6 @@ export function loadCube(sources){
                 depth: dimensions.depth.input,
             }
             dimensions[missingDimension] = val;
-            console.warn(numDimensionInputs, missingDimension, avgDimensions, dimensions)
         }else{
             dimensions = {
                 width: dimensions.width.input,
@@ -182,7 +181,6 @@ export function loadCube(sources){
         }
 
         for (let [a, b] of pairs) {
-//            console.log({[a]: materials[a], [b]: materials[b]})
             if (materials[a] && materials[b]){
                 // do nothing
             }else if (materials[a]){
@@ -209,7 +207,6 @@ export function loadCube(sources){
 //            this.geometry.translate(0, dimensions.height/2, 0);
 
         // Create a mesh
-//        console.log(dimensions, Object.values(materials));
         const cube = new THREE.Mesh( geometry, [
             materials.right,
             materials.left,

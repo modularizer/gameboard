@@ -74,7 +74,6 @@ function loadJSON(scene, src){
             }else{
                 details.src = JSON.parse(JSON.stringify(details.src).replaceAll("GAME/", folder));
             }
-            console.log("src", details.src);
             let model = new Model(details);
             models[name] = model;
             if (details.moveable) {

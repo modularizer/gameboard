@@ -77,7 +77,6 @@ To Rotate:
             window.metadata = metadata;
             if (metadata.instructions) {
                 let i = localStorage.getItem(game + "Instructions");
-                console.warn("found instructions", i);
                 if (i === metadata.instructions) {
                     hideInstructions();
                 }else {

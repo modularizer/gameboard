@@ -32,7 +32,6 @@ export class BaseModel extends THREE.Group {
 
         this.loadPromise.then(((model) => {
             if (typeof model === "object" && model.config && model.model) {
-                console.warn("loading model from cache", model)
                 this.config = model.config;
                 this.position.set(model.position.x, model.position.y, model.position.z);
                 this.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z);
@@ -142,7 +141,6 @@ export class BaseModel extends THREE.Group {
     }
     setSnapController(...args){
         if (!this.model){return this.loadPromise.then(this.setSnapController.bind(this, ...args))}
-//        console.warn(args);
         this.snapController = new SnapController(this, ...args);
     }
     setShadow(cast = true, receive = true){
@@ -299,7 +297,6 @@ export class BaseModel extends THREE.Group {
         this.pivot.rotation.z += rz;
     }
     onMouseDown(event) {
-        console.warn("onMouseDown", event)
         let m = this.config.selected.scale;
         this.scale.set(m, m, m);
         if (!this.offset){

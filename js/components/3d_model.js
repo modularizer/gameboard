@@ -33,7 +33,6 @@ export function load3DModel(path) {
     if (o) {
         if (o instanceof Promise) {
             console.time(name);
-            console.log("o", o)
             o.then((j) => {
                 const obj = objectLoader.parse(j);
                 promise.resolve(obj);
