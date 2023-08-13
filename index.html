@@ -15,6 +15,7 @@
         }
       }
     </script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 
 </head>
@@ -39,14 +40,15 @@ To Rotate:
     3. Right Click and drag to rotate </pre>
         </div>
     </div>
+    <my-chat></my-chat>
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE;
         import * as gameengine from 'gameengine';
         import { CustomScene, loadJSON } from 'gameengine';
+        import { MQTTClient } from 'utils';
 
-
-
+        window.m = new MQTTClient();
 
         window.gameengine = gameengine;
         window.scene = new CustomScene();
@@ -89,6 +91,8 @@ To Rotate:
             window.models = models;
         });
 
+        console.warn("loaded", chat, m);
+        chat.attachMQTT(m);
     </script>
 </body>
 </html>
