@@ -46,9 +46,9 @@ To Rotate:
         window.THREE = THREE;
         import * as gameengine from 'gameengine';
         import { CustomScene, loadJSON } from 'gameengine';
-        import { MQTTClient } from 'utils';
+        import { MQTTRTCClient } from 'utils';
 
-        window.m = new MQTTClient();
+        window.rtc = new MQTTRTCClient();
 
         window.gameengine = gameengine;
         window.scene = new CustomScene();
@@ -90,9 +90,9 @@ To Rotate:
             }
             window.models = models;
         });
+        chat.attachMQTTRTC(rtc);
 
-        console.warn("loaded", chat, m);
-        chat.attachMQTT(m);
+
     </script>
 </body>
 </html>

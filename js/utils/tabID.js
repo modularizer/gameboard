@@ -1,31 +1,24 @@
-// Create a BroadcastChannel to communicate between tabs
-const channel = new BroadcastChannel('tab-channel');
 
+let tabs = localStorage.getItem('tabs');
+let existingTabs = tabs?JSON.parse(tabs):[];
+console.log("Existing tabs: ", existingTabs, localStorage.getItem('tabs') );
 // Generate a unique ID for the current tab
-const tabID = Math.random().toString(36).substr(2, 9);
-sessionStorage.tabID = tabID;
 
-// Get the current count of tabs and increment it
-let tabCount = parseInt(localStorage.getItem('tab-count')) || 0;
-localStorage.setItem('tab-count', ++tabCount);
+const randomTabID = Math.floor(Math.random() * 1000000000)
+const tabID = Math.max(...existingTabs.map(v=>1*v.split("_")[0]), 0) + 1;
+const fullTabID = tabID + "_" + randomTabID;
 
-// Broadcast to other tabs that a new tab was opened
-channel.postMessage('tab-opened');
+existingTabs.push(fullTabID);
+localStorage.setItem('tabs', JSON.stringify(existingTabs));
 
-// When receiving a message that a tab was opened, update the count
-channel.onmessage = function () {
-  let tabOrder = parseInt(localStorage.getItem('tab-count'));
-//  document.getElementById('tab-info').textContent = `You are on Tab${tabOrder}, and there are ${tabOrder} tabs open.`;
-};
-
-// Update the display on the current page
-//document.getElementById('tab-info').textContent = `You are on Tab${tabCount}, and there are ${tabCount} tabs open.`;
+console.log("Tab ID: ", tabID);
 
 // When the tab is closed or reloaded, decrement the count and notify other tabs
-window.addEventListener('unload', function () {
-  let tabCount = parseInt(localStorage.getItem('tab-count')) - 1;
-  localStorage.setItem('tab-count', tabCount);
-  channel.postMessage('tab-closed');
+window.addEventListener('beforeunload', function () {
+  tabs = localStorage.getItem('tabs');
+  existingTabs = tabs?JSON.parse(tabs):[];
+  existingTabs = existingTabs.filter(v=>v!==fullTabID);
+  localStorage.setItem('tabs', JSON.stringify(existingTabs));
 });
 
 

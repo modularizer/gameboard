@@ -3,7 +3,7 @@ class Chat extends HTMLElement {
     super();
     window.chat = this;
 
-
+    this.name = "?"
     this.history = [];
     this.activeUsers = [];
 
@@ -13,7 +13,7 @@ class Chat extends HTMLElement {
         #chat-container {
           position: fixed;
           bottom: 0;
-          left: 0;
+          right: 0;
           width: 300px;
           border: 1px solid #ccc;
           background-color: #f9f9f9;
@@ -59,6 +59,7 @@ class Chat extends HTMLElement {
 
     this.sendMessage = this.sendMessage.bind(this);
     this.attachMQTT = this.attachMQTT.bind(this);
+    this.attachMQTTRTC = this.attachMQTTRTC.bind(this);
 
     this.inputMessage.addEventListener('keydown', (e) => {
         if (e.key === "Enter" && !e.ctrlKey){
@@ -74,6 +75,8 @@ class Chat extends HTMLElement {
     // Load initial history
     this.history.forEach((entry) => this.appendMessage(entry));
 
+    this.chatBody.style.display = "block";
+
 
   }
   attachMQTT(m){
@@ -84,6 +87,14 @@ class Chat extends HTMLElement {
     }
     m.onChat = this.receive.bind(this);
   }
+  attachMQTTRTC(m){
+    this.m = m;
+    this.send = m.sendChat.bind(m);
+    this.name = m.name;
+    m.handlers.chat = (message, sender) => {this.receive.bind(this)({data: message, sender: sender, timestamp: Date.now()})};
+    m.handlers.activeRTCUsers = (activeUsers) => {this.onActiveUsersChange.bind(this)(activeUsers)};
+    m.handlers.RTCconnection = (message, sender) => {this.receive.bind(this)({data: `<${message}>`, sender: sender, timestamp: Date.now()})};
+  }
   setHistory(history){
     this.history = history;
     this.history.forEach((entry) => this.appendMessage(entry));
@@ -91,6 +102,10 @@ class Chat extends HTMLElement {
 
   send(message){
     console.warn("No MQTT connection");
+  }
+  receive({data, sender, timestamp}) {
+    this.history.push({ data, sender, timestamp });
+    this.appendMessage({ data, sender, timestamp });
   }
 
   toggleChat() {
@@ -100,7 +115,7 @@ class Chat extends HTMLElement {
   sendMessage() {
     const data = this.inputMessage.value;
     this.send(data);
-    this.appendMessage({ data, sender: 'You', timestamp: new Date() });
+    this.appendMessage({ data, sender: this.name + "( You )", timestamp: new Date() });
     this.inputMessage.value = '';
   }
 
@@ -110,12 +125,8 @@ class Chat extends HTMLElement {
     this.messagesEl.appendChild(messageEl);
   }
 
-  receive({data, sender, timestamp}) {
-    this.history.push({ data, sender, timestamp });
-    this.appendMessage({ data, sender, timestamp });
-  }
-
   onActiveUsersChange(activeUsers) {
+    console.log("Active users: ", activeUsers);
     this.activeUsers = activeUsers;
     this.activeUsersEl.innerHTML = 'Active users: ' + activeUsers.join(', ');
   }
