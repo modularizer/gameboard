@@ -721,7 +721,7 @@ export class CustomScene extends THREE.Scene {
         for (let [name, update] of Object.entries(data)){
 
             let item = this.state.itemsByName[name];
-            console.log("Updating", name, update, item)
+//            console.log("Updating", name, update, item)
             if (!item){continue}
             if (update.position){
                 item.position.set(...update.position);
