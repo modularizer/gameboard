@@ -719,7 +719,7 @@ export class CustomScene extends THREE.Scene {
         console.log("requesting sync")
         setTimeout((() => {
             this.m.sendRTC("request", "sync")
-        }).bind(this), 2000);// FIXME: this asks everyone, should be a better way
+        }).bind(this), 4000);// FIXME: this asks everyone, should be a better way
         // also use promise not timeout
     }
     sync(data, sender){
