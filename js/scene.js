@@ -34,6 +34,8 @@ export class CustomScene extends THREE.Scene {
         this.configGridHelper = this.configGridHelper.bind(this);
         this.configFloor = this.configFloor.bind(this);
         this.configLights = this.configLights.bind(this);
+        this.sendItemUpdate = this.sendItemUpdate.bind(this);
+        this.receiveItemUpdate = this.receiveItemUpdate.bind(this);
 
         // Event listener for arrow keys
         this.keyListeners.addTo(window);
@@ -410,6 +412,7 @@ export class CustomScene extends THREE.Scene {
         dragging: false,
         animate: true,
         items: [],
+        itemsByName: {},
         selectedItem: null,
         selectedFace: null,
         releaseItem: true,
@@ -440,6 +443,7 @@ export class CustomScene extends THREE.Scene {
                 }
                 item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
                 item.loadPromise.then(()=>{this.addModel.bind(this)(item)});
+                this.state.itemsByName[item.name] = item;
                 return
             }else{
                 this.checkIfFullyLoaded();
@@ -626,6 +630,7 @@ export class CustomScene extends THREE.Scene {
             }
             if (item.snap){
                 item.snap();
+                this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray(), position: item.position.toArray()}})
             }
         }
     }
@@ -633,6 +638,7 @@ export class CustomScene extends THREE.Scene {
         let item = this.getClickedItem(event);
         if (item) {
             item.pivot.rotateY(Math.PI/2);
+            this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray()}})
         }
     }
     itemRotateClick(item){
@@ -656,12 +662,13 @@ export class CustomScene extends THREE.Scene {
         if (item.snapController){
             euler = item.snapController.enforceRotationLocks(euler);
         }
-
+        this.sendItemUpdate({[item.name]: {rotation: euler.toArray()}});
         item.pivot.rotation.set(euler.x, euler.y, euler.z);
     }
     itemRotateEnd(item){
         if (item.snap){
             item.snap();
+            this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray()}});
         }
         this.state.startPosition = null;
     }
@@ -684,6 +691,7 @@ export class CustomScene extends THREE.Scene {
                 endPos = item.snapController.enforcePositionLocks(endPos);
             }
 
+            this.sendItemUpdate({[item.name]: {position: endPos.toArray()}});
             item.position.set(endPos.x, endPos.y, endPos.z);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
@@ -694,10 +702,35 @@ export class CustomScene extends THREE.Scene {
         if (item.snap){
             try{
                 item.snap();
+
             }catch{
                 item.position.copy(item.startDragPosition);
             }
+            this.sendItemUpdate({[item.name]: {rotation: item.position.toArray()}});
+        }
+    }
 
+    attachMQTTRTC(m){
+        this.m = m;
+        this.m.handlers["moves"] = this.receiveItemUpdate.bind(this);
+    }
+    sendItemUpdate(data){
+//        console.log("Sending move", data)
+        this.m.sendRTC(data, "moves");
+    }
+    receiveItemUpdate(data, sender){
+//        console.log("Received move from", sender, data)
+        for (let [name, update] of Object.entries(data)){
+
+            let item = this.state.itemsByName[name];
+            console.log("Updating", name, update, item)
+            if (!item){continue}
+            if (update.position){
+                item.position.set(...update.position);
+            }
+            if (update.rotation){
+                item.pivot.rotation.set(...update.rotation);
+            }
         }
     }
 

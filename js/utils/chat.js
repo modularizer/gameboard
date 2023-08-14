@@ -46,8 +46,10 @@ class Chat extends HTMLElement {
         <div id="chat-body">
           <div id="active-users"></div>
           <div id="messages"></div>
+
           <input id="input-message" type="text" placeholder="Type a message...">
           <button id="send-button">Send</button>
+          <button id="emoji-button" style="display: inline-block">👋</button>
         </div>
       </div>
     `;
@@ -58,8 +60,14 @@ class Chat extends HTMLElement {
     this.chatName = this.shadowRoot.getElementById('chat-name');
     this.activeUsersEl = this.shadowRoot.getElementById('active-users');
     this.messagesEl = this.shadowRoot.getElementById('messages');
+    this.emojiButton = this.shadowRoot.getElementById('emoji-button');
     this.inputMessage = this.shadowRoot.getElementById('input-message');
     this.sendButton = this.shadowRoot.getElementById('send-button');
+
+    this.emojiButton.addEventListener('click', () => {
+        this.inputMessage.value = this.emojiButton.innerText;
+        this.sendMessage();
+    })
 
     this.chatName.value = localStorage.getItem("name") || "?";
     this.chatName.addEventListener('change', () => {

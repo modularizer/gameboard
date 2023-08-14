@@ -186,27 +186,20 @@ export class MQTTRTCClient {
     this.rtcConnections[name] = this.makeRTCConnection();
     let peerConnection = this.rtcConnections[name];
 
-    for (let [channel, handler] of Object.entries(this.handlers)){
-        let dataChannel = peerConnection.createDataChannel(channel);
-        if (!this.rtcChannels[channel]){
-            this.rtcChannels[channel] = {};
-        }
-        this.rtcChannels[channel][name] = dataChannel;
-        dataChannel.onmessage = (event) => {
-            handler(event.data, name);
-        }
-    }
+    let dataChannel = peerConnection.createDataChannel("main");
+    this.rtcChannels[name] = dataChannel;
+    dataChannel.onmessage = ((event) => {
+        let d = JSON.parse(event.data);
+        this.handle(d, name);
+    }).bind(this);
 
     peerConnection.ondatachannel = (event) => {
         let dataChannel = event.channel;
-        let channel = dataChannel.label;
-        if (!this.rtcChannels[channel]){
-            this.rtcChannels[channel] = {};
-        }
-        this.rtcChannels[channel][name] = dataChannel;
-        dataChannel.onmessage = (event) => {
-            this.handlers[channel](event.data, name);
-        }
+        this.rtcChannels[name] = dataChannel;
+        dataChannel.onmessage = ((event) => {
+            let d = JSON.parse(event.data);
+            this.handle(d, name);
+        }).bind(this);
     }
 
     peerConnection.createOffer()
@@ -241,6 +234,13 @@ export class MQTTRTCClient {
             this.handlers["activeUsers"](this.activeUsers);
         }
   }
+  handle(data, sender){
+    let t = data.type;
+    let d = data.data;
+    if (this.handlers[t]){
+        this.handlers[t](d, sender);
+    }
+  }
 
   handlers = {
     dm: (data, sender) => {
@@ -248,7 +248,7 @@ export class MQTTRTCClient {
     },
     chat: (data, sender) => {
         console.log("Received group chat from", sender, data);
-    },
+    }
   }
   getRTCConnections(users){
     users = users || this.activeUsers;
@@ -257,19 +257,24 @@ export class MQTTRTCClient {
     }
     return Object.fromEntries(users.map((name) => [name, this.rtcConnections[name]]));
   }
-  sendRTC(data, name, users){
+  sendRTC(data, type, users){
     let connections = this.getRTCConnections(users);
-    let d = JSON.stringify(data);
+    let payload = {"type": type, "data": data}
+    let d = JSON.stringify(payload);
     for (let [user, connection] of Object.entries(connections)){
-        let channel = this.rtcChannels[name][user];
+        let channel = this.rtcChannels[user];
+        if (channel.readyState !== "open"){
+            console.log("Channel not open", channel.readyState);
+            return
+        }
         channel.send(d);
     }
   }
   sendDM(message, target){
-    this.send(message, "dm", target);
+    this.sendRTC(message, "dm", target);
   }
   sendChat(message){
-    this.send(message, "chat");
+    this.sendRTC(message, "chat");
   }
 }
 
