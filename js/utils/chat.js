@@ -38,7 +38,11 @@ class Chat extends HTMLElement {
         }
       </style>
       <div id="chat-container">
-        <div id="chat-header">Chat</div>
+        <div id="chat-header">
+        Chat
+        <input id="chat-name" style="float:right">
+        </div>
+
         <div id="chat-body">
           <div id="active-users"></div>
           <div id="messages"></div>
@@ -51,10 +55,26 @@ class Chat extends HTMLElement {
     // Elements
     this.chatHeader = this.shadowRoot.getElementById('chat-header');
     this.chatBody = this.shadowRoot.getElementById('chat-body');
+    this.chatName = this.shadowRoot.getElementById('chat-name');
     this.activeUsersEl = this.shadowRoot.getElementById('active-users');
     this.messagesEl = this.shadowRoot.getElementById('messages');
     this.inputMessage = this.shadowRoot.getElementById('input-message');
     this.sendButton = this.shadowRoot.getElementById('send-button');
+
+    this.chatName.value = localStorage.getItem("name") || "?";
+    this.chatName.addEventListener('change', () => {
+        localStorage.setItem("name", this.name);
+        if (this.m){
+            this.m.name = this.chatName.value;
+            if (this.m.tabID && !this.m.name.endsWith(this.m.tabID)){
+                this.m.name += "_" + this.m.tabID;
+            }
+            this.name = this.m.name;
+            this.chatName.value = this.name;
+        }else{
+            this.name = this.chatName.value;
+        }
+    })
 
 
     this.sendMessage = this.sendMessage.bind(this);
@@ -91,9 +111,10 @@ class Chat extends HTMLElement {
     this.m = m;
     this.send = m.sendChat.bind(m);
     this.name = m.name;
+    this.chatName.value = this.name;
     m.handlers.chat = (message, sender) => {this.receive.bind(this)({data: message, sender: sender, timestamp: Date.now()})};
-    m.handlers.activeRTCUsers = (activeUsers) => {this.onActiveUsersChange.bind(this)(activeUsers)};
-    m.handlers.RTCconnection = (message, sender) => {this.receive.bind(this)({data: `<${message}>`, sender: sender, timestamp: Date.now()})};
+    m.handlers.activeUsers = (activeUsers) => {this.onActiveUsersChange.bind(this)(activeUsers)};
+//    m.handlers.RTCconnection = (message, sender) => {this.receive.bind(this)({data: `<${message}>`, sender: sender, timestamp: Date.now()})};
   }
   setHistory(history){
     this.history = history;

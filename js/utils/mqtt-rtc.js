@@ -13,6 +13,7 @@ export class MQTTRTCClient {
     this.name = name || localStorage.getItem("name") || ("anon" + Math.floor(Math.random() * 1000));
     localStorage.setItem("name", this.name);
     this.name += "_" + tabID;
+    this.tabID = tabID;
 
     this.topic = baseTopic + (topic || "");
     this.send = this.send.bind(this);
@@ -48,8 +49,8 @@ export class MQTTRTCClient {
     this.client = client;
 
     this.rollCalls = {};
-    this.activeMQTTUsers = [];
-    this.activeRTCUsers = [];
+    this.activeUsers = [];
+    this.activeRTCConnections = [];
 
     this.rtcConnections = {};
     this.rtcChannels = {};
@@ -59,12 +60,13 @@ export class MQTTRTCClient {
 
 
     window.addEventListener("beforeunload", () => {
-        this.send("Goodbye", "goodbye");
         this.sendRTC("left", "connection")
+        this.send("Goodbye", "goodbye");
+
     })
 
     setTimeout((() => {
-        if (!this.activeMQTTUsers){
+        if (!this.activeUsers){
             // no one responded to the roll call
         }
     }).bind(this), 1000);
@@ -86,6 +88,12 @@ export class MQTTRTCClient {
         if (!this.rollCalls[t]){
             this.rollCalls[t] = [];
         }
+        if (!this.activeUsers.includes(payload.sender)){
+            this.activeUsers.push(payload.sender);
+            if (this.handlers["activeUsers"]){
+                this.handlers["activeUsers"](this.activeUsers);
+            }
+        }
         if (!this.rollCalls[t].includes(payload.sender)){
             this.rollCalls[t].push(payload.sender);
             if (this.rtcConnections[payload.sender]){
@@ -106,26 +114,15 @@ export class MQTTRTCClient {
         }
         if (!this.rollCalls[t]){
             this.rollCalls[t] = [];
-
-            // give everyone a second to respond
-            setTimeout((() => {
-                this.activeMQTTUsers = this.rollCalls[t];
-                if (this.handlers["activeMQTTUsers"]){
-                    this.handlers["activeMQTTUsers"](this.activeMQTTUsers);
-                }
-            }).bind(this), 1000);
         }
 
     },
     goodbye: payload => {
-        this.activeMQTTUsers = this.activeMQTTUsers.filter((name) => name !== payload.sender);
-        if (this.handlers["activeMQTTUsers"]){
-            this.handlers["activeMQTTUsers"](this.activeMQTTUsers);
+        this.activeUsers = this.activeUsers.filter((name) => name !== payload.sender);
+        if (this.handlers["activeUsers"]){
+            this.handlers["activeUsers"](this.activeUsers);
         }
-        this.activeRTCUsers = this.activeRTCUsers.filter((name) => name !== payload.sender);
-        if (this.handlers["activeRTCUsers"]){
-            this.handlers["activeRTCUsers"](this.activeRTCUsers);
-        }
+        this.activeRTCConnections = this.activeRTCConnections.filter((name) => name !== payload.sender);
         if (this.rtcConnections[payload.sender]){
             this.rtcConnections[payload.sender].close();
             delete this.rtcConnections[payload.sender];
@@ -159,10 +156,7 @@ export class MQTTRTCClient {
             return;
         }
         peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        this.rtcChannels["connection"][payload.sender].addEventListener('open', () => {
-            this.sendRTC("joined", "connection", payload.sender);
-        })
-
+        setTimeout((()=>this.sendRTC("joined", "connection", payload.sender)).bind(this), 100);
     },
     RTCiceCandidate: payload => {
         let peerConnection = this.rtcConnections[payload.sender]; // Using the correct connection
@@ -224,23 +218,27 @@ export class MQTTRTCClient {
   }
   
   connection(data, sender){
+        console.log("connection", data, sender)
         if (this.handlers["RTCconnection"]){
             this.handlers["RTCconnection"](data, sender);
         }
         if (data === "joined"){
-            if (!this.activeRTCUsers.includes(sender)){
+            if (!this.activeUsers.includes(sender)){
                 console.log("Received connection from", sender);
-                this.send("joined", "connection", sender);
-                this.activeRTCUsers.push(sender);
+                this.activeUsers.push(sender);
             }else{
                 console.warn("Already received connection from " + sender);
             }
+            if (!this.activeRTCConnections.includes(sender)){
+                this.activeRTCConnections.push(sender);
+                this.send("joined", "connection", sender);
+            }
         }else if (data === "left"){
             console.log("Received disconnection from", sender);
-            this.activeRTCUsers = this.activeRTCUsers.filter((name) => name !== sender);
+            this.activeUsers = this.activeUsers.filter((name) => name !== sender);
         }
-        if (this.handlers["activeRTCUsers"]){
-            this.handlers["activeRTCUsers"](this.activeRTCUsers);
+        if (this.handlers["activeUsers"]){
+            this.handlers["activeUsers"](this.activeUsers);
         }
   }
 
@@ -253,7 +251,7 @@ export class MQTTRTCClient {
     },
   }
   getRTCConnections(users){
-    users = users || this.activeMQTTUsers;
+    users = users || this.activeUsers;
     if (typeof users === "string"){
         users = [users];
     }
