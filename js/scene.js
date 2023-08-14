@@ -713,6 +713,31 @@ export class CustomScene extends THREE.Scene {
     attachMQTTRTC(m){
         this.m = m;
         this.m.handlers["moves"] = this.receiveItemUpdate.bind(this);
+        this.syncedFrom = [];
+        this.syncedTo = [];
+        this.m.handlers["sync"] = this.sync.bind(this);
+        console.log("requesting sync")
+        setTimeout((() => {
+            this.m.sendRTC("request", "sync")
+        }).bind(this), 2000);// FIXME: this asks everyone, should be a better way
+        // also use promise not timeout
+    }
+    sync(data, sender){
+        console.log("syncing", data, sender)
+        if (data === "request"){
+            if (!this.syncedFrom){return}
+            let data = {};
+            for (let [name, item] of Object.entries(this.state.itemsByName)){
+                data[name] = {position: item.position.toArray(), rotation: item.pivot.rotation.toArray()}
+            }
+            console.log("sending sync", data, "to", sender)
+            this.m.sendRTC(data, "sync", sender);
+            this.syncedTo.push(sender);
+        }else{
+            console.log("receiving sync", data, "from", sender)
+            this.receiveItemUpdate(data, sender);
+            this.syncedFrom.push(sender);
+        }
     }
     sendItemUpdate(data){
         this.m.sendRTC(data, "moves");
