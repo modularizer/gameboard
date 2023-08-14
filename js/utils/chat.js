@@ -36,6 +36,9 @@ class Chat extends HTMLElement {
         #messages {
           margin-bottom: 10px;
         }
+        #clear-button {
+            style="float: right;"
+        }
       </style>
       <div id="chat-container">
         <div id="chat-header">
@@ -45,6 +48,7 @@ class Chat extends HTMLElement {
 
         <div id="chat-body">
           <div id="active-users"></div>
+          <button id="clear-button">Clear</button>
           <div id="messages"></div>
 
           <input id="input-message" type="text" placeholder="Type a message...">
@@ -63,11 +67,14 @@ class Chat extends HTMLElement {
     this.emojiButton = this.shadowRoot.getElementById('emoji-button');
     this.inputMessage = this.shadowRoot.getElementById('input-message');
     this.sendButton = this.shadowRoot.getElementById('send-button');
-
-    this.emojiButton.addEventListener('click', () => {
-        this.inputMessage.value = this.emojiButton.innerText;
-        this.sendMessage();
+    this.clearButton = this.shadowRoot.getElementById('clear-button');
+    this.clearButton.addEventListener('click', () => {
+        this.messagesEl.innerHTML = "";
     })
+
+    this.pingTime = 0;
+
+    this.emojiButton.addEventListener('click', this.ping.bind(this));
 
     this.chatName.value = localStorage.getItem("name") || "?";
     this.chatName.addEventListener('change', () => {
@@ -132,7 +139,17 @@ class Chat extends HTMLElement {
   send(message){
     console.warn("No MQTT connection");
   }
+  ping(){
+    this.sendMessage("👋");
+    this.pingTime = Date.now();
+  }
   receive({data, sender, timestamp}) {
+    if (data === "👋"){
+        let t = Date.now();
+        if ((t - this.pingTime) > 2000){
+            this.ping();
+        }
+    }
     this.history.push({ data, sender, timestamp });
     this.appendMessage({ data, sender, timestamp });
   }
@@ -141,8 +158,8 @@ class Chat extends HTMLElement {
     this.chatBody.style.display = this.chatBody.style.display === 'none' ? 'block' : 'none';
   }
 
-  sendMessage() {
-    const data = this.inputMessage.value;
+  sendMessage(data) {
+    data = data || this.inputMessage.value;
     this.send(data);
     this.appendMessage({ data, sender: this.name + "( You )", timestamp: new Date() });
     this.inputMessage.value = '';

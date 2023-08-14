@@ -431,23 +431,6 @@
         "position": {"x": -16, "y": 0, "z": -19},
         "moveable": false
     },
-   "turn": {
-      "src": {
-        "top": "yellow",
-        "side": "yellow",
-        "dimensions": {
-          "radius": 4,
-          "height": 0.75
-        }
-      },
-      "position": {
-        "x": 22,
-        "y": 0,
-        "z": 15
-      },
-      "snap": "walls",
-      "moveable": true
-    },
     "Y1": {
         "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
         "position": {"x": -13, "y": 0.75, "z": -19},

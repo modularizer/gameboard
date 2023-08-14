@@ -717,9 +717,10 @@ export class CustomScene extends THREE.Scene {
         this.syncedTo = [];
         this.m.handlers["sync"] = this.sync.bind(this);
         console.log("requesting sync")
-        setTimeout((() => {
+        this.syncInterval = setInterval((() => {
             this.m.sendRTC("request", "sync")
-        }).bind(this), 4000);// FIXME: this asks everyone, should be a better way
+        }).bind(this), 1000);
+        // FIXME: this asks everyone, should be a better way
         // also use promise not timeout
     }
     sync(data, sender){
@@ -737,6 +738,10 @@ export class CustomScene extends THREE.Scene {
             console.log("receiving sync", data, "from", sender)
             this.receiveItemUpdate(data, sender);
             this.syncedFrom.push(sender);
+            if (this.syncInterval){
+                clearInterval(this.syncInterval);
+                this.syncInterval = null;
+            }
         }
     }
     sendItemUpdate(data){
