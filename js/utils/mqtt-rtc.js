@@ -176,22 +176,19 @@ export class MQTTRTCClient {
         this.send(event.candidate, "RTCiceCandidate");
       }
     };
-    return peerConnection
-  }
-  offerRTCConnection(name){
-      if (this.rtcConnections[name]) {
-        console.warn(`Connection already exists with ${name}, not offering again.`);
-        return;
-      }
-    this.rtcConnections[name] = this.makeRTCConnection();
-    let peerConnection = this.rtcConnections[name];
 
     let dataChannel = peerConnection.createDataChannel("main");
-    this.rtcChannels[name] = dataChannel;
+
     dataChannel.onmessage = ((event) => {
         let d = JSON.parse(event.data);
         this.handle(d, name);
     }).bind(this);
+
+    dataChannel.onerror = error => {
+      console.error("Data Channel Error:", error);
+    };
+
+
 
     peerConnection.ondatachannel = (event) => {
         let dataChannel = event.channel;
@@ -201,6 +198,18 @@ export class MQTTRTCClient {
             this.handle(d, name);
         }).bind(this);
     }
+    peerConnection.dataChannel = dataChannel;
+    return peerConnection
+  }
+  offerRTCConnection(name){
+      if (this.rtcConnections[name]) {
+        console.warn(`Connection already exists with ${name}, not offering again.`);
+        return;
+      }
+    this.rtcConnections[name] = this.makeRTCConnection();
+    let peerConnection = this.rtcConnections[name];
+    this.rtcChannels[name] = peerConnection.dataChannel;
+
 
     peerConnection.createOffer()
       .then(offer => peerConnection.setLocalDescription(offer))

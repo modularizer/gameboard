@@ -715,11 +715,9 @@ export class CustomScene extends THREE.Scene {
         this.m.handlers["moves"] = this.receiveItemUpdate.bind(this);
     }
     sendItemUpdate(data){
-//        console.log("Sending move", data)
         this.m.sendRTC(data, "moves");
     }
     receiveItemUpdate(data, sender){
-//        console.log("Received move from", sender, data)
         for (let [name, update] of Object.entries(data)){
 
             let item = this.state.itemsByName[name];
