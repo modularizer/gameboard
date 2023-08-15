@@ -10,11 +10,15 @@ class Chat extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
       <style>
+        @media only screen {
+          * {
+            font-size: 2em; /* twice as big as the default size */
+          }
+        }
         #chat-container {
           position: fixed;
           bottom: 0;
           right: 0;
-          width: 300px;
           border: 1px solid #ccc;
           background-color: #f9f9f9;
         }
@@ -25,7 +29,7 @@ class Chat extends HTMLElement {
           font-weight: bold;
         }
         #chat-body {
-          max-height: 200px;
+          max-height: 40vh;
           overflow: auto;
           display: none;
           padding: 10px;
