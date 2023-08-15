@@ -12,13 +12,14 @@ class Chat extends HTMLElement {
       <style>
         @media only screen and (max-width: 1000px){
           * {
-            font-size: 10px; /* twice as big as the default size */
+            font-size: 12px; /* twice as big as the default size */
           }
+
         }
         #chat-container {
           position: fixed;
-          bottom: 0;
-          right: 0;
+          bottom: 0.5em;
+          right: 0.5em;
           border: 1px solid #ccc;
           background-color: #f9f9f9;
         }
