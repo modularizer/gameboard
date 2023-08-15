@@ -82,8 +82,9 @@ class Chat extends HTMLElement {
     this.emojiButton.addEventListener('click', this.ping.bind(this));
 
     this.chatName.value = localStorage.getItem("name") || "?";
-    this.chatName.addEventListener('change', () => {
-        localStorage.setItem("name", this.name);
+    this.chatName.addEventListener('change', (() => {
+
+        localStorage.setItem("name", this.chatName.value);
         if (this.m){
             this.m.name = this.chatName.value;
             if (this.m.tabID && !this.m.name.endsWith(this.m.tabID)){
@@ -94,7 +95,7 @@ class Chat extends HTMLElement {
         }else{
             this.name = this.chatName.value;
         }
-    })
+    }))
 
 
     this.sendMessage = this.sendMessage.bind(this);
