@@ -83,7 +83,7 @@ class Chat extends HTMLElement {
 
     this.chatName.value = localStorage.getItem("name") || "?";
     this.chatName.addEventListener('change', (() => {
-
+        console.log("Name changed to " + this.chatName.value);
         localStorage.setItem("name", this.chatName.value);
         if (this.m){
             this.m.name = this.chatName.value;
@@ -95,7 +95,7 @@ class Chat extends HTMLElement {
         }else{
             this.name = this.chatName.value;
         }
-    }))
+    }).bind(this));
 
 
     this.sendMessage = this.sendMessage.bind(this);
