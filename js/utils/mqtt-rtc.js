@@ -9,8 +9,12 @@ export class MQTTRTCClient {
   constructor(config){
     let {topic, name, options, handlers} = config || {};
     this.handlers.connection = this.connection.bind(this);
+    let n = localStorage.getItem("name");
+    if (n && n.startsWith("anon")){
+        n = null;
+    }
+    this.name = name || n || ("anon" + Math.floor(Math.random() * 1000));
 
-    this.name = name || localStorage.getItem("name") || ("anon" + Math.floor(Math.random() * 1000));
     localStorage.setItem("name", this.name);
     this.name += "_" + tabID;
     this.tabID = tabID;
