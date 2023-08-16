@@ -40,7 +40,7 @@ export class MQTTRTCClient {
         client.subscribe(this.topic);
         let t = Date.now();
         this.rollCalls[t] = []
-        this.send(t, "rollCall")
+        this.post(t, "rollCall")
     }).bind(this));
     client.on('message', ((t, payloadString)=>{
         if (t === this.topic){
@@ -61,19 +61,14 @@ export class MQTTRTCClient {
     this.client = client;
 
     window.addEventListener("beforeunload", () => {
-        this.sendRTC("left", "connection")
-        this.send("Goodbye", "goodbye");
+        this.send("left", "connection")
+        this.post("Goodbye", "goodbye");
 
     })
 
-    setTimeout((() => {
-        if (!this.activeUsers){
-            // no one responded to the roll call
-        }
-    }).bind(this), 1000);
   }
 
-  send(message, type = "chat"){
+  post(message, type = "chat"){
     let payload = {
         sender: this.name,
         timestamp: Date.now(),
@@ -113,7 +108,7 @@ export class MQTTRTCClient {
                 }
             }
 
-            this.send(t, "rollCall");
+            this.post(t, "rollCall");
         }else{
             console.warn("Already received roll call from " + payload.sender);
         }
@@ -181,7 +176,7 @@ export class MQTTRTCClient {
             }
             if (!this.activeRTCConnections.includes(sender)){
                 this.activeRTCConnections.push(sender);
-                this.send("joined", "connection", sender);
+                this.post("joined", "connection", sender);
             }
         }else if (data === "left"){
             console.log("Received disconnection from", sender);
@@ -211,7 +206,7 @@ export class MQTTRTCClient {
     }
     return users.map((name) => this.rtcConnections[name]).filter((connection) => connection);
   }
-  sendRTC(data, type, users){
+  send(data, type, users){
     let connections = this.getRTCConnections(users);
     let d = JSON.stringify(data);
     for (let connection of connections){
@@ -219,10 +214,10 @@ export class MQTTRTCClient {
     }
   }
   sendDM(message, target){
-    this.sendRTC(message, "dm", target);
+    this.send(message, "dm", target);
   }
   sendChat(message){
-    this.sendRTC(message, "chat");
+    this.send(message, "chat");
   }
 }
 
@@ -244,14 +239,16 @@ export class RTCConnection {
 
         this.peerConnection.onicecandidate = this.onicecandidate.bind(this);
 
+        this.dataChannelDeferredPromises = Object.fromEntries(Object.entries(this.handlers).map(([name, handler]) => [name, new DeferredPromise()]));
+        this.readyPromise = Promise.all(Object.values(this.dataChannelDeferredPromises).map((deferredPromise) => deferredPromise.promise));
+        this.loaded = false;
+        this.readyPromise.then((() => {this.loaded = true}).bind(this));
 
-        this.peerConnection.ondatachannel = (event) => {
-            let dataChannel = event.channel;
-            dataChannel.onmessage = ((e) => {
-                this.onmessage(e, dataChannel.label);
-            }).bind(this);
-            this.dataChannels[dataChannel.label] = dataChannel;
-        }
+
+
+        this.peerConnection.ondatachannel = ((event) => {
+            this.registerDataChannel(event.channel);
+        }).bind(this);
     }
 
     sendOffer(){
@@ -261,20 +258,26 @@ export class RTCConnection {
           .then(() => {
             // Send offer via MQTT
             console.log("Sending offer to " + this.target);
-            this.mqttClient.send({"offer": this.peerConnection.localDescription, "target": this.target}, "RTCoffer");
+            this.mqttClient.post({"offer": this.peerConnection.localDescription, "target": this.target}, "RTCoffer");
           });
+    }
+    registerDataChannel(dataChannel){
+        dataChannel.onmessage = ((e) => {
+            this.onmessage(e, dataChannel.label);
+        }).bind(this);
+        dataChannel.onerror = ((e) => {
+            this.dataChannelDeferredPromises[dataChannel.label].reject(e);
+            this.ondatachannelerror(e, dataChannel.label);
+        }).bind(this);
+        dataChannel.onopen = ((e) => {
+            this.dataChannelDeferredPromises[dataChannel.label].resolve(e);
+        }).bind(this);
+        this.dataChannels[dataChannel.label] = dataChannel;
     }
     setupDataChannels(){
         for (let [name, dataChannelHandler] of Object.entries(this.handlers)){
             let dataChannel = this.peerConnection.createDataChannel(name);
-            dataChannel.onmessage = ((event) => {
-                this.onmessage(event, name);
-            }).bind(this);
-            dataChannel.onerror = ((error) => {
-                this.ondatachannelerror(error, name);
-            }).bind(this);
-
-            this.dataChannels[name] = dataChannel;
+            this.registerDataChannel(dataChannel);
         }
     }
 
@@ -285,7 +288,7 @@ export class RTCConnection {
               .then(answer => this.peerConnection.setLocalDescription(answer))
               .then((answer) => {
                 // Send answer via MQTT
-                this.mqttClient.send({
+                this.mqttClient.post({
                     "answer": this.peerConnection.localDescription,
                     "target": this.target,
                 }, "RTCanswer");
@@ -298,7 +301,7 @@ export class RTCConnection {
             return;
         }
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        setTimeout((()=>this.send("joined", "connection")).bind(this), 100);
+        this.loadPromise.then((() => this.send("joined", "connection")).bind(this));
     }
 
     dm(data){
@@ -343,7 +346,7 @@ export class RTCConnection {
     onicecandidate(event){
         if (event.candidate) {
             // Send ICE candidate via MQTT
-            this.mqttClient.send(event.candidate, "RTCiceCandidate");
+            this.mqttClient.post(event.candidate, "RTCiceCandidate");
         }
     }
     ondatachannel(event){

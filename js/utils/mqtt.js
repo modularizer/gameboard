@@ -61,7 +61,6 @@ export class MQTTClient {
                     db.setItem(baseTopic, this.data);
                 }
             })
-
         }
     }).bind(this), 1000);
   }

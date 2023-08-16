@@ -718,8 +718,9 @@ export class CustomScene extends THREE.Scene {
         this.m.handlers["sync"] = this.sync.bind(this);
         console.log("requesting sync")
         this.syncInterval = setInterval((() => {
-            this.m.sendRTC("request", "sync")
-        }).bind(this), 1000);
+            this.m.send("request", "sync")
+        }).bind(this), 1000); // tries to sync every second until it is successfully gets a sync response
+        setTimeout((()=>this.m.send("request", "sync")).bind(this), 100);
         // FIXME: this asks everyone, should be a better way
         // also use promise not timeout
     }
@@ -732,7 +733,7 @@ export class CustomScene extends THREE.Scene {
                 data[name] = {position: item.position.toArray(), rotation: item.pivot.rotation.toArray()}
             }
             console.log("sending sync", data, "to", sender)
-            this.m.sendRTC(data, "sync", sender);
+            this.m.send(data, "sync", sender);
             this.syncedTo.push(sender);
         }else{
             console.log("receiving sync", data, "from", sender)
@@ -745,7 +746,7 @@ export class CustomScene extends THREE.Scene {
         }
     }
     sendItemUpdate(data){
-        this.m.sendRTC(data, "moves");
+        this.m.send(data, "moves");
     }
     receiveItemUpdate(data, sender){
         for (let [name, update] of Object.entries(data)){
