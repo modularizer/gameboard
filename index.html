@@ -61,7 +61,13 @@ To Rotate:
     3. Right Click and drag to rotate </pre>
         </div>
     </div>
+
+    <div style="position: absolute; bottom: 0.5em; opacity: 0.9; width: 100%; display: flex; justify-content: center; align-items: center;">
+        <pre id="subtitles" style="background-color: #000; color: #fff; text-align: center; padding: 10px;">
+        </pre>
+    </div>
     <my-chat></my-chat>
+
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE;
@@ -69,13 +75,17 @@ To Rotate:
         import { CustomScene, loadJSON } from 'gameengine';
         import { MQTTRTCClient, WebRTCAudioChannel } from 'utils';
 
+
         window.rtc = new MQTTRTCClient({handlers:{
             sync: (data, sender) => {console.log("Received sync from", sender, data);},
             dm: (data, sender) => {console.log("Received DM from", sender, data);},
             chat: (data, sender) => {console.log("Received group chat from", sender, data);},
             moves: (data, sender) => {console.log("Received moves from", sender, data);},
             audio: (data, sender) => {console.log("Received audio from", sender, data);},
-            subtitles: (data, sender) => {console.log("Received subtitles from", sender, data);},
+            subtitles: (data, sender) => {
+                document.getElementById("subtitles").innerText = "[" + sender + "] " + data;
+
+            },
         }});
 
         window.voiceChat = new WebRTCAudioChannel(rtc);
