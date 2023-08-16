@@ -67,7 +67,7 @@ To Rotate:
         window.THREE = THREE;
         import * as gameengine from 'gameengine';
         import { CustomScene, loadJSON } from 'gameengine';
-        import { MQTTRTCClient } from 'utils';
+        import { MQTTRTCClient, WebRTCAudioChannel } from 'utils';
 
         window.rtc = new MQTTRTCClient({
             sync: (data, sender) => {console.log("Received sync from", sender, data);},
@@ -76,6 +76,10 @@ To Rotate:
             moves: (data, sender) => {console.log("Received moves from", sender, data);},
             audio: (data, sender) => {console.log("Received audio from", sender, data);},
         });
+
+        window.voiceChat = new WebRTCAudioChannel(rtc);
+        window.vc = voiceChat;
+
 
         window.gameengine = gameengine;
         window.scene = new CustomScene();

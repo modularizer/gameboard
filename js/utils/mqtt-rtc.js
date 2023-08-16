@@ -197,9 +197,8 @@ export class MQTTRTCClient {
   }
   send(data, type, users){
     let connections = this.getRTCConnections(users);
-    let d = JSON.stringify(data);
     for (let connection of connections){
-        connection.sendRaw(d, type);
+        connection.send(data, type);
     }
   }
   sendDM(message, target){
@@ -297,7 +296,7 @@ export class RTCConnection {
         this.send(data, "dm");
     }
     send(data, type){
-        let d = this.dataChannels[type].raw?data:JSON.stringify(data);
+        let d = this.handlers[type].raw?data:JSON.stringify(data);
         this.sendRaw(d, type);
     }
     sendRaw(d, type){

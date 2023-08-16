@@ -41,8 +41,14 @@ class Chat extends HTMLElement {
         #messages {
           margin-bottom: 10px;
         }
+        #voice-button {
+            float: right;
+        }
+        #speaker-button {
+            float: right;
+        }
         #clear-button {
-            style="float: right;"
+            float: right;
         }
       </style>
       <div id="chat-container">
@@ -53,7 +59,11 @@ class Chat extends HTMLElement {
 
         <div id="chat-body">
           <div id="active-users"></div>
-          <button id="clear-button">Clear</button>
+
+          <button id="voice-button">🎙️</button>
+          <button id="speaker-button">🔊</button>
+          <button id="clear-button">🗑️</button>
+          <br/>
           <div id="messages"></div>
 
           <input id="input-message" type="text" placeholder="Type a message...">
@@ -72,10 +82,38 @@ class Chat extends HTMLElement {
     this.emojiButton = this.shadowRoot.getElementById('emoji-button');
     this.inputMessage = this.shadowRoot.getElementById('input-message');
     this.sendButton = this.shadowRoot.getElementById('send-button');
+    this.voiceButton = this.shadowRoot.getElementById('voice-button');
     this.clearButton = this.shadowRoot.getElementById('clear-button');
+    this.speakerButton = this.shadowRoot.getElementById('speaker-button');
     this.clearButton.addEventListener('click', () => {
         this.messagesEl.innerHTML = "";
     })
+
+    this.streaming = false;
+    this.voiceButton.addEventListener('click', (() => {
+        if (!this.streaming){
+            console.log("Starting streaming");
+            this.streaming = true;
+            this.rtc.startStreaming();
+        }else{
+            console.log("Stopping streaming");
+            this.streaming = false;
+            this.rtc.stopStreaming();
+        }
+    }).bind(this))
+
+    this.muted = true;
+    this.speakerButton.addEventListener('click', (() => {
+        if (!this.muted){
+            this.muted = true;
+            this.rtc.mute()
+        }else{
+            this.muted = false;
+            this.rtc.unmute()
+        }
+    }).bind(this))
+
+
 
     this.pingTime = 0;
 
@@ -85,12 +123,12 @@ class Chat extends HTMLElement {
     this.chatName.addEventListener('change', (() => {
         console.log("Name changed to " + this.chatName.value);
         localStorage.setItem("name", this.chatName.value);
-        if (this.m){
-            this.m.name = this.chatName.value;
-            if (this.m.tabID && !this.m.name.endsWith(this.m.tabID)){
-                this.m.name += "_" + this.m.tabID;
+        if (this.rtc){
+            this.rtc.name = this.chatName.value;
+            if (this.rtc.tabID && !this.rtc.name.endsWith(this.rtc.tabID)){
+                this.rtc.name += "_" + this.rtc.tabID;
             }
-            this.name = this.m.name;
+            this.name = this.rtc.name;
             this.chatName.value = this.name;
         }else{
             this.name = this.chatName.value;
@@ -99,7 +137,6 @@ class Chat extends HTMLElement {
 
 
     this.sendMessage = this.sendMessage.bind(this);
-    this.attachMQTT = this.attachMQTT.bind(this);
     this.attachMQTTRTC = this.attachMQTTRTC.bind(this);
 
     this.inputMessage.addEventListener('keydown', (e) => {
@@ -120,22 +157,13 @@ class Chat extends HTMLElement {
 
 
   }
-  attachMQTT(m){
-    this.m = m;
-    this.send = m.send.bind(m);
-    if (m.data.chat){
-        this.setHistory(m.data.chat);
-    }
-    m.onChat = this.receive.bind(this);
-  }
-  attachMQTTRTC(m){
-    this.m = m;
-    this.send = m.sendChat.bind(m);
-    this.name = m.name;
+  attachMQTTRTC(rtc){
+    this.rtc = rtc;
+    this.send = rtc.sendChat.bind(rtc);
+    this.name = rtc.name;
     this.chatName.value = this.name;
-    m.handlers.chat = (message, sender) => {this.receive.bind(this)({data: message, sender: sender, timestamp: Date.now()})};
-    m.handlers.activeUsers = (activeUsers) => {this.onActiveUsersChange.bind(this)(activeUsers)};
-//    m.handlers.RTCconnection = (message, sender) => {this.receive.bind(this)({data: `<${message}>`, sender: sender, timestamp: Date.now()})};
+    rtc.handlers.chat = (message, sender) => {this.receive.bind(this)({data: message, sender: sender, timestamp: Date.now()})};
+    rtc.handlers.activeUsers = (activeUsers) => {this.onActiveUsersChange.bind(this)(activeUsers)};
   }
   setHistory(history){
     this.history = history;

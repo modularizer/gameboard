@@ -6,3 +6,4 @@ export { merge } from './merge.js';
 export { tabID } from './tabID.js';
 export { Chat } from './chat.js';
 export { MQTTRTCClient} from './mqtt-rtc.js';
+export { WebRTCAudioChannel } from './rtcAudio.js';

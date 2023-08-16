@@ -6,3 +6,4 @@ export { loadText } from './components/text.js';
 export { Model, placeModels, loadJSON } from './components/model.js';
 export { CustomScene } from './scene.js';
 export { MoveableItem } from './moveable.js';
+
