@@ -72,7 +72,7 @@ export class WebRTCAudioChannel {
       threshold: -40, // Compressor threshold in dB, typical range from -100 to 0 dB; sets level where compression begins
       knee: 10, // Compressor knee in dB, typical range from 0 to 40 dB; higher values result in a softer knee and smoother transition
       ratio: 5, // Compression ratio, typical range from 1 (no compression) to 20 (hard compression); higher values reduce dynamic range more aggressively
-      attack: 0.0001, // Attack time in seconds, typical range from 0.0001 to 1 s; sets how quickly compression begins once threshold is reached
+      attack: 0.001, // Attack time in seconds, typical range from 0.0001 to 1 s; sets how quickly compression begins once threshold is reached
       release: 0.1, // Release time in seconds, typical range from 0.01 to 1 s; sets how quickly compression stops after signal drops below threshold
       delay: 5 // Delay in seconds, typically between 0 to whatever latency is acceptable; represents a simple latency delay, often used to align signals
     }
