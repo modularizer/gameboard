@@ -22,7 +22,7 @@ export class WebRTCAudioChannel {
     this.rtcClient = rtcClient;
 
     // Inside your constructor:
-    this.audioContext = new AudioContext();
+    this.audioContext = new AudioContext({sampleRate: 44100});
     this.audioContext.audioWorklet.addModule('./js/utils/audio-processor.js').then(() => {
       // the processor is now available
     });
@@ -46,21 +46,6 @@ export class WebRTCAudioChannel {
   }
   get rtcClient(){
     return this._rtcClient;
-  }
-
-   setupAudioProcessing(stream) {
-    console.log("Setting up audio processing", stream);
-    this.sourceNode = this.audioContext.createMediaStreamSource(stream);
-    this.processorNode = this.audioContext.createScriptProcessor(1024, 1, 1);
-
-    this.processorNode.onaudioprocess = (event) => {
-      const inputBuffer = event.inputBuffer.getChannelData(0);
-      const audioData = new Float32Array(inputBuffer);
-      this.send(audioData.buffer);
-    };
-
-    this.sourceNode.connect(this.processorNode);
-    // Note: not connecting processorNode to destination here
   }
 
 
@@ -88,18 +73,38 @@ export class WebRTCAudioChannel {
     .then(stream => {
       console.log("Setting up audio processing", stream);
       this.sourceNode = this.audioContext.createMediaStreamSource(stream);
-      this.processorNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
 
+     // Biquad filter for band-pass
+      const biquadFilter = this.audioContext.createBiquadFilter();
+      biquadFilter.type = "bandpass";
+      biquadFilter.frequency.value = 800;
+      biquadFilter.Q.value = 1;
+
+      // Dynamics compressor for managing dynamic range
+      const compressor = this.audioContext.createDynamicsCompressor();
+      compressor.threshold.value = -50;
+      compressor.knee.value = 30;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.25;
+
+      this.processorNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
       this.processorNode.port.onmessage = (event) => {
         const audioData = new Float32Array(event.data);
         this.send(audioData.buffer);
       };
 
-      this.sourceNode.connect(this.processorNode);
-//      this.processorNode.connect(this.audioContext.destination);
+      // Create a 1-second delay node
+      const delay = this.audioContext.createDelay(1.0);
+      delay.delayTime.value = 0; // add a delay in testing
 
-      // This line will directly play the audio from the microphone for testing
-      // this.sourceNode.connect(this.audioContext.destination);
+      // Connecting nodes
+      this.sourceNode.connect(delay);
+      delay.connect(biquadFilter);
+      biquadFilter.connect(compressor);
+      compressor.connect(this.processorNode);
+
+
 
       this.mediaStream = stream; // Save the stream for later
       this.streaming = true;
