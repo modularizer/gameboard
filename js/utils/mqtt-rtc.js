@@ -296,8 +296,12 @@ export class RTCConnection {
         this.send(data, "dm");
     }
     send(data, type){
+        try{
         let d = this.handlers[type].raw?data:JSON.stringify(data);
         this.sendRaw(d, type);
+        }catch(e){
+        console.error("error sending", type, this.handlers)
+        }
     }
     sendRaw(d, type){
         let dataChannel = this.dataChannels[type];

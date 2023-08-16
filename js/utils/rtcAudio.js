@@ -74,7 +74,7 @@ export class WebRTCAudioChannel {
       ratio: 5, // Compression ratio, typical range from 1 (no compression) to 20 (hard compression); higher values reduce dynamic range more aggressively
       attack: 0.0001, // Attack time in seconds, typical range from 0.0001 to 1 s; sets how quickly compression begins once threshold is reached
       release: 0.1, // Release time in seconds, typical range from 0.01 to 1 s; sets how quickly compression stops after signal drops below threshold
-      delay: 0 // Delay in seconds, typically between 0 to whatever latency is acceptable; represents a simple latency delay, often used to align signals
+      delay: 1*(localStorage.getItem("delay") || 0) // Delay in seconds, typically between 0 to whatever latency is acceptable; represents a simple latency delay, often used to align signals
     }
 
 
@@ -108,7 +108,7 @@ export class WebRTCAudioChannel {
       };
 
       // Create a 1-second delay node
-      const delay = this.audioContext.createDelay(1.0);
+      const delay = this.audioContext.createDelay(5.0);
       delay.delayTime.value = this.config.delay; // add a delay in testing
 
       // Connecting nodes
@@ -116,15 +116,12 @@ export class WebRTCAudioChannel {
       delay.connect(biquadFilter);
       biquadFilter.connect(compressor);
       compressor.connect(this.processorNode);
-
-
-
+      this.startStreamingSubtitles();
       this.mediaStream = stream; // Save the stream for later
       this.streaming = true;
     })
     .catch(error => console.error('Error accessing microphone:', error));
 }
-
 
 
   // Method to stop streaming
@@ -135,9 +132,40 @@ export class WebRTCAudioChannel {
 
     // Stop the media stream tracks
     this.mediaStream.getTracks().forEach(track => track.stop());
+    this.stopStreamingSubtitles();
 
     this.streaming = false;
   }
+  startStreamingSubtitles(){
+       // Speech Recognition Setup
+      if ('webkitSpeechRecognition' in window) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+
+          // Post the subtitles via RTC
+          this.rtcClient.send(transcript, "subtitles", this.users);
+        };
+
+        recognition.start();
+      } else {
+        console.error('Web Speech API is not supported in this browser.');
+      }
+  }
+    stopStreamingSubtitles(){
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.stop();
+        }
+    }
+
+
   mute(){
     this.muted = true;
   }
