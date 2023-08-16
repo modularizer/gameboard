@@ -8,6 +8,8 @@ let baseTopic = (location.hostname + location.pathname + (location.hash || "")).
 export class MQTTRTCClient {
   constructor(config){
     let {topic, name, options, handlers} = config || {};
+    this.handlers = Object.assign(this.handlers, handlers);
+
     let n = localStorage.getItem("name");
     if (n && n.startsWith("anon")){
         n = null;
@@ -80,7 +82,7 @@ export class MQTTRTCClient {
   }
   mqttHandlers = {
     rollCall: payload => {
-        console.log("Roll call from " + payload.sender, payload);
+        console.log("Roll call from " + payload.sender, payload, payload.data);
         let t = payload.data;
         let newRollCall = !this.rollCalls[t];
         if (!this.rollCalls[t]){
@@ -107,10 +109,9 @@ export class MQTTRTCClient {
                     this.rtcConnections[payload.sender].sendOffer();
                 }
             }
-
             this.post(t, "rollCall");
         }else{
-            console.warn("Already received roll call from " + payload.sender);
+            console.warn("Already received roll call from " + payload.sender, t);
         }
         if (!this.rollCalls[t]){
             this.rollCalls[t] = [];
@@ -185,19 +186,7 @@ export class MQTTRTCClient {
         if (this.handlers["activeUsers"]){
             this.handlers["activeUsers"](this.activeUsers);
         }
-  },
-    sync: (data, sender) => {
-        console.log("Received sync from", sender, data);
     },
-    dm: (data, sender) => {
-        console.log("Received DM from", sender, data);
-    },
-    chat: (data, sender) => {
-        console.log("Received group chat from", sender, data);
-    },
-    audio: (data, sender) => {
-
-    }
   }
   getRTCConnections(users){
     users = users || this.activeUsers;
@@ -210,7 +199,7 @@ export class MQTTRTCClient {
     let connections = this.getRTCConnections(users);
     let d = JSON.stringify(data);
     for (let connection of connections){
-        connection.sendString(d, type);
+        connection.sendRaw(d, type);
     }
   }
   sendDM(message, target){
@@ -240,9 +229,9 @@ export class RTCConnection {
         this.peerConnection.onicecandidate = this.onicecandidate.bind(this);
 
         this.dataChannelDeferredPromises = Object.fromEntries(Object.entries(this.handlers).map(([name, handler]) => [name, new DeferredPromise()]));
-        this.readyPromise = Promise.all(Object.values(this.dataChannelDeferredPromises).map((deferredPromise) => deferredPromise.promise));
+        this.loadPromise = Promise.all(Object.values(this.dataChannelDeferredPromises).map((deferredPromise) => deferredPromise.promise));
         this.loaded = false;
-        this.readyPromise.then((() => {this.loaded = true}).bind(this));
+        this.loadPromise.then((() => {this.loaded = true}).bind(this));
 
 
 
@@ -308,10 +297,10 @@ export class RTCConnection {
         this.send(data, "dm");
     }
     send(data, type){
-        let d = JSON.stringify(data);
-        this.sendString(d, type);
+        let d = this.dataChannels[type].raw?data:JSON.stringify(data);
+        this.sendRaw(d, type);
     }
-    sendString(d, type){
+    sendRaw(d, type){
         let dataChannel = this.dataChannels[type];
         if (!dataChannel){
             if (this.handlers[type]){
@@ -327,11 +316,9 @@ export class RTCConnection {
         dataChannel.send(d);
     }
     onmessage(event, type){
-        let data = JSON.parse(event.data);
         let sender = this.target;
-
         let handler = this.handlers[type];
-//        console.log("Received", type, "from", sender, data, handler);
+        let data = handler.raw?event.data:JSON.parse(event.data);
         if (handler){
             handler(data, sender);
         }else{
@@ -355,7 +342,7 @@ export class RTCConnection {
         dataChannel.onmessage = this.onmessage.bind(this);
     }
     ondatachannelerror(error, channelName){
-        console.error("Data Channel Error:", event, "on channel", channelName);
+//        console.error("Data Channel Error:", event, "on channel", channelName);
     }
 
     close(){

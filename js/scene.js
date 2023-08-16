@@ -725,7 +725,6 @@ export class CustomScene extends THREE.Scene {
         // also use promise not timeout
     }
     sync(data, sender){
-        console.log("syncing", data, sender)
         if (data === "request"){
             if (!this.syncedFrom){return}
             let data = {};
