@@ -93,10 +93,13 @@ class Chat extends HTMLElement {
     this.voiceButton.addEventListener('click', (() => {
         if (!this.streaming){
             console.log("Starting streaming");
+            this.voiceButton.style.backgroundColor = "red";
+
             this.streaming = true;
             this.rtc.startStreaming();
         }else{
             console.log("Stopping streaming");
+            this.voiceButton.style.backgroundColor = "";
             this.streaming = false;
             this.rtc.stopStreaming();
         }
@@ -107,9 +110,11 @@ class Chat extends HTMLElement {
         if (!this.muted){
             this.muted = true;
             this.rtc.mute()
+            this.speakerButton.style.backgroundColor = "";
         }else{
             this.muted = false;
             this.rtc.unmute()
+            this.speakerButton.style.backgroundColor = "red";
         }
     }).bind(this))
 

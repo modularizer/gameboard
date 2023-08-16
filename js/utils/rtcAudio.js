@@ -22,7 +22,7 @@ export class WebRTCAudioChannel {
     this.rtcClient = rtcClient;
 
     // Inside your constructor:
-    this.audioContext = new AudioContext({sampleRate: 44100});
+    this.audioContext = new AudioContext({sampleRate: this.config.sampleRate});
     this.audioContext.audioWorklet.addModule('./js/utils/audio-processor.js').then(() => {
       // the processor is now available
     });
@@ -65,6 +65,19 @@ export class WebRTCAudioChannel {
     audioSource.start();
   }
 
+  config = {
+      sampleRate: 25000, // Sample rate in Hz, common values are 44100 or 48000 Hz
+      freq: 800, // Frequency for bandpass filter, commonly between 300 to 3400 Hz for voice
+      q: 1, // Quality factor for bandpass filter, ranges from 0.001 to 100; lower values less resonant
+      threshold: -40, // Compressor threshold in dB, typical range from -100 to 0 dB; sets level where compression begins
+      knee: 10, // Compressor knee in dB, typical range from 0 to 40 dB; higher values result in a softer knee and smoother transition
+      ratio: 5, // Compression ratio, typical range from 1 (no compression) to 20 (hard compression); higher values reduce dynamic range more aggressively
+      attack: 0.0001, // Attack time in seconds, typical range from 0.0001 to 1 s; sets how quickly compression begins once threshold is reached
+      release: 0.1, // Release time in seconds, typical range from 0.01 to 1 s; sets how quickly compression stops after signal drops below threshold
+      delay: 5 // Delay in seconds, typically between 0 to whatever latency is acceptable; represents a simple latency delay, often used to align signals
+    }
+
+
   // Method to start streaming
   startStreaming() {
     if (this.streaming) return; // Do not start if already streaming
@@ -77,16 +90,16 @@ export class WebRTCAudioChannel {
      // Biquad filter for band-pass
       const biquadFilter = this.audioContext.createBiquadFilter();
       biquadFilter.type = "bandpass";
-      biquadFilter.frequency.value = 800;
-      biquadFilter.Q.value = 1;
+      biquadFilter.frequency.value = this.config.freq;
+      biquadFilter.Q.value = this.config.q;
 
       // Dynamics compressor for managing dynamic range
       const compressor = this.audioContext.createDynamicsCompressor();
-      compressor.threshold.value = -50;
-      compressor.knee.value = 30;
-      compressor.ratio.value = 4;
-      compressor.attack.value = 0.003;
-      compressor.release.value = 0.25;
+      compressor.threshold.value = this.config.threshold;
+      compressor.knee.value = this.config.knee;
+      compressor.ratio.value = this.config.ratio;
+      compressor.attack.value = this.config.attack;
+      compressor.release.value = this.config.release;
 
       this.processorNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
       this.processorNode.port.onmessage = (event) => {
@@ -96,7 +109,7 @@ export class WebRTCAudioChannel {
 
       // Create a 1-second delay node
       const delay = this.audioContext.createDelay(1.0);
-      delay.delayTime.value = 0; // add a delay in testing
+      delay.delayTime.value = this.config.delay; // add a delay in testing
 
       // Connecting nodes
       this.sourceNode.connect(delay);
