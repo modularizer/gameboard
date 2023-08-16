@@ -8,7 +8,6 @@ let baseTopic = (location.hostname + location.pathname + (location.hash || "")).
 export class MQTTRTCClient {
   constructor(config){
     let {topic, name, options, handlers} = config || {};
-    this.handlers.connection = this.connection.bind(this);
     let n = localStorage.getItem("name");
     if (n && n.startsWith("anon")){
         n = null;
@@ -34,7 +33,6 @@ export class MQTTRTCClient {
     this.activeRTCConnections = [];
 
     this.rtcConnections = {};
-    this.rtcChannels = {};
 
 
     let client = mqtt.connect('wss://public:public@public.cloud.shiftr.io', {clientId: 'javascript'});
@@ -61,12 +59,6 @@ export class MQTTRTCClient {
         }
     }).bind(this));
     this.client = client;
-
-
-
-    // WebRTC Configuration
-    this.rpcConfiguration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] };
-
 
     window.addEventListener("beforeunload", () => {
         this.sendRTC("left", "connection")
@@ -107,19 +99,18 @@ export class MQTTRTCClient {
         }
         if (!this.rollCalls[t].includes(payload.sender)){
             this.rollCalls[t].push(payload.sender);
-            if (this.rtcConnections[payload.sender]){
-                if (this.rtcConnections[payload.sender].connectionState === "connected"){
-                    console.warn("Already connected to " + payload.sender);
-                }else{
+            if (this.rtcConnections[payload.sender] && this.rtcConnections[payload.sender].connectionState === "connected"){
+                console.warn("Already connected to " + payload.sender);
+            }else{
+                if (this.rtcConnections[payload.sender]){
                     console.warn("Already have a connection to " + payload.sender + " but it's not connected. Closing and reopening.");
-//                    this.rtcConnections[payload.sender].close();
-//                    delete this.rtcConnections[payload.sender];
-//                    delete this.rtcChannels[payload.sender];
-//                    this.offerRTCConnection(payload.sender);
+                    this.rtcConnections[payload.sender].close();
                 }
-            }else if (newRollCall){
 
-                this.offerRTCConnection(payload.sender);
+                if (newRollCall){
+                    this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
+                    this.rtcConnections[payload.sender].sendOffer();
+                }
             }
 
             this.send(t, "rollCall");
@@ -141,9 +132,6 @@ export class MQTTRTCClient {
             this.rtcConnections[payload.sender].close();
             delete this.rtcConnections[payload.sender];
         }
-        for (let channel of Object.values(this.rtcChannels)){
-            delete this.rtcChannels[payload.sender];
-        }
     },
     RTCoffer: payload => {
         console.log("received RTCoffer", payload);
@@ -151,113 +139,35 @@ export class MQTTRTCClient {
         if (target != this.name){return};
         if (this.rtcConnections[payload.sender]){
             this.rtcConnections[payload.sender].close();
-            delete this.rtcConnections[payload.sender];
-            delete this.rtcChannels[payload.sender];
         }
-        let peerConnection = this.makeRTCConnection(payload.sender);
-        this.rtcConnections[payload.sender] = peerConnection;
-
-        console.log("Setting remote description");
-        peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
-          .then(() => peerConnection.createAnswer())
-          .then(answer => peerConnection.setLocalDescription(answer))
-          .then((answer) => {
-            // Send answer via MQTT
-            this.send({
-                "answer": peerConnection.localDescription,
-                "target": payload.sender,
-            }, "RTCanswer");
-          });
+        this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
+        this.rtcConnections[payload.sender].respondToOffer(offer);
     },
     RTCanswer: payload => {
         console.log("received RTCanswer", payload);
         let {answer, target} = payload.data;
         if (target != this.name){return};
-        let peerConnection = this.rtcConnections[payload.sender]; // Using the correct connection
-        if (!peerConnection){
+        let rtcConnection = this.rtcConnections[payload.sender]; // Using the correct connection
+        if (!rtcConnection){
             console.error("No connection found for " + payload.sender);
             return
         }
-        if (peerConnection.signalingState !== 'have-local-offer') {
-            console.warn("Wrong state " + peerConnection.signalingState);
-//            this.offerRTCConnection(payload.sender);
-            return;
-        }
-        peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        setTimeout((()=>this.sendRTC("joined", "connection", payload.sender)).bind(this), 100);
+        rtcConnection.receiveAnswer(answer);
     },
     RTCiceCandidate: payload => {
-        let peerConnection = this.rtcConnections[payload.sender]; // Using the correct connection
-        if (!peerConnection){
+        let rtcConnection = this.rtcConnections[payload.sender]; // Using the correct connection
+        if (!rtcConnection){
             console.error("No connection found for " + payload.sender);
-            this.offerRTCConnection(payload.sender);
-            peerConnection = this.makeRTCConnection(payload.sender);
-            this.rtcConnections[payload.sender] = peerConnection;
+            this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
+            let rtcConnection = this.rtcConnections[payload.sender];
+            rtcConnection.sendOffer();
         }
-        peerConnection.addIceCandidate(new RTCIceCandidate(payload.data));
+        rtcConnection.onReceivedIceCandidate(payload.data);
     }
   }
-  makeRTCConnection(name){
-    let peerConnection = new RTCPeerConnection(this.rtcConfiguration);
 
-    peerConnection.onicecandidate = event => {
-      if (event.candidate) {
-        // Send ICE candidate via MQTT
-        this.send(event.candidate, "RTCiceCandidate");
-      }
-    };
-
-
-    peerConnection.ondatachannel = (event) => {
-        let dataChannel = event.channel;
-        this.rtcChannels[name] = dataChannel;
-        dataChannel.onmessage = ((event) => {
-            let d = JSON.parse(event.data);
-            this.handle(d, name);
-        }).bind(this);
-    }
-    return peerConnection
-  }
-  offerRTCConnection(name){
-    if (this.rtcConnections[name]) {
-    console.warn(`Connection already exists with ${name}, not offering again.`);
-    return;
-    }
-    this.rtcConnections[name] = this.makeRTCConnection(name);
-    let peerConnection = this.rtcConnections[name];
-    let dataChannel = peerConnection.createDataChannel("main");
-
-    dataChannel.onmessage = ((event) => {
-        let d = JSON.parse(event.data);
-        this.handle(d, name);
-    }).bind(this);
-
-    dataChannel.onerror = error => {
-      console.error("Data Channel Error:", error);
-    };
-    this.rtcChannels[name] = dataChannel;
-
-    peerConnection.createOffer()
-      .then(offer => peerConnection.setLocalDescription(offer))
-      .then(() => {
-        // Send offer via MQTT
-        console.log("Sending offer to " + name);
-        this.send({"offer": peerConnection.localDescription, "target": name}, "RTCoffer");
-      });
-
-//    setTimeout((()=>{
-//        if (dataChannel.readyState != "open"){
-//            console.warn("RTC connection to " + name + " timed out");
-//            peerConnection.close();
-//            delete this.rtcConnections[name];
-//            setTimeout(()=>{this.offerRTCConnection(name)}, 1000);
-//        }else{
-//
-//        }
-//    }).bind(this), 3000)
-  }
-  
-  connection(data, sender){
+  handlers = {
+    connection(data, sender){
         console.log("connection", data, sender)
         if (this.handlers["RTCconnection"]){
             this.handlers["RTCconnection"](data, sender);
@@ -280,21 +190,18 @@ export class MQTTRTCClient {
         if (this.handlers["activeUsers"]){
             this.handlers["activeUsers"](this.activeUsers);
         }
-  }
-  handle(data, sender){
-    let t = data.type;
-    let d = data.data;
-    if (this.handlers[t]){
-        this.handlers[t](d, sender);
-    }
-  }
-
-  handlers = {
+  },
+    sync: (data, sender) => {
+        console.log("Received sync from", sender, data);
+    },
     dm: (data, sender) => {
         console.log("Received DM from", sender, data);
     },
     chat: (data, sender) => {
         console.log("Received group chat from", sender, data);
+    },
+    audio: (data, sender) => {
+
     }
   }
   getRTCConnections(users){
@@ -302,23 +209,13 @@ export class MQTTRTCClient {
     if (typeof users === "string"){
         users = [users];
     }
-    return Object.fromEntries(users.map((name) => [name, this.rtcConnections[name]]));
+    return users.map((name) => this.rtcConnections[name]).filter((connection) => connection);
   }
   sendRTC(data, type, users){
     let connections = this.getRTCConnections(users);
-    let payload = {"type": type, "data": data}
-    let d = JSON.stringify(payload);
-    for (let [user, connection] of Object.entries(connections)){
-        let channel = this.rtcChannels[user];
-        if (!channel){
-            console.error("No channel found for " + user);
-            return
-        }
-        if (channel.readyState !== "open"){
-            console.log("Channel not open", channel.readyState);
-            return
-        }
-        channel.send(d);
+    let d = JSON.stringify(data);
+    for (let connection of connections){
+        connection.sendString(d, type);
     }
   }
   sendDM(message, target){
@@ -329,3 +226,139 @@ export class MQTTRTCClient {
   }
 }
 
+
+
+export class RTCConnection {
+    rtcConfiguration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
+
+
+    constructor(name, target, mqttClient, handlers){
+        console.log("making RTCConnection", handlers)
+        this.name = name;
+        this.target = target;
+        this.mqttClient = mqttClient;
+        this.handlers = handlers
+        this.dataChannels = {};
+        this.peerConnection = new RTCPeerConnection(this.rtcConfiguration);
+        this.peerConnection = new RTCPeerConnection(this.rtcConfiguration);
+
+        this.peerConnection.onicecandidate = this.onicecandidate.bind(this);
+
+
+        this.peerConnection.ondatachannel = (event) => {
+            let dataChannel = event.channel;
+            dataChannel.onmessage = ((e) => {
+                this.onmessage(e, dataChannel.label);
+            }).bind(this);
+            this.dataChannels[dataChannel.label] = dataChannel;
+        }
+    }
+
+    sendOffer(){
+        this.setupDataChannels();
+        this.peerConnection.createOffer()
+          .then(offer => this.peerConnection.setLocalDescription(offer))
+          .then(() => {
+            // Send offer via MQTT
+            console.log("Sending offer to " + this.target);
+            this.mqttClient.send({"offer": this.peerConnection.localDescription, "target": this.target}, "RTCoffer");
+          });
+    }
+    setupDataChannels(){
+        for (let [name, dataChannelHandler] of Object.entries(this.handlers)){
+            let dataChannel = this.peerConnection.createDataChannel(name);
+            dataChannel.onmessage = ((event) => {
+                this.onmessage(event, name);
+            }).bind(this);
+            dataChannel.onerror = ((error) => {
+                this.ondatachannelerror(error, name);
+            }).bind(this);
+
+            this.dataChannels[name] = dataChannel;
+        }
+    }
+
+    respondToOffer(offer){
+
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+              .then(() => this.peerConnection.createAnswer())
+              .then(answer => this.peerConnection.setLocalDescription(answer))
+              .then((answer) => {
+                // Send answer via MQTT
+                this.mqttClient.send({
+                    "answer": this.peerConnection.localDescription,
+                    "target": this.target,
+                }, "RTCanswer");
+              });
+    }
+
+    receiveAnswer(answer){
+        if (this.peerConnection.signalingState !== 'have-local-offer') {
+            console.warn("Wrong state " + this.peerConnection.signalingState);
+            return;
+        }
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        setTimeout((()=>this.send("joined", "connection")).bind(this), 100);
+    }
+
+    dm(data){
+        this.send(data, "dm");
+    }
+    send(data, type){
+        let d = JSON.stringify(data);
+        this.sendString(d, type);
+    }
+    sendString(d, type){
+        let dataChannel = this.dataChannels[type];
+        if (!dataChannel){
+            if (this.handlers[type]){
+                console.warn("handler found for type", type, "but no data channel");
+            }
+            console.warn("No data channel for type", type);
+            return
+        }
+        if (dataChannel.readyState !== "open"){
+            console.log("Channel not open", dataChannel.readyState);
+            return
+        }
+        dataChannel.send(d);
+    }
+    onmessage(event, type){
+        let data = JSON.parse(event.data);
+        let sender = this.target;
+
+        let handler = this.handlers[type];
+//        console.log("Received", type, "from", sender, data, handler);
+        if (handler){
+            handler(data, sender);
+        }else{
+            console.warn("No handler for type", type);
+        }
+    }
+
+    onReceivedIceCandidate(data) {
+        this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
+    }
+
+    onicecandidate(event){
+        if (event.candidate) {
+            // Send ICE candidate via MQTT
+            this.mqttClient.send(event.candidate, "RTCiceCandidate");
+        }
+    }
+    ondatachannel(event){
+        let dataChannel = event.channel;
+        this.dataChannels[event.name] = dataChannel;
+        dataChannel.onmessage = this.onmessage.bind(this);
+    }
+    ondatachannelerror(error, channelName){
+        console.error("Data Channel Error:", event, "on channel", channelName);
+    }
+
+    close(){
+        this.peerConnection.close();
+        this.closed = true;
+        this.peerConnection = null;
+    }
+
+}
