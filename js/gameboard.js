@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import * as gameengine from 'gameengine';
-import { CustomScene, loadJSON } from 'gameengine';
-import { MQTTRTCClient, WebRTCAudioChannel } from 'utils';
-import { KeyListeners } from 'utils';
+import { MQTTRTCClient } from './utils/mqtt-rtc.js';
+import { WebRTCAudioChannel } from './utils/rtcAudio.js';
+import { KeyListeners } from './utils/keyListeners.js';
+import { CustomScene } from './scene.js';
+import { loadJSON } from './components/model.js';
 
-
-class GameBoard extends HTMLElement {
+export class GameBoard extends HTMLElement {
     constructor() {
         super();
         // Create shadow root
@@ -85,11 +85,12 @@ class GameBoard extends HTMLElement {
             option.innerHTML = game;
             this.gameSelect.appendChild(option);
         }
-        this.gameSelect.addEventListener("change", (() => {
+        this.gameSelect.addEventListener("change", (e => {
             location.hash = e.target.value;
             location.reload();
         }).bind(this));
         this.instructions.innerHTML = this.defaultInstructions;
+        console.log(this.chat)
         this.chat.attachMQTTRTC(this.rtc);
         console.log("Bound elements");
     }

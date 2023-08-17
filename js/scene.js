@@ -1,7 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { MoveableItem } from 'gameengine';
-import { KeyListeners, MouseListeners, DeferredPromise, merge } from 'utils';
+import { MoveableItem } from './moveable.js';
+import { KeyListeners } from './utils/keyListeners.js';
+import { MouseListeners } from './utils/mouseListeners.js';
+import { DeferredPromise } from './utils/deferredPromise.js';
+import { merge } from './utils/merge.js';
 
 
 function toXYZ(v) {

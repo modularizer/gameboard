@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DeferredPromise } from 'utils';
+import { DeferredPromise } from '../utils/deferredPromise.js';
 
 function getMaterial(v, loader){
     let loadPromise = false;

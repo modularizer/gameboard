@@ -2,8 +2,8 @@ import * as THREE from 'three';;
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { SnapController } from 'gameengine';
-import { DeferredPromise } from 'utils';
+import { SnapController } from '../snapControl.js';
+import { DeferredPromise } from '../utils/deferredPromise.js';
 
 
 export class BaseModel extends THREE.Group {

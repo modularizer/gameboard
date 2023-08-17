@@ -1,8 +1,6 @@
 import * as THREE from 'three';
-//import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-//import { TextGeometry } from 'three/addons/loaders/TextGeometry.js';
 
-import { DeferredPromise } from 'utils';
+import { DeferredPromise } from '../utils/deferredPromise.js';
 
 let knownFonts = {
     gentilis_bold: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js/examples/fonts/gentilis_bold.typeface.json',

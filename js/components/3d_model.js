@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader';
-import { STLLoader } from 'three/addons/loaders/STLLoader';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-import { DeferredPromise, IndexedDBBackend } from 'utils';
+import { DeferredPromise} from '../utils/deferredPromise.js';
+import { IndexedDBBackend } from '../utils/db.js';
 
 let loadPaths = {}
 let objectLoader = new THREE.ObjectLoader();

@@ -3,8 +3,6 @@ const importMap = {
       "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
       "three/addons/": "https://unpkg.com/three@0.132.2/examples/jsm/",
       "three/loaders": "https://unpkg.com/three@0.132.2/examples/jsm/loaders/",
-      "utils": `./js/utils/index.js?${Date.now()}`,
-      "gameengine": `./js/index.js?${Date.now()}`,
     }
 };
 
