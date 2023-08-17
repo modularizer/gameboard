@@ -2,7 +2,7 @@ import { tabID } from "./tabID.js";
 import { DeferredPromise } from "./deferredPromise.js";
 
 
-let baseTopic = (location.hostname + location.pathname + (location.hash || "")).replace(/[^a-zA-Z0-9]/g, ".");
+let baseTopic = (location.hostname + (location.hash || "")).replace(/[^a-zA-Z0-9]/g, ".");
 
 
 export class MQTTRTCClient {
