@@ -331,6 +331,16 @@ export class BaseModel extends THREE.Group {
         this.onMouseUp(event);
 
     }
+    select(color){
+        if (color !== undefined){
+            this.wireframe.material.color.set(color);
+        }
+        this.wireframe.visible = true;
+    }
+    unselect(){
+        this.wireframe.visible = false;
+        this.wireframe.material.color.set(this.config.wireframe.color);
+    }
 }
 
 

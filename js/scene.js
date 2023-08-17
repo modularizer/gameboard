@@ -414,6 +414,8 @@ export class CustomScene extends THREE.Scene {
         items: [],
         itemsByName: {},
         selectedItem: null,
+        peerSelections: {},
+        otherSelectedItems: {},
         selectedFace: null,
         releaseItem: true,
         moveMode: "normal", // "normal", "x", "y", "z", Vector3
@@ -558,6 +560,7 @@ export class CustomScene extends THREE.Scene {
 
 
             this.state.selectedItem = item;
+            this.sendItemUpdate({"selected": item.name});
             this.state.dragging = true;
 
             this.state.mouseState = {
@@ -579,6 +582,7 @@ export class CustomScene extends THREE.Scene {
         } else {
             this.state.dragging = false;
             this.state.selectedItem = null;
+            this.sendItemUpdate({"selected": null});
             this.state.selectedFace = null;
             this.controls.enabled = true;
         }
@@ -614,6 +618,7 @@ export class CustomScene extends THREE.Scene {
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
+            this.sendItemUpdate({"selected": null});
             this.state.selectedFace = null;
             this.state.dragging = false;
             this.addOrbitControls();
@@ -749,15 +754,38 @@ export class CustomScene extends THREE.Scene {
     }
     receiveItemUpdate(data, sender){
         for (let [name, update] of Object.entries(data)){
+            if (name === "selected"){
+                if (update){
+                    console.log(sender, "selected", update)
+                    if (!this.state.otherSelectedItems[update]){
+                        this.state.otherSelectedItems[update] = [];
+                    }
+                    this.state.otherSelectedItems[update].push(sender);
+                    this.state.itemsByName[update].select(0xff0000);
+                    this.state.peerSelections[sender] = update;
 
-            let item = this.state.itemsByName[name];
-//            console.log("Updating", name, update, item)
-            if (!item){continue}
-            if (update.position){
-                item.position.set(...update.position);
-            }
-            if (update.rotation){
-                item.pivot.rotation.set(...update.rotation);
+                }else{
+                    update = this.state.peerSelections[sender];
+                    console.log(sender, "unselected", update)
+                    let selectors = this.state.otherSelectedItems[update]
+                    if (selectors){
+                        this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);
+                    }
+                    console.log(this.state.otherSelectedItems[update])
+                    if (!this.state.otherSelectedItems[update].length){
+                        this.state.itemsByName[update].unselect();
+                    }
+                }
+            }else{
+                let item = this.state.itemsByName[name];
+    //            console.log("Updating", name, update, item)
+                if (!item){continue}
+                if (update.position){
+                    item.position.set(...update.position);
+                }
+                if (update.rotation){
+                    item.pivot.rotation.set(...update.rotation);
+                }
             }
         }
     }
