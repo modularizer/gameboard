@@ -66,7 +66,21 @@ export class WebRTCAudioChannel {
   }
 
   config = {
-      sampleRate: 25000, // Sample rate in Hz, common values are 44100 or 48000 Hz
+       audio: {
+        // Specify other constraints as needed
+        sampleSize: 16, // bits per sample
+        channelCount: 1, // stereo
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        latency: 0, // optimum latency
+        googAutoGainControl: true,
+        googNoiseSuppression: true,
+        googHighpassFilter: true,
+        googTypingNoiseDetection: true,
+        bitrate: 8000 * 16,
+      },
+      sampleRate: 8000, // Sample rate in Hz, common values are 44100 or 48000 Hz
       freq: 800, // Frequency for bandpass filter, commonly between 300 to 3400 Hz for voice
       q: 1, // Quality factor for bandpass filter, ranges from 0.001 to 100; lower values less resonant
       threshold: -40, // Compressor threshold in dB, typical range from -100 to 0 dB; sets level where compression begins
@@ -82,7 +96,7 @@ export class WebRTCAudioChannel {
   startStreaming() {
     if (this.streaming) return; // Do not start if already streaming
     console.log("Starting streaming");
-  navigator.mediaDevices.getUserMedia({ audio: true })
+  navigator.mediaDevices.getUserMedia({ audio: this.config.audio})
     .then(stream => {
       console.log("Setting up audio processing", stream);
       this.sourceNode = this.audioContext.createMediaStreamSource(stream);
