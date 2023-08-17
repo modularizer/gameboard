@@ -62,8 +62,8 @@ To Rotate:
         </div>
     </div>
 
-    <div style="position: absolute; bottom: 0.5em; opacity: 0.9; width: 100%; display: flex; justify-content: center; align-items: center;">
-        <pre id="subtitles" style="background-color: #000; color: #fff; text-align: center; padding: 10px;">
+    <div style="position: absolute; bottom: 0.5em; width: 100%; display: flex; justify-content: center; align-items: center;">
+        <pre id="subtitles" style="opacity: 0; background-color: #000; color: #fff; text-align: center; padding: 10px;">
         </pre>
     </div>
     <my-chat></my-chat>
@@ -83,8 +83,16 @@ To Rotate:
             moves: (data, sender) => {console.log("Received moves from", sender, data);},
             audio: (data, sender) => {console.log("Received audio from", sender, data);},
             subtitles: (data, sender) => {
+                document.getElementById("subtitles").style.transition = "";
+                document.getElementById("subtitles").style.opacity = 1;
                 document.getElementById("subtitles").innerText = "[" + sender + "] " + data;
+                if (window.subtitlesTimeout) {clearTimeout(window.subtitlesTimeout)};
+                window.subtitlesTimeout = setTimeout(() => {
+                    document.getElementById("subtitles").style.transition = "opacity 3s";
+                    document.getElementById("subtitles").style.opacity = 0;
+                }, 1000);
 
+                console.log("Received subtitles from", sender, data, subtitlesTimeout);
             },
         }});
 
