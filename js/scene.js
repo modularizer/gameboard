@@ -134,7 +134,7 @@ export class CustomScene extends THREE.Scene {
                 this.camera.position.y += this.config.speed
             }
         },
-        " ": ()=>{
+        "r": ()=>{
             if (!this.state.dragging) {
                 this.state.animate = !this.state.animate; // Toggle rotation
             }
@@ -145,7 +145,7 @@ export class CustomScene extends THREE.Scene {
                 if (item.onRightClickUp) item.onRightClickUp(event);
             }
         },
-        "r": ()=>{this.reset()},
+        "x": ()=>{this.reset()},
         "p": ()=>{this.state.moveMode = "y"},
         "n": ()=>{this.state.moveMode = "normal"},
         "Control": ()=>{this.state.clickMode = "right"},
