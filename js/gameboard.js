@@ -28,7 +28,7 @@ export class GameBoard extends HTMLElement {
                 </pre>
           </div>
           <pre id="subtitles" class="widget bc subtitles"></pre>
-          <my-chat id="chat"></my-chat>
+          <chat-box id="chat"></chat-box>
         `;
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
@@ -166,8 +166,4 @@ To Rotate:
         document.getElementById("x").style.display = "block";
         localStorage.removeItem(game + "Instructions");
     }
-}
-
-
-// Register the custom element
-customElements.define('game-board', GameBoard);
+};

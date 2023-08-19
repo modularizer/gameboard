@@ -101,11 +101,6 @@ export class MoveableItem{
             z: sz,
         }
     }
-    setRotation(x, y, z){
-        this.item.rotation.x = x;
-        this.item.rotation.y = y;
-        this.item.rotation.z = z;
-    }
     spinTo(x, y, z, duration, speed=0.02){
         let dx = x-this.item.rotation.x;
         let dy = y-this.item.rotation.y;
@@ -128,7 +123,6 @@ export class MoveableItem{
             z: sz,
         }
     }
-
     setRotation(x, y, z){
         // TODO: make sure it doesn't rotate below the ground (y=0)
         this.item.pivot.rotation.x = x;

@@ -1,4 +1,4 @@
-class Chat extends HTMLElement {
+export class ChatBox extends HTMLElement {
   constructor() {
     super();
 
@@ -215,8 +215,3 @@ class Chat extends HTMLElement {
     this.activeUsersEl.innerHTML = 'Active users: ' + activeUsers.join(', ');
   }
 }
-
-customElements.define('my-chat', Chat);
-
-
-export { Chat };
