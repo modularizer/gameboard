@@ -30,6 +30,7 @@ class GameBoard extends HTMLElement {
           <pre id="subtitles" class="widget bc subtitles"></pre>
           <my-chat id="chat"></my-chat>
         `;
+        wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
         this.gameNames = ["quoridor", "chess", "cube", "card"]

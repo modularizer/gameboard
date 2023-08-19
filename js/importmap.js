@@ -1,5 +1,3 @@
-
-
 const importMap = {
     imports: {
       "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
@@ -27,3 +25,5 @@ mqttScript.src = "https://unpkg.com/mqtt/dist/mqtt.min.js";
 document.head.append(mqttScript);
 
 document.head.append(script);
+
+
