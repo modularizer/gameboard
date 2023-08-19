@@ -10,6 +10,7 @@ require('esbuild').build({
   ],
   platform: 'browser',
   format: 'esm',
+  minify: true // Add this line to minify the output
 }).then(() => {
   const fs = require('fs').promises;
   const path = require('path');
@@ -23,7 +24,7 @@ require('esbuild').build({
         return fs.readFile(specPath, 'utf8')
           .then(data => {
             const minified = JSON.stringify(JSON.parse(data));
-            return fs.writeFile(specPath.replace("spec.json","spec.min.json"), minified);
+            return fs.writeFile(specPath.replace('spec.json', 'spec.min.json'), minified);
           })
           .then(() => console.log(`Minified ${specPath}`));
       });
@@ -32,7 +33,8 @@ require('esbuild').build({
     })
     .then(() => fs.readFile(gameboardMinPath, 'utf8'))
     .then(data => {
-      const updatedData = data.replace(/"spec\.json"/g, '"spec.min.json"');
+      // Make sure this regular expression matches the occurrences of "spec.json" in your file
+      const updatedData = data.replaceAll("spec.json", "spec.min.json");
       return fs.writeFile(gameboardMinPath, updatedData);
     })
     .then(() => console.log(`Updated references in ${gameboardMinPath}`))
