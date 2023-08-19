@@ -1,7 +1,6 @@
 class Chat extends HTMLElement {
   constructor() {
     super();
-    window.chat = this;
 
     this.name = "?"
     this.history = [];

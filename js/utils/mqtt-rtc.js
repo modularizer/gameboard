@@ -35,8 +35,18 @@ export class MQTTRTCClient {
     this.activeRTCConnections = [];
 
     this.rtcConnections = {};
+    this.load = this.load.bind(this);
+    this.load();
 
 
+
+  }
+  load(){
+    if (!window.mqtt){
+        console.warn("MQTT not loaded yet");
+        setTimeout(this.load.bind(this), 100);
+        return;
+    }
     let client = mqtt.connect('wss://public:public@public.cloud.shiftr.io', {clientId: 'javascript'});
     client.on('connect', (function() {
         client.subscribe(this.topic);
@@ -67,7 +77,6 @@ export class MQTTRTCClient {
         this.post("Goodbye", "goodbye");
 
     })
-
   }
 
   post(message, type = "chat"){
@@ -125,6 +134,7 @@ export class MQTTRTCClient {
         }
         this.activeRTCConnections = this.activeRTCConnections.filter((name) => name !== payload.sender);
         if (this.rtcConnections[payload.sender]){
+            console.warn("Closing connection to " + payload.sender + " because they left.");
             this.rtcConnections[payload.sender].close();
             delete this.rtcConnections[payload.sender];
         }
@@ -134,6 +144,7 @@ export class MQTTRTCClient {
         let {offer, target} = payload.data;
         if (target != this.name){return};
         if (this.rtcConnections[payload.sender]){
+            console.warn("Already have a connection to " + payload.sender + ". Closing and reopening.")
             this.rtcConnections[payload.sender].close();
         }
         this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
@@ -270,7 +281,6 @@ export class RTCConnection {
     }
 
     respondToOffer(offer){
-
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
               .then(() => this.peerConnection.createAnswer())
               .then(answer => this.peerConnection.setLocalDescription(answer))
@@ -330,6 +340,7 @@ export class RTCConnection {
     }
 
     onReceivedIceCandidate(data) {
+
         this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
     }
 

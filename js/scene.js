@@ -771,8 +771,7 @@ export class CustomScene extends THREE.Scene {
                     if (selectors){
                         this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);
                     }
-                    console.log(this.state.otherSelectedItems[update])
-                    if (!this.state.otherSelectedItems[update].length){
+                    if (this.state.otherSelectedItems[update] && !this.state.otherSelectedItems[update].length){
                         this.state.itemsByName[update].unselect();
                     }
                 }

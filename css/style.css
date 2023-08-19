@@ -1,0 +1,78 @@
+
+
+.fullscreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 98vh;
+    width: 98vw;
+    margin: 1vh 1vw;
+    overflow: hidden;
+}
+
+@media only screen and (max-width: 1000px){
+    * {
+        font-size: 10px; /* twice as big as the default size */
+    }
+}
+
+
+.widget {
+    position: absolute;
+    z-index: 9999;
+    margin: 0.5em;
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.tl {
+    top: 0
+    left: 0;
+}
+
+.tr {
+    top: 0;
+    right: 0;
+}
+
+.bl {
+    bottom: 0;
+    left: 0;
+}
+
+.br {
+    bottom: 0;
+    right: 0;
+}
+
+.bc {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.hidden {
+    display: none;
+}
+
+.fr {
+    float: right;
+}
+
+.fl {
+    float: left;
+}
+
+.hidden {
+    display: none;
+}
+
+.subtitles {
+    position: absolute;
+    opacity: 0;
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
