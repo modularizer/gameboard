@@ -6,7 +6,7 @@ if (shouldObfuscate){
     shouldMinify = true;
 }
 
-const gameboardMinPath = 'gameboard.min.js';
+const gameboardMinPath = 'build/gameboard.min.js';
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const fs = require('fs').promises;
 
