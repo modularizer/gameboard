@@ -20,7 +20,8 @@ require('esbuild').build({
   ],
   platform: 'browser',
   format: 'esm',
-  minify: shouldMinify // Add this line to minify the output
+  minify: shouldMinify, // Add this line to minify the output
+  pure: ['console.log'],
 }).then(() => {
   const path = require('path');
 
