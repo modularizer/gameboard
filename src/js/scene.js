@@ -109,6 +109,7 @@ export class CustomScene extends THREE.Scene {
         })
 
         this.loadPromise.then(this.loadCachedState.bind(this));
+        this.loadPromise.then(()=>{console.timeEnd("load")});
 
 //        window.addEventListener('load', ()=>{
 //           this.display(document.body);
@@ -456,6 +457,7 @@ export class CustomScene extends THREE.Scene {
                     this.loadDeferredPromise = new DeferredPromise();
                     this.loadPromise = this.loadDeferredPromise.promise;
                     this.loadPromise.then(this.loadCachedState.bind(this));
+                    this.loadPromise.then(()=>{console.timeEnd("load")});
                 }
                 item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
                 item.loadPromise.then(()=>{this.addModel.bind(this)(item)});

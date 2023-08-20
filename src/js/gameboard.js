@@ -200,7 +200,10 @@ export class GameBoard extends HTMLElement {
         const src = "../../assets/games/" + this.gameName + "/spec.json?" + Date.now();
         console.log("Loading game", this.gameName, "from", src);
         loadJSON(this.scene, src).then((({models, metadata}) => {
+            this.models = models;
+            this.metadata = metadata;
             if (metadata.instructions) {
+
                 let i = localStorage.getItem(this.game + "Instructions");
                 if (i === metadata.instructions) {
                     this.hideInstructions();
@@ -210,7 +213,7 @@ export class GameBoard extends HTMLElement {
 
                 this.instructions.innerHTML = metadata.instructions;
             }
-            this.models = models;
+
         }).bind(this));
     }
 
@@ -238,7 +241,9 @@ export class GameBoard extends HTMLElement {
 To Rotate:
     1. Double Click OR
     2. Click and use spacebar OR
-    3. Right Click and drag to rotate`
+    3. Right Click and drag to rotate
+
+Software Version: ${window.version}`
 
     keydownHandlers = {
         " ": () => {
@@ -251,16 +256,16 @@ To Rotate:
         }
     }
     hideInstructions(){
-        document.getElementById("instructions").style.display = "none";
-        document.getElementById("q").style.display = "block";
-        document.getElementById("x").style.display = "none";
-        localStorage.setItem(game + "Instructions", window.metadata.instructions);
+        this.instructions.style.display = "none";
+        this.q.style.display = "block";
+        this.x.style.display = "none";
+        localStorage.setItem(this.game + "Instructions", this.metadata.instructions);
     }
     showInstructions(){
-        document.getElementById("instructions").style.display = "block";
-        document.getElementById("q").style.display = "none";
-        document.getElementById("x").style.display = "block";
-        localStorage.removeItem(game + "Instructions");
+        this.instructions.style.display = "block";
+        this.q.style.display = "none";
+        this.x.style.display = "block";
+        localStorage.removeItem(this.game + "Instructions");
     }
     log(message) {
     // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds

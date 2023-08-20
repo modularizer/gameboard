@@ -3,15 +3,19 @@ const fs = require('fs').promises;
 const path = require('path');
 const versionFile = 'version';
 const JavaScriptObfuscator = require('javascript-obfuscator');
+const directory = path.join(__dirname, 'assets', 'games');
 
 
 const args = process.argv.slice(2);
 
 let shouldMinify = args.includes('--min');
 const shouldObfuscate = args.includes('--obf');
+
 if (shouldObfuscate) {
   shouldMinify = true;
 }
+console.log(`Minifying: ${shouldMinify}`);
+console.log(`Obfuscating: ${shouldObfuscate}`);
 
 async function updateVersion() {
     let newVersion = new Date().toISOString().replace(/-/g,"");
@@ -45,6 +49,7 @@ async function updateVersion() {
         let indexFileData = await fs.readFile(indexFilePath, 'utf8');
         // replace all instances of ?v0.0.5"; with the new version
         indexFileData = indexFileData.replace(/\?v.*";/g, `?v${newVersion}";`);
+        indexFileData = indexFileData.replace(/window\.version = 'v.*';/g, `window.version = '${newVersion}';`);
         await fs.writeFile(indexFilePath, indexFileData, 'utf8');
         console.log(`Version updated to ${newVersion}`);
     }
@@ -69,8 +74,10 @@ require('esbuild').build({
   minify: shouldMinify, // Add this line to minify the output
   pure: ['console.log'],
 }).then(() => {
+    console.log(`Built ${gameboardMinPath}`);
   fs.readdir(directory)
     .then(folders => {
+        console.log("Minifying spec.json files");
       const promises = folders.map(folder => {
         const specPath = path.join(directory, folder, 'spec.json');
         return fs.readFile(specPath, 'utf8')
@@ -86,12 +93,12 @@ require('esbuild').build({
     .then(() => fs.readFile(gameboardMinPath, 'utf8'))
     .then(data => {
       // Make sure this regular expression matches the occurrences of "spec.json" in your file
+      console.log("Replacing spec.json with spec.min.json")
       const updatedData = data.replaceAll("spec.json", "spec.min.json");
       return fs.writeFile(gameboardMinPath, updatedData);
-    })
-    .then(() => console.log(`Updated references in ${gameboardMinPath}`))
-    .then(() => {
+    }).then(() => {
         if (shouldObfuscate){
+            console.log(`Obfuscating ${gameboardMinPath}`);
             fs.readFile(gameboardMinPath, 'utf8')
             .then(data => {
               const obfuscationResult = JavaScriptObfuscator.obfuscate(data, {
@@ -104,6 +111,7 @@ require('esbuild').build({
                 splitStrings: true,
                 stringArrayThreshold: 1
               });
+              console.log(`Writing obfuscated code to ${gameboardMinPath}`);
               return fs.writeFile(gameboardMinPath, obfuscationResult.getObfuscatedCode());
             })
         }
