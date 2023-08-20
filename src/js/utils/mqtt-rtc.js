@@ -1,8 +1,10 @@
 import { tabID } from "./tabID.js";
 import { DeferredPromise } from "./deferredPromise.js";
 
-
-let baseTopic = (location.hostname + (location.hash || "")).replace(/[^a-zA-Z0-9]/g, ".");
+// make a base topic name based on the hostname and hash, removing non-alphanumeric characters
+// this way, different games (specified by hash) can be played on different pages without interfering with each other
+let baseTopic = (location.hostname + (location.hash || "")).replace(/[^a-zA-Z0-9]/g, "");
+console.log("Base topic", baseTopic);
 
 
 export class MQTTRTCClient {
@@ -10,19 +12,33 @@ export class MQTTRTCClient {
     let {topic, name, options, handlers} = config || {};
     this.handlers = Object.assign(this.handlers, handlers);
 
+    // If no name is specified, use the name from local storage
+    // If no name is in local storage, use a anon<random number>
     let n = localStorage.getItem("name");
     if (n && n.startsWith("anon")){
         n = null;
     }
     this.name = name || n || ("anon" + Math.floor(Math.random() * 1000));
-
+    // save the name to local storage to persist it
     localStorage.setItem("name", this.name);
+
+    // specify a tabID to allow multiple tabs to be open at once
     this.name += "_" + tabID;
     this.tabID = tabID;
 
+    // If no topic is specified, use the base topic, otherwise append the topic to the base topic
     this.topic = baseTopic + (topic || "");
-    this.send = this.send.bind(this);
 
+    // bind methods to this
+    this.load = this.load.bind(this);
+    this.post = this.post.bind(this);
+    this.send = this.send.bind(this);
+    this.sendDM = this.sendDM.bind(this);
+    this.sendChat = this.sendChat.bind(this);
+    this.getRTCConnections = this.getRTCConnections.bind(this);
+    this.onMQTTConnect = this.onMQTTConnect.bind(this);
+    this.onMQTTMessage = this.onMQTTMessage.bind(this);
+    this.beforeunload = this.beforeunload.bind(this);
     for (let [k, v] of Object.entries(this.mqttHandlers)){
         this.mqttHandlers[k] = v.bind(this);
     }
@@ -30,31 +46,38 @@ export class MQTTRTCClient {
         this.handlers[k] = v.bind(this);
     }
 
+    // initialize state tracking variables
     this.rollCalls = {};
     this.activeUsers = [];
     this.activeRTCConnections = [];
-
     this.rtcConnections = {};
-    this.load = this.load.bind(this);
+
+    // load the MQTT client
     this.load();
-
-
-
   }
   load(){
     if (!window.mqtt){
+        // if the MQTT library isn't loaded yet byt the script tag in HTML, try again in 100ms
         console.warn("MQTT not loaded yet");
         setTimeout(this.load.bind(this), 100);
         return;
     }
-    let client = mqtt.connect('wss://public:public@public.cloud.shiftr.io', {clientId: 'javascript'});
-    client.on('connect', (function() {
-        client.subscribe(this.topic);
+
+    // connect to the MQTT broker
+    this.client = mqtt.connect('wss://public:public@public.cloud.shiftr.io', {clientId: 'javascript'});
+    this.client.on('connect', this.onMQTTConnect.bind(this));
+    this.client.on('message', this.onMQTTMessage.bind(this));
+    window.r = this;
+    window.c = this.client;
+    window.addEventListener("beforeunload", this.beforeunload.bind(this));
+  }
+  onMQTTConnect(){
+        this.client.subscribe(this.topic);
         let t = Date.now();
         this.rollCalls[t] = []
         this.post(t, "rollCall")
-    }).bind(this));
-    client.on('message', ((t, payloadString)=>{
+  }
+  onMQTTMessage(t, payloadString){
         if (t === this.topic){
             let payload = JSON.parse(payloadString);
             if (payload.sender === this.name){
@@ -69,14 +92,10 @@ export class MQTTRTCClient {
                 console.warn("Unhandled message type: " + type, payload);
             }
         }
-    }).bind(this));
-    this.client = client;
-
-    window.addEventListener("beforeunload", () => {
-        this.send("left", "connection")
-        this.post("Goodbye", "goodbye");
-
-    })
+    }
+  beforeunload(){
+    this.send("left", "connection")
+    this.post("Goodbye", "goodbye");
   }
 
   post(message, type = "chat"){
@@ -105,11 +124,11 @@ export class MQTTRTCClient {
         }
         if (!this.rollCalls[t].includes(payload.sender)){
             this.rollCalls[t].push(payload.sender);
-            if (this.rtcConnections[payload.sender] && this.rtcConnections[payload.sender].connectionState === "connected"){
+            if (this.rtcConnections[payload.sender] && this.rtcConnections[payload.sender].peerConnection.connectionState === "connected"){
                 console.warn("Already connected to " + payload.sender);
             }else{
                 if (this.rtcConnections[payload.sender]){
-                    console.warn("Already have a connection to " + payload.sender + " but it's not connected. Closing and reopening.");
+                    console.warn("Already have a connection to " + payload.sender + " but it's not connected.", this.rtcConnections[payload.sender].peerConnection.connectionState,"  Closing and reopening.");
                     this.rtcConnections[payload.sender].close();
                 }
 
