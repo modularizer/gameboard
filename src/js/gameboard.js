@@ -20,7 +20,15 @@ export class GameBoard extends HTMLElement {
         // Include HTML
         const wrapper = document.createElement('div');
         wrapper.innerHTML = `
-          <select id="gameSelect" class="widget tl"></select>
+          <div id="select" class="widget tl">
+            <select id="gameSelect">
+                <option>Please select a game</option>
+            </select><br/>
+            <select id="roomSelect">
+                <option>Please select a room</option>
+            </select>
+            <input id="roomInput" placeholder="Room Name" class="hidden"></input>
+          </div>
           <div id="instructionsBox" class="widget tr">
                 <button id="q">?</button>
                 <button id = "x" class="fr hidden">x</button>
@@ -34,6 +42,8 @@ export class GameBoard extends HTMLElement {
         this.shadowRoot.appendChild(wrapper);
 
         this.gameNames = ["quoridor", "chess", "cube", "card"]
+        this.roomNames = ["octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate", "+"];
+
         // bind handlers
         for (let o of [this.handlers, this.keydownHandlers, this.keyupHandlers]){
             for (let [k, v] of Object.entries(o)){
@@ -68,6 +78,8 @@ export class GameBoard extends HTMLElement {
         this.q = this.shadowRoot.getElementById("q");
         this.x = this.shadowRoot.getElementById("x");
         this.gameSelect = this.shadowRoot.getElementById("gameSelect");
+        this.roomSelect = this.shadowRoot.getElementById("roomSelect");
+        this.roomInput = this.shadowRoot.getElementById("roomInput");
         this.chat = this.shadowRoot.getElementById("chat");
         this.subtitles = this.shadowRoot.getElementById("subtitles");
         console.log("Saved elements");
@@ -85,21 +97,52 @@ export class GameBoard extends HTMLElement {
             option.innerHTML = game;
             this.gameSelect.appendChild(option);
         }
+        for (let room of this.roomNames){
+            let option = document.createElement("option");
+            option.value = room;
+            option.innerHTML = room;
+            this.roomSelect.appendChild(option);
+        }
         this.gameSelect.addEventListener("change", (e => {
-            location.hash = e.target.value;
+            this.gameName = e.target.value;
+            location.hash = "#" + this.gameName + "." + this.roomName;
             location.reload();
         }).bind(this));
+        this.roomSelect.addEventListener("change", (e => {
+            if (e.target.value === "+"){
+                this.roomInput.classList.remove("hidden");
+                this.roomInput.focus();
+                return;
+            }else{
+                this.roomName = e.target.value;
+                location.hash = "#" + this.gameName + "." + this.roomName;
+                location.reload();
+            }
+        }).bind(this));
+        this.roomInput.addEventListener("change", (e => {
+            this.roomName = e.target.value;
+            location.hash = "#" + this.gameName + "." + this.roomName;
+            location.reload();
+        }).bind(this));
+
         this.instructions.innerHTML = this.defaultInstructions;
         console.log(this.chat)
         this.chat.attachMQTTRTC(this.rtc);
         console.log("Bound elements");
     }
     loadGame(){
-        this.gameName = location.hash.replace("#", "") || localStorage.getItem("game") || "chess";
+        const hashParts = location.hash.replace("#", "").split(".");
+
+        this.gameName = (hashParts && this.gameNames.includes(hashParts[0]))? hashParts[0] : (localStorage.getItem("game") || "chess");
+        this.roomName = (hashParts.length >= 2) ? hashParts[1] : (localStorage.getItem("room") || "octopus");
+
         localStorage.setItem("game", this.gameName);
-        location.hash = "#" + this.gameName;
+        localStorage.setItem("room", this.roomName);
+        location.hash = "#" + this.gameName + "." + this.roomName;
         document.title = this.gameName;
         this.gameSelect.value = this.gameName;
+        this.roomSelect.value = this.roomName;
+        this.roomInput.classList.add("hidden");
 
         const src = "../../assets/games/" + this.gameName + "/spec.json?" + Date.now();
         console.log("Loading game", this.gameName, "from", src);

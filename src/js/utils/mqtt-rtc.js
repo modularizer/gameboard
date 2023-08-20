@@ -360,6 +360,7 @@ export class RTCConnection {
     }
 
     close(){
+        if (this.closed){return}
         this.peerConnection.close();
         this.closed = true;
         this.peerConnection = null;
