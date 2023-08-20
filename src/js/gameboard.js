@@ -197,7 +197,7 @@ export class GameBoard extends HTMLElement {
         this.roomSelect.value = this.roomName;
         this.roomInput.classList.add("hidden");
 
-        const src = "../assets/games/" + this.gameName + "/spec.json?" + Date.now();
+        const src = "./assets/games/" + this.gameName + "/spec.json?" + Date.now();
         console.log("Loading game", this.gameName, "from", src);
         loadJSON(this.scene, src).then((({models, metadata}) => {
             this.models = models;
