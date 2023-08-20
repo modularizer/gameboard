@@ -14,7 +14,7 @@ export class GameBoard extends HTMLElement {
         // Include CSS
         const styleLink = document.createElement('link');
         styleLink.setAttribute('rel', 'stylesheet');
-        styleLink.setAttribute('href', './css/style.css');
+        styleLink.setAttribute('href', '../css/style.css');
         this.shadowRoot.appendChild(styleLink);
 
         // Include HTML

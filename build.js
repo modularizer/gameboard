@@ -1,4 +1,6 @@
 const gameboardMinPath = 'gameboard.min.js';
+const JavaScriptObfuscator = require('javascript-obfuscator');
+const fs = require('fs').promises;
 
 require('esbuild').build({
   entryPoints: ['js/index.js'],
@@ -12,7 +14,6 @@ require('esbuild').build({
   format: 'esm',
   minify: true // Add this line to minify the output
 }).then(() => {
-  const fs = require('fs').promises;
   const path = require('path');
 
   const directory = 'games';
@@ -38,6 +39,22 @@ require('esbuild').build({
       return fs.writeFile(gameboardMinPath, updatedData);
     })
     .then(() => console.log(`Updated references in ${gameboardMinPath}`))
+
+    // Obfuscate the output
+    .then(() => fs.readFile(gameboardMinPath, 'utf8'))
+    .then(data => {
+  const obfuscationResult = JavaScriptObfuscator.obfuscate(data, {
+    compact: true,
+    controlFlowFlattening: true,
+    controlFlowFlatteningThreshold: 1,
+    numbersToExpressions: true,
+    simplify: true,
+    shuffleStringArray: true,
+    splitStrings: true,
+    stringArrayThreshold: 1
+  });
+  return fs.writeFile(gameboardMinPath, obfuscationResult.getObfuscatedCode());
+})
     .catch(err => console.error('An error occurred:', err));
 })
 .catch(() => process.exit(1));
