@@ -20,6 +20,7 @@ export class GameBoard extends HTMLElement {
         // Include HTML
         const wrapper = document.createElement('div');
         wrapper.innerHTML = `
+          <div id="sceneBox" class="sceneBox"></div>
           <div id="select" class="widget tl">
             <select id="gameSelect">
                 <option value="lobby">Please select a game</option>
@@ -36,12 +37,18 @@ export class GameBoard extends HTMLElement {
                 </pre>
           </div>
           <pre id="subtitles" class="widget bc subtitles"></pre>
-          <chat-box id="chat"></chat-box>
+          <div id="disappearingLog" class="floating bl">
+
+          </div>
+          <button id="hideLogs" class="widget logs" style="opacity: 0;">x</button>
+          <button id="showLogs" class="widget logs hidden">+</button>
+          <chat-box id="chat" class="widget"></chat-box>
+
         `;
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
-        this.gameNames = ["lobby", "quoridor", "chess", "cube", "card"]
+        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube"]
         this.roomNames = ["lobby", "octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate"];
         this.secretRooms = JSON.parse(localStorage.getItem("secretRooms") || "[]");
         this.roomNames = this.roomNames.concat(this.secretRooms);
@@ -72,6 +79,7 @@ export class GameBoard extends HTMLElement {
     }
     onDocumentLoad() {
         console.log("document loaded");
+        window.g = this;
         this.saveElements();
         this.bindElements();
         this.loadGame();
@@ -85,6 +93,10 @@ export class GameBoard extends HTMLElement {
         this.roomInput = this.shadowRoot.getElementById("roomInput");
         this.chat = this.shadowRoot.getElementById("chat");
         this.subtitles = this.shadowRoot.getElementById("subtitles");
+        this.disappearingLog = this.shadowRoot.getElementById("disappearingLog");
+        this.sceneBox = this.shadowRoot.getElementById("sceneBox");
+        this.hideLogs = this.shadowRoot.getElementById("hideLogs");
+        this.showLogs = this.shadowRoot.getElementById("showLogs");
         console.log("Saved elements");
     }
     bindElements(){
@@ -131,6 +143,17 @@ export class GameBoard extends HTMLElement {
             location.hash = "#" + this.gameName + "." + this.roomName;
             location.reload();
         }).bind(this));
+        this.hideLogs.addEventListener("click", (() => {
+            this.disappearingLog.classList.add("hidden");
+            this.hideLogs.classList.add("hidden");
+            this.showLogs.classList.remove("hidden");
+        }));
+        this.showLogs.addEventListener("click", (() => {
+            this.disappearingLog.classList.remove("hidden");
+            this.hideLogs.classList.remove("hidden");
+            this.showLogs.classList.add("hidden");
+        }));
+        this.scene.display(this.sceneBox);
 
         this.instructions.innerHTML = this.defaultInstructions;
         console.log(this.chat)
@@ -164,7 +187,7 @@ export class GameBoard extends HTMLElement {
         console.log("Loading game", this.gameName, "from", src);
         loadJSON(this.scene, src).then((({models, metadata}) => {
             if (metadata.instructions) {
-                let i = localStorage.getItem(game + "Instructions");
+                let i = localStorage.getItem(this.game + "Instructions");
                 if (i === metadata.instructions) {
                     this.hideInstructions();
                 }else {
@@ -225,4 +248,56 @@ To Rotate:
         document.getElementById("x").style.display = "block";
         localStorage.removeItem(game + "Instructions");
     }
+    log(message) {
+    // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds
+    const log = this.disappearingLog;
+    const div = document.createElement("div");
+    div.classList.add("logs");
+    div.classList.add("disappearing");
+    div.style.opacity = 1;
+    div.innerText = message;
+    log.appendChild(div);
+
+    // Move all messages up
+    Array.from(log.children).forEach((child, index) => {
+        // Move each message up by 20px by reading bottom and adding 20px not using translate
+        let bottom = parseInt(child.style.bottom) || 0;
+        child.style.bottom = (bottom + 20) + "px";
+    });
+
+    const x = this.hideLogs;
+    const p = this.showLogs;
+    if (this.fadeHideLogs) {
+        clearInterval(this.fadeHideLogs);
+        this.fadeHideLogs = null;
+    }
+    x.style.opacity = 1;
+    p.style.opacity = 1;
+    setTimeout((() => {
+        x.style.opacity = 1;
+        p.style.opacity = 1;
+        if (this.fadeHideLogs) {
+            clearInterval(this.fadeHideLogs);
+            this.fadeHideLogs = null;
+        }
+        this.fadeHideLogs = setInterval(() => {
+            x.style.opacity = Math.max((parseFloat(x.style.opacity) || 0) - 0.01, 0);
+            p.style.opacity = Math.max((parseFloat(p.style.opacity) || 0) - 0.01, 0);
+        }, 100);
+    }).bind(this), 5000);
+
+
+    // Fade out and move up the new message
+    setTimeout(() => {
+        div.style.opacity = 0;
+        div.style.transform = "translateY(-80px)"; // Move the new message up by 40px
+    }, 1000);
+
+    // Remove the new message after fading out
+    setTimeout(() => {
+        log.removeChild(div);
+    }, 11000);
+
+}
+
 };

@@ -1,16 +1,15 @@
 import { tabID } from "./tabID.js";
 import { DeferredPromise } from "./deferredPromise.js";
 
-// make a base topic name based on the hostname and hash, removing non-alphanumeric characters
-// this way, different games (specified by hash) can be played on different pages without interfering with each other
-let baseTopic = (location.hostname + (location.hash || "")).replace(/[^a-zA-Z0-9]/g, "");
-console.log("Base topic", baseTopic);
+// make a base topic name based on the hostname and page path, except replace index.html with nothing
+let baseTopic = location.hostname + location.pathname.replace(/index\.html$/, "").replace(/[^a-zA-Z0-9]/g, "");
 
 
 export class MQTTRTCClient {
   constructor(config){
-    let {topic, name, options, handlers} = config || {};
+    let {topic, name, options, handlers, mqttOnly} = config || {};
     this.handlers = Object.assign(this.handlers, handlers);
+    this.mqttOnly = mqttOnly;
 
     // If no name is specified, use the name from local storage
     // If no name is in local storage, use a anon<random number>
@@ -27,7 +26,7 @@ export class MQTTRTCClient {
     this.tabID = tabID;
 
     // If no topic is specified, use the base topic, otherwise append the topic to the base topic
-    this.topic = baseTopic + (topic || "");
+    this.topic = baseTopic + (topic || location.hash.replace("#", "").replace(/[^a-zA-Z0-9]/g, ""));
 
     // bind methods to this
     this.load = this.load.bind(this);
@@ -124,17 +123,19 @@ export class MQTTRTCClient {
         }
         if (!this.rollCalls[t].includes(payload.sender)){
             this.rollCalls[t].push(payload.sender);
-            if (this.rtcConnections[payload.sender] && this.rtcConnections[payload.sender].peerConnection.connectionState === "connected"){
-                console.warn("Already connected to " + payload.sender);
-            }else{
-                if (this.rtcConnections[payload.sender]){
-                    console.warn("Already have a connection to " + payload.sender + " but it's not connected.", this.rtcConnections[payload.sender].peerConnection.connectionState,"  Closing and reopening.");
-                    this.rtcConnections[payload.sender].close();
-                }
+            if (!this.mqttOnly){
+                if (this.rtcConnections[payload.sender] && this.rtcConnections[payload.sender].peerConnection.connectionState === "connected"){
+                    console.warn("Already connected to " + payload.sender);
+                }else{
+                    if (this.rtcConnections[payload.sender]){
+                        console.warn("Already have a connection to " + payload.sender + " but it's not connected.", this.rtcConnections[payload.sender].peerConnection.connectionState,"  Closing and reopening.");
+                        this.rtcConnections[payload.sender].close();
+                    }
 
-                if (newRollCall){
-                    this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
-                    this.rtcConnections[payload.sender].sendOffer();
+                    if (newRollCall){
+                        this.rtcConnections[payload.sender] = new RTCConnection(this.name, payload.sender, this, this.handlers);
+                        this.rtcConnections[payload.sender].sendOffer();
+                    }
                 }
             }
             this.post(t, "rollCall");
@@ -159,6 +160,7 @@ export class MQTTRTCClient {
         }
     },
     RTCoffer: payload => {
+        if (this.mqttOnly){return}
         console.log("received RTCoffer", payload);
         let {offer, target} = payload.data;
         if (target != this.name){return};
@@ -170,6 +172,7 @@ export class MQTTRTCClient {
         this.rtcConnections[payload.sender].respondToOffer(offer);
     },
     RTCanswer: payload => {
+        if (this.mqttOnly){return}
         console.log("received RTCanswer", payload);
         let {answer, target} = payload.data;
         if (target != this.name){return};
@@ -181,6 +184,7 @@ export class MQTTRTCClient {
         rtcConnection.receiveAnswer(answer);
     },
     RTCiceCandidate: payload => {
+        if (this.mqttOnly){return}
         let rtcConnection = this.rtcConnections[payload.sender]; // Using the correct connection
         if (!rtcConnection){
             console.error("No connection found for " + payload.sender);

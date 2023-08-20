@@ -101,10 +101,10 @@ export class CustomScene extends THREE.Scene {
             }
         })
 
-        window.addEventListener('load', ()=>{
-           this.display(document.body);
-           this.sceneLoaded = true;
-        })
+//        window.addEventListener('load', ()=>{
+//           this.display(document.body);
+//           this.sceneLoaded = true;
+//        })
     }
 
     // key listeners
@@ -437,6 +437,7 @@ export class CustomScene extends THREE.Scene {
     display(parentElement) {
         parentElement.appendChild(this.renderer.domElement);
         this.animate();
+        this.sceneLoaded = true;
     }
     addModel(item, position){
         if (item.loadPromise) {
