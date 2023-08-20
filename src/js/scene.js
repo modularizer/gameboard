@@ -41,6 +41,11 @@ export class CustomScene extends THREE.Scene {
         this.receiveItemUpdate = this.receiveItemUpdate.bind(this);
         this.log = this.log.bind(this);
         this.onlog = this.onlog.bind(this);
+        this.cacheFullState = this.cacheFullState.bind(this);
+        this.getFullState = this.getFullState.bind(this);
+        this.loadCachedState = this.loadCachedState.bind(this);
+
+        this.fullState = {};
 
         // Event listener for arrow keys
         this.keyListeners.addTo(window);
@@ -102,6 +107,8 @@ export class CustomScene extends THREE.Scene {
                 return true;
             }
         })
+
+        this.loadPromise.then(this.loadCachedState.bind(this));
 
 //        window.addEventListener('load', ()=>{
 //           this.display(document.body);
@@ -448,6 +455,7 @@ export class CustomScene extends THREE.Scene {
                     this.loaded = false;
                     this.loadDeferredPromise = new DeferredPromise();
                     this.loadPromise = this.loadDeferredPromise.promise;
+                    this.loadPromise.then(this.loadCachedState.bind(this));
                 }
                 item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
                 item.loadPromise.then(()=>{this.addModel.bind(this)(item)});
@@ -566,7 +574,7 @@ export class CustomScene extends THREE.Scene {
 
 
             this.state.selectedItem = item;
-            this.sendItemUpdate({"selected": item.name});
+            this.sendItemUpdate({"selected": item.name, nocache: true});
             this.state.dragging = true;
 
             this.state.mouseState = {
@@ -588,7 +596,7 @@ export class CustomScene extends THREE.Scene {
         } else {
             this.state.dragging = false;
             this.state.selectedItem = null;
-            this.sendItemUpdate({"selected": null});
+            this.sendItemUpdate({"selected": null, nocache: true});
             this.state.selectedFace = null;
             this.controls.enabled = true;
         }
@@ -624,7 +632,7 @@ export class CustomScene extends THREE.Scene {
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
-            this.sendItemUpdate({"unselected": item.name});
+            this.sendItemUpdate({"unselected": item.name, nocache: true});
             this.state.selectedFace = null;
             this.state.dragging = false;
             this.addOrbitControls();
@@ -732,22 +740,51 @@ export class CustomScene extends THREE.Scene {
             this.m.send("request", "sync")
         }).bind(this), 1000); // tries to sync every second until it is successfully gets a sync response
         setTimeout((()=>this.m.send("request", "sync")).bind(this), 100);
+
         // FIXME: this asks everyone, should be a better way
         // also use promise not timeout
+    }
+    getFullState(){
+        let data = {};
+        for (let [name, item] of Object.entries(this.state.itemsByName)){
+            data[name] = {position: item.position.toArray(), rotation: item.pivot.rotation.toArray()}
+        }
+        return data;
+    }
+    cacheFullState(){
+        this.fullState = this.getFullState()
+        localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
+    }
+    loadCachedState(){
+        if (this.syncedFrom.length){
+            this.cacheFullState();
+            return
+        }
+        this.log("loading from browser cache")
+        let data = JSON.parse(localStorage.getItem(location.hash + "FullState") || "false");
+        if (!data){return}
+        for (let [name, update] of Object.entries(data)){
+            let item = this.state.itemsByName[name];
+            if (!item){continue}
+            if (update.position){
+                item.position.set(...update.position);
+            }
+            if (update.rotation){
+                item.pivot.rotation.set(...update.rotation);
+            }
+        }
     }
     sync(data, sender){
         if (data === "request"){
             if (!this.syncedFrom){return}
-            let data = {};
-            for (let [name, item] of Object.entries(this.state.itemsByName)){
-                data[name] = {position: item.position.toArray(), rotation: item.pivot.rotation.toArray()}
-            }
-            console.log("sending sync", data, "to", sender)
+            let data = this.getFullState();
+
             this.m.send(data, "sync", sender);
             this.syncedTo.push(sender);
+            this.log(`Syncing to ${sender}`)
         }else{
-            console.log("receiving sync", data, "from", sender)
-            this.receiveItemUpdate(data, sender);
+            this.log(`Syncing from ${sender}`);
+            this.receiveItemUpdate(data, sender, true);
             this.syncedFrom.push(sender);
             if (this.syncInterval){
                 clearInterval(this.syncInterval);
@@ -757,34 +794,38 @@ export class CustomScene extends THREE.Scene {
     }
     sendItemUpdate(data){
         this.m.send(data, "moves");
+
         if (!data.nocache){
+
+            let changed = false;
             for (let [name, update] of Object.entries(data)){
-            if (name === "selected"){
-                if (update){
-//                    this.log(`You selected ${update}`);
-                }else{
-//                    this.log(`You unselected an item`);
+            if (!["selected", "unselected"].includes(name)){
+                if (!this.fullState[name]){
+                    this.fullState[name] = {"position": null, "rotation": null}
                 }
-            }else if (name === "unselected"){
-//                this.log(`You unselected ${update}`);
-            }
-            else{
+
+                changed = true;
                 if (update.position){
                     this.log(`You moved ${name}`);
-                }else if (update.rotation ){
-                    this.log(`You rotated ${name}`);
+                    this.fullState[name].position = update.position;
                 }
+                if (update.rotation ){
+                    if (!update.position) this.log(`You rotated ${name}`);
+                    this.fullState[name].rotation = update.rotation;
+                }
+            }
+            if (changed){
+                localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
             }
         }
         }
     }
-    receiveItemUpdate(data, sender){
-        let cache = !data.nocache;
+    receiveItemUpdate(data, sender, forcenocache=false){
+        let cache = !(forcenocache || data.nocache);
         delete data.nocache;
         for (let [name, update] of Object.entries(data)){
             if (name === "selected"){
                 if (update){
-//                    if (cache) this.log(`${sender} selected ${update}`);
                     if (!this.state.otherSelectedItems[update]){
                         this.state.otherSelectedItems[update] = [];
                     }
@@ -793,7 +834,6 @@ export class CustomScene extends THREE.Scene {
                     this.state.peerSelections[sender] = update;
                 }else{
                     update = this.state.peerSelections[sender];
-//                    if (cache) this.log(`${sender} unselected ${update}`);
                     let selectors = this.state.otherSelectedItems[update]
                     if (selectors){
                         this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);
@@ -803,7 +843,6 @@ export class CustomScene extends THREE.Scene {
                     }
                 }
             }else if (name === "unselected"){
-//                if (cache) this.log(`${sender} unselected ${update}`);
                 let selectors = this.state.otherSelectedItems[update]
                 if (selectors){
                     this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);

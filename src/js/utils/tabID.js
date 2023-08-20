@@ -1,15 +1,15 @@
 
 let tabs = localStorage.getItem('tabs');
 let existingTabs = tabs?JSON.parse(tabs):[];
+if (existingTabs.length > 10){
+    existingTabs = [];
+    localStorage.removeItem('tabs');
+}
 console.log("Existing tabs: ", existingTabs, localStorage.getItem('tabs') );
 // Generate a unique ID for the current tab
 
 const randomTabID = Math.floor(Math.random() * 1000000000)
 let tabID = Math.max(...existingTabs.map(v=>1*v.split("_")[0]), 0) + 1;
-if (tabID > 10){
-    localStorage.removeItem('tabs');
-    tabID = 1;
-}
 const fullTabID = tabID + "_" + randomTabID;
 
 existingTabs.push(fullTabID);

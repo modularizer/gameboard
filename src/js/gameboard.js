@@ -145,16 +145,29 @@ export class GameBoard extends HTMLElement {
             location.reload();
         }).bind(this));
         this.hideLogs.addEventListener("click", (() => {
+            localStorage.setItem("hideLogs", "true");
             this.disappearingLog.classList.add("hidden");
             this.hideLogs.classList.add("hidden");
             this.showLogs.classList.remove("hidden");
         }));
         this.showLogs.addEventListener("click", (() => {
+            localStorage.removeItem("hideLogs");
             this.disappearingLog.classList.remove("hidden");
             this.hideLogs.classList.remove("hidden");
             this.showLogs.classList.add("hidden");
         }));
         this.scene.display(this.sceneBox);
+
+        let h = localStorage.getItem("hideLogs");
+        if (h === "true"){
+            this.disappearingLog.classList.add("hidden");
+            this.hideLogs.classList.add("hidden");
+            this.showLogs.classList.remove("hidden");
+        }else{
+            this.disappearingLog.classList.remove("hidden");
+            this.hideLogs.classList.remove("hidden");
+            this.showLogs.classList.add("hidden");
+        }
 
         this.instructions.innerHTML = this.defaultInstructions;
         console.log(this.chat)
