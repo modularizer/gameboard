@@ -39,6 +39,8 @@ export class CustomScene extends THREE.Scene {
         this.configLights = this.configLights.bind(this);
         this.sendItemUpdate = this.sendItemUpdate.bind(this);
         this.receiveItemUpdate = this.receiveItemUpdate.bind(this);
+        this.log = this.log.bind(this);
+        this.onlog = this.onlog.bind(this);
 
         // Event listener for arrow keys
         this.keyListeners.addTo(window);
@@ -622,7 +624,7 @@ export class CustomScene extends THREE.Scene {
         let item = this.state.selectedItem;
         if (item) {
             this.state.selectedItem = null;
-            this.sendItemUpdate({"selected": null});
+            this.sendItemUpdate({"unselected": item.name});
             this.state.selectedFace = null;
             this.state.dragging = false;
             this.addOrbitControls();
@@ -671,13 +673,13 @@ export class CustomScene extends THREE.Scene {
         if (item.snapController){
             euler = item.snapController.enforceRotationLocks(euler);
         }
-        this.sendItemUpdate({[item.name]: {rotation: euler.toArray()}});
+        this.sendItemUpdate({[item.name]: {rotation: euler.toArray()}, nocache: true});
         item.pivot.rotation.set(euler.x, euler.y, euler.z);
     }
     itemRotateEnd(item){
         if (item.snap){
             item.snap();
-            this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray()}});
+            this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray()}, nocache: true});
         }
         this.state.startPosition = null;
     }
@@ -700,7 +702,7 @@ export class CustomScene extends THREE.Scene {
                 endPos = item.snapController.enforcePositionLocks(endPos);
             }
 
-            this.sendItemUpdate({[item.name]: {position: endPos.toArray()}});
+            this.sendItemUpdate({[item.name]: {position: endPos.toArray()}, nocache: true});
             item.position.set(endPos.x, endPos.y, endPos.z);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
@@ -715,7 +717,7 @@ export class CustomScene extends THREE.Scene {
             }catch{
                 item.position.copy(item.startDragPosition);
             }
-            this.sendItemUpdate({[item.name]: {rotation: item.position.toArray()}});
+            this.sendItemUpdate({[item.name]: {position: item.position.toArray()}, nocache: true});
         }
     }
 
@@ -755,22 +757,43 @@ export class CustomScene extends THREE.Scene {
     }
     sendItemUpdate(data){
         this.m.send(data, "moves");
+        if (!data.nocache){
+            for (let [name, update] of Object.entries(data)){
+            if (name === "selected"){
+                if (update){
+//                    this.log(`You selected ${update}`);
+                }else{
+//                    this.log(`You unselected an item`);
+                }
+            }else if (name === "unselected"){
+//                this.log(`You unselected ${update}`);
+            }
+            else{
+                if (update.position){
+                    this.log(`You moved ${name}`);
+                }else if (update.rotation ){
+                    this.log(`You rotated ${name}`);
+                }
+            }
+        }
+        }
     }
     receiveItemUpdate(data, sender){
+        let cache = !data.nocache;
+        delete data.nocache;
         for (let [name, update] of Object.entries(data)){
             if (name === "selected"){
                 if (update){
-                    console.log(sender, "selected", update)
+//                    if (cache) this.log(`${sender} selected ${update}`);
                     if (!this.state.otherSelectedItems[update]){
                         this.state.otherSelectedItems[update] = [];
                     }
                     this.state.otherSelectedItems[update].push(sender);
                     this.state.itemsByName[update].select(0xff0000);
                     this.state.peerSelections[sender] = update;
-
                 }else{
                     update = this.state.peerSelections[sender];
-                    console.log(sender, "unselected", update)
+//                    if (cache) this.log(`${sender} unselected ${update}`);
                     let selectors = this.state.otherSelectedItems[update]
                     if (selectors){
                         this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);
@@ -779,18 +802,36 @@ export class CustomScene extends THREE.Scene {
                         this.state.itemsByName[update].unselect();
                     }
                 }
-            }else{
+            }else if (name === "unselected"){
+//                if (cache) this.log(`${sender} unselected ${update}`);
+                let selectors = this.state.otherSelectedItems[update]
+                if (selectors){
+                    this.state.otherSelectedItems[update] = selectors.filter((s)=>s!==sender);
+                }
+                if (this.state.otherSelectedItems[update] && !this.state.otherSelectedItems[update].length){
+                    this.state.itemsByName[update].unselect();
+                }
+            }
+            else{
                 let item = this.state.itemsByName[name];
-    //            console.log("Updating", name, update, item)
                 if (!item){continue}
                 if (update.position){
+                    if (cache) this.log(`${sender} moved ${name}`);
                     item.position.set(...update.position);
                 }
                 if (update.rotation){
+                    if (cache && !update.position) this.log(`${sender} rotated ${name}`);
                     item.pivot.rotation.set(...update.rotation);
                 }
             }
         }
+    }
+    log(msg){
+        console.log(msg);
+        this.onlog(msg);
+    }
+    onlog(msg){
+    //gets overridden
     }
 
 }

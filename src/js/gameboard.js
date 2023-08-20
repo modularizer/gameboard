@@ -72,6 +72,7 @@ export class GameBoard extends HTMLElement {
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
         this.keyListeners.addTo(window);
         this.scene = new CustomScene();
+        this.scene.onlog = this.log.bind(this);
         this.scene.attachMQTTRTC(this.rtc);
         console.log("Gameboard constructed");
         this.onDocumentLoad();
@@ -251,7 +252,7 @@ To Rotate:
     log(message) {
     // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds
     const log = this.disappearingLog;
-    const div = document.createElement("div");
+    const div = document.createElement("pre");
     div.classList.add("logs");
     div.classList.add("disappearing");
     div.style.opacity = 1;
@@ -284,13 +285,13 @@ To Rotate:
             x.style.opacity = Math.max((parseFloat(x.style.opacity) || 0) - 0.01, 0);
             p.style.opacity = Math.max((parseFloat(p.style.opacity) || 0) - 0.01, 0);
         }, 100);
-    }).bind(this), 5000);
+    }).bind(this), 2000);
 
 
     // Fade out and move up the new message
     setTimeout(() => {
         div.style.opacity = 0;
-        div.style.transform = "translateY(-80px)"; // Move the new message up by 40px
+//        div.style.transform = "translateY(-80px)"; // Move the new message up by 40px
     }, 1000);
 
     // Remove the new message after fading out

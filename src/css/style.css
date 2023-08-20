@@ -117,7 +117,7 @@
 
 
 .disappearing{
-    left: 2em;
+    left: 2.5em;
     transform: translateY(0);
     transition: opacity 10s, transform 10s; /* Transition properties */
     /* Add any other styling as needed */
