@@ -1,9 +1,17 @@
+const args = process.argv.slice(2);
+
+let shouldMinify = args.includes('--min');
+const shouldObfuscate = args.includes('--obf');
+if (shouldObfuscate){
+    shouldMinify = true;
+}
+
 const gameboardMinPath = 'gameboard.min.js';
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const fs = require('fs').promises;
 
 require('esbuild').build({
-  entryPoints: ['js/index.js'],
+  entryPoints: ['src/js/index.js'],
   bundle: true,
   outfile: gameboardMinPath,
   external: [
@@ -12,11 +20,11 @@ require('esbuild').build({
   ],
   platform: 'browser',
   format: 'esm',
-  minify: true // Add this line to minify the output
+  minify: shouldMinify // Add this line to minify the output
 }).then(() => {
   const path = require('path');
 
-  const directory = 'games';
+  const directory = 'assets/games';
 
   fs.readdir(directory)
     .then(folders => {
@@ -39,22 +47,24 @@ require('esbuild').build({
       return fs.writeFile(gameboardMinPath, updatedData);
     })
     .then(() => console.log(`Updated references in ${gameboardMinPath}`))
-
-    // Obfuscate the output
-    .then(() => fs.readFile(gameboardMinPath, 'utf8'))
-    .then(data => {
-  const obfuscationResult = JavaScriptObfuscator.obfuscate(data, {
-    compact: true,
-    controlFlowFlattening: true,
-    controlFlowFlatteningThreshold: 1,
-    numbersToExpressions: true,
-    simplify: true,
-    shuffleStringArray: true,
-    splitStrings: true,
-    stringArrayThreshold: 1
-  });
-  return fs.writeFile(gameboardMinPath, obfuscationResult.getObfuscatedCode());
-})
+    .then(() => {
+        if (shouldObfuscate){
+            fs.readFile(gameboardMinPath, 'utf8')
+            .then(data => {
+              const obfuscationResult = JavaScriptObfuscator.obfuscate(data, {
+                compact: true,
+                controlFlowFlattening: true,
+                controlFlowFlatteningThreshold: 1,
+                numbersToExpressions: true,
+                simplify: true,
+                shuffleStringArray: true,
+                splitStrings: true,
+                stringArrayThreshold: 1
+              });
+              return fs.writeFile(gameboardMinPath, obfuscationResult.getObfuscatedCode());
+            })
+        }
+    })
     .catch(err => console.error('An error occurred:', err));
 })
 .catch(() => process.exit(1));

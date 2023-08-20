@@ -14,7 +14,7 @@ export class GameBoard extends HTMLElement {
         // Include CSS
         const styleLink = document.createElement('link');
         styleLink.setAttribute('rel', 'stylesheet');
-        styleLink.setAttribute('href', '../css/style.css');
+        styleLink.setAttribute('href', './src/css/style.css');
         this.shadowRoot.appendChild(styleLink);
 
         // Include HTML
@@ -101,7 +101,7 @@ export class GameBoard extends HTMLElement {
         document.title = this.gameName;
         this.gameSelect.value = this.gameName;
 
-        const src = "./games/" + this.gameName + "/spec.json?" + Date.now();
+        const src = "../../assets/games/" + this.gameName + "/spec.json?" + Date.now();
         console.log("Loading game", this.gameName, "from", src);
         loadJSON(this.scene, src).then((({models, metadata}) => {
             if (metadata.instructions) {

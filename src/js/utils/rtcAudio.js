@@ -23,7 +23,7 @@ export class WebRTCAudioChannel {
 
     // Inside your constructor:
     this.audioContext = new AudioContext({sampleRate: this.config.sampleRate});
-    this.audioContext.audioWorklet.addModule('./js/utils/audio-processor.js').then(() => {
+    this.audioContext.audioWorklet.addModule('./src/js/utils/audio-processor.js').then(() => {
       // the processor is now available
     });
 
