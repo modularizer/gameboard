@@ -15,16 +15,7 @@
       }
     }
     </script>
-<!--    <script type="module" src="src/js/index.js"></script>-->
-<!--    <script type="module" src="build/gameboard.min.js"></script>-->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = `build/gameboard.min.js?v${Date.now()}`;
-            document.head.appendChild(script);
-        });
-    </script>
+    <script type="module" src="build/gameboard.min.js"></script>
 </head>
 <body>
     <game-board></game-board>

@@ -1,14 +1,60 @@
+const gameboardMinPath = 'build/gameboard.min.js';
+const fs = require('fs').promises;
+const path = require('path');
+const versionFile = 'version';
+const JavaScriptObfuscator = require('javascript-obfuscator');
+
+
 const args = process.argv.slice(2);
 
 let shouldMinify = args.includes('--min');
 const shouldObfuscate = args.includes('--obf');
-if (shouldObfuscate){
-    shouldMinify = true;
+if (shouldObfuscate) {
+  shouldMinify = true;
 }
 
-const gameboardMinPath = 'build/gameboard.min.js';
-const JavaScriptObfuscator = require('javascript-obfuscator');
-const fs = require('fs').promises;
+async function updateVersion() {
+    let newVersion = new Date().toISOString().replace(/-/g,"");
+    if (args.includes('--inc')) {
+        const versionData = (await fs.readFile(versionFile, 'utf8')).trim();
+        // if the version file is empty, start at 0.0.0
+        // if the version matches \d+\.\d+\.\d+, increment the patch version
+        // otherwise, use the datetime as the version
+        if (versionData === '') {
+            newVersion = '0.0.0';
+        }else if (versionData.match(/\d+\.\d+\.\d+/)) {
+            newVersion = versionData.replace(/(\d+\.\d+\.)\d+/, (_, p1) => {
+                return p1 + (parseInt(versionData.split('.')[2], 10) + 1).toString();
+            });
+        }else{
+            newVersion = new Date().toISOString().replace(/-/g,"");
+         }
+    }else{
+        const versionIndex = args.indexOf('--version');
+        if (versionIndex !== -1) {
+            newVersion = args[versionIndex + 1];
+            if (newVersion === "date") {
+              newVersion = new Date().toISOString().replace(/-/g,"");
+            }
+        }
+    }
+    if (newVersion) {
+        await fs.writeFile(versionFile, newVersion, 'utf8');
+
+        const indexFilePath = path.join(__dirname, 'src', 'js', 'index.js');
+        let indexFileData = await fs.readFile(indexFilePath, 'utf8');
+        // replace all instances of ?v0.0.5"; with the new version
+        indexFileData = indexFileData.replace(/\?v.*";/g, `?v${newVersion}";`);
+        await fs.writeFile(indexFilePath, indexFileData, 'utf8');
+        console.log(`Version updated to ${newVersion}`);
+    }
+
+}
+
+updateVersion().catch(err => {
+  console.error('An error occurred:', err);
+  process.exit(1);
+}).then(() => {
 
 require('esbuild').build({
   entryPoints: ['src/js/index.js'],
@@ -23,10 +69,6 @@ require('esbuild').build({
   minify: shouldMinify, // Add this line to minify the output
   pure: ['console.log'],
 }).then(() => {
-  const path = require('path');
-
-  const directory = 'assets/games';
-
   fs.readdir(directory)
     .then(folders => {
       const promises = folders.map(folder => {
@@ -69,3 +111,5 @@ require('esbuild').build({
     .catch(err => console.error('An error occurred:', err));
 })
 .catch(() => process.exit(1));
+
+});
