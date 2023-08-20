@@ -4,6 +4,7 @@ const path = require('path');
 const versionFile = 'version';
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const directory = path.join(__dirname, 'assets', 'games');
+const indexHtmlPath = path.join(__dirname, 'index.html');
 
 
 const args = process.argv.slice(2);
@@ -49,8 +50,13 @@ async function updateVersion() {
         let indexFileData = await fs.readFile(indexFilePath, 'utf8');
         // replace all instances of ?v0.0.5"; with the new version
         indexFileData = indexFileData.replace(/\?v.*";/g, `?v${newVersion}";`);
-        indexFileData = indexFileData.replace(/window\.version = 'v.*';/g, `window.version = '${newVersion}';`);
+        indexFileData = indexFileData.replace(/window\.version = 'v.*';/g, `window.version = 'v${newVersion}';`);
         await fs.writeFile(indexFilePath, indexFileData, 'utf8');
+
+
+        let indexHTMLData = await fs.readFile(indexHtmlPath, 'utf8');
+        indexHTMLData = indexHTMLData.replace(/"build\/gameboard\.min\.js\?v.*?"/g, `"build/gameboard.min.js?v${newVersion}"`);
+        await fs.writeFile(indexHtmlPath, indexHTMLData, 'utf8');
         console.log(`Version updated to ${newVersion}`);
     }
 
