@@ -22,11 +22,11 @@ export class GameBoard extends HTMLElement {
         wrapper.innerHTML = `
           <div id="select" class="widget tl">
             <select id="gameSelect">
-                <option>Please select a game</option>
+                <option value="lobby">Please select a game</option>
             </select><br/>
             <select id="roomSelect">
-                <option>Please select a room</option>
-            </select>
+                <option value="lobby">Please select a room</option>
+            </select><br/>
             <input id="roomInput" placeholder="Room Name" class="hidden"></input>
           </div>
           <div id="instructionsBox" class="widget tr">
@@ -41,8 +41,11 @@ export class GameBoard extends HTMLElement {
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
-        this.gameNames = ["quoridor", "chess", "cube", "card"]
-        this.roomNames = ["octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate", "+"];
+        this.gameNames = ["lobby", "quoridor", "chess", "cube", "card"]
+        this.roomNames = ["lobby", "octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate"];
+        this.secretRooms = JSON.parse(localStorage.getItem("secretRooms") || "[]");
+        this.roomNames = this.roomNames.concat(this.secretRooms);
+        this.roomNames.push("+");
 
         // bind handlers
         for (let o of [this.handlers, this.keydownHandlers, this.keyupHandlers]){
@@ -92,12 +95,14 @@ export class GameBoard extends HTMLElement {
             this.hideInstructions();
         }).bind(this));
         for (let game of this.gameNames){
+            if (game === "lobby") continue;
             let option = document.createElement("option");
             option.value = game;
             option.innerHTML = game;
             this.gameSelect.appendChild(option);
         }
         for (let room of this.roomNames){
+            if (room === "lobby") continue;
             let option = document.createElement("option");
             option.value = room;
             option.innerHTML = room;
@@ -115,6 +120,8 @@ export class GameBoard extends HTMLElement {
                 return;
             }else{
                 this.roomName = e.target.value;
+                this.secretRooms.push(this.roomName);
+                localStorage.setItem("secretRooms", JSON.stringify(this.secretRooms));
                 location.hash = "#" + this.gameName + "." + this.roomName;
                 location.reload();
             }
@@ -133,8 +140,17 @@ export class GameBoard extends HTMLElement {
     loadGame(){
         const hashParts = location.hash.replace("#", "").split(".");
 
-        this.gameName = (hashParts && this.gameNames.includes(hashParts[0]))? hashParts[0] : (localStorage.getItem("game") || "chess");
-        this.roomName = (hashParts.length >= 2) ? hashParts[1] : (localStorage.getItem("room") || "octopus");
+        this.gameName = (hashParts && this.gameNames.includes(hashParts[0]))? hashParts[0] : (localStorage.getItem("game") || "lobby");
+        this.roomName = (hashParts.length >= 2) ? hashParts[1] : (localStorage.getItem("room") || "lobby");
+        if (!this.roomNames.includes(this.roomName)){
+            this.roomNames.push(this.roomName);
+            this.secretRooms.push(this.roomName);
+            localStorage.setItem("secretRooms", JSON.stringify(this.secretRooms));
+            let option = document.createElement("option");
+            option.value = this.roomName;
+            option.innerHTML = this.roomName;
+            this.roomSelect.appendChild(option);
+        }
 
         localStorage.setItem("game", this.gameName);
         localStorage.setItem("room", this.roomName);
