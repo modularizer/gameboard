@@ -29,6 +29,7 @@ export class GameBoard extends HTMLElement {
                 <option value="lobby">Please select a room</option>
             </select><br/>
             <input id="roomInput" placeholder="Room Name" class="hidden"></input>
+            <button id="reset">Reset Room</button>
           </div>
           <div id="instructionsBox" class="widget tr">
                 <button id="q">?</button>
@@ -48,7 +49,7 @@ export class GameBoard extends HTMLElement {
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
-        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube"]
+        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube", "scrabble"]
         this.roomNames = ["lobby", "octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate"];
         this.secretRooms = JSON.parse(localStorage.getItem("secretRooms") || "[]");
         this.roomNames = this.roomNames.concat(this.secretRooms);
@@ -92,6 +93,7 @@ export class GameBoard extends HTMLElement {
         this.gameSelect = this.shadowRoot.getElementById("gameSelect");
         this.roomSelect = this.shadowRoot.getElementById("roomSelect");
         this.roomInput = this.shadowRoot.getElementById("roomInput");
+        this.reset = this.shadowRoot.getElementById("reset");
         this.chat = this.shadowRoot.getElementById("chat");
         this.subtitles = this.shadowRoot.getElementById("subtitles");
         this.disappearingLog = this.shadowRoot.getElementById("disappearingLog");
@@ -106,6 +108,9 @@ export class GameBoard extends HTMLElement {
         }).bind(this));
         this.x.addEventListener("click", (() => {
             this.hideInstructions();
+        }).bind(this));
+        this.reset.addEventListener("click", (() => {
+            this.scene.reset();
         }).bind(this));
         for (let game of this.gameNames){
             if (game === "lobby") continue;
@@ -202,8 +207,9 @@ export class GameBoard extends HTMLElement {
         loadJSON(this.scene, src).then((({models, metadata}) => {
             this.models = models;
             this.metadata = metadata;
-            if (metadata.instructions) {
 
+
+            if (metadata.instructions) {
                 let i = localStorage.getItem(this.game + "Instructions");
                 if (i === metadata.instructions) {
                     this.hideInstructions();

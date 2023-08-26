@@ -1,7 +1,16 @@
 export class MoveableItem{
-    constructor(item){
+    constructor(item, position, rotation){
         this.item = item;
-        this.initialPosition = {x: item.originCube.position.x, y: item.originCube.position.y, z: item.originCube.position.z};
+        if (position){
+            this.initialPosition = {x: position.x, y: position.y, z: position.z};
+        }else{
+            this.initialPosition = {x: item.originCube.position.x, y: item.originCube.position.y, z: item.originCube.position.z};
+        }
+        if (rotation){
+            this.initialRotation = {x: rotation.x, y: rotation.y, z: rotation.z};
+        }else{
+            this.initialRotation = {x: item.pivot.rotation.x, y: item.pivot.rotation.y, z: item.pivot.rotation.z};
+        }
         this.item.clickRelativePosition = null;
         this.item.movestate = {
             animation: {
@@ -48,9 +57,12 @@ export class MoveableItem{
 
 
     reset(){
-        this.item.originCube.position.x = this.initialPosition.x;
-        this.item.originCube.position.y = this.initialPosition.y;
-        this.item.originCube.position.z = this.initialPosition.z;
+        this.item.position.x = this.initialPosition.x;
+        this.item.position.y = this.initialPosition.y;
+        this.item.position.z = this.initialPosition.z;
+        this.item.pivot.rotation.x = this.initialRotation.x;
+        this.item.pivot.rotation.y = this.initialRotation.y;
+        this.item.pivot.rotation.z = this.initialRotation.z;
         this.item.movestate = {
             animation: {
                 rotation: {

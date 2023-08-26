@@ -107,6 +107,7 @@ export class CustomScene extends THREE.Scene {
                 return true;
             }
         })
+        this.freshState = {};
 
         this.loadPromise.then(this.loadCachedState.bind(this));
         this.loadPromise.then(()=>{console.timeEnd("load")});
@@ -449,7 +450,7 @@ export class CustomScene extends THREE.Scene {
         this.animate();
         this.sceneLoaded = true;
     }
-    addModel(item, position){
+    addModel(item, position, rotation){
         if (item.loadPromise) {
             if (!item.loaded){
                 if (this.loaded){
@@ -468,14 +469,16 @@ export class CustomScene extends THREE.Scene {
             }
         }
         if (item.addToScene) {return item.addToScene(this)};
-        item = new MoveableItem(item);
-        if (position) item.position.set(position.x, position.y, position.z);
+        item = new MoveableItem(item, position, rotation);
         this.state.items.push(item);
         this.item = item;
         this.add(item);
     }
     reset(){
-        this.state.items.map(item => item.reset());
+        this.log("reset room");
+        localStorage.setItem(location.hash + "FullState", JSON.stringify(this.freshState));
+        this.loadCachedState();
+        this.sendItemUpdate(this.freshState);
     }
     animate(t) {
         requestAnimationFrame(this.animate.bind(this));
@@ -774,6 +777,7 @@ export class CustomScene extends THREE.Scene {
             if (update.rotation){
                 item.pivot.rotation.set(...update.rotation);
             }
+            item.snap();
         }
     }
     sync(data, sender){

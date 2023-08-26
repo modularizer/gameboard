@@ -1,0 +1,58 @@
+{
+  "scene": {
+    "camera": {
+      "position": {"x": 5, "y": 5, "z": 5},
+      "lookAt": {"x": 0, "y": 0, "z": 0}
+    }
+  },
+  "snaps": {
+      "tiles": {
+        "y": 0.2,
+        "step": 1,
+        "offset": 0,
+        "rotationNodes": "grid"
+      }
+  },
+  "game": {
+    "src": {
+      "top": "GAME/board.png",
+      "bottom": "#CD853F",
+      "left": "#CD853F",
+      "right": "#CD853F",
+      "front": "#CD853F",
+      "back": "#CD853F",
+      "dimensions": {"width": 20.4, "height": 0.2, "depth": 17}
+    },
+    "position": {"x": -11.2, "y": 0, "z": -8.95},
+    "moveable": false
+  },
+  "templates": {
+    "tile": {
+      "template": {
+        "src": {
+          "top": "GAME/$letter.png",
+          "topCover": "#CD853F",
+          "bottom": "#CD853F",
+          "left": "#CD853F",
+          "right": "#CD853F",
+          "front": "#CD853F",
+          "back": "#CD853F",
+          "dimensions": {
+            "width": 0.916,
+            "height": 0.2,
+            "depth": 1
+          }
+        },
+        "position": {
+          "x": "$x",
+          "y": 0.2,
+          "z": "$z"
+        },
+        "moveable": true,
+        "snap": "tiles"
+      },
+      "parameters": ["x", "z", "letter"]
+    }
+  },
+  "script": "GAME/script.js"
+}

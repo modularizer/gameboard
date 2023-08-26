@@ -70,6 +70,7 @@ function loadJSON(scene, src){
         }
 
         let models = {};
+        let freshState = {};
         for (let [name, details] of Object.entries(json)){
             details.name = name;
             if (typeof details.src === "string"){
@@ -80,11 +81,16 @@ function loadJSON(scene, src){
             let model = new Model(details);
             models[name] = model;
             if (details.moveable) {
-                scene.addModel(model);
+                freshState[name] = {
+                    position: model.position.toArray(),
+                    rotation: model.pivot.rotation.toArray()
+                }
+                scene.addModel(model, details.position, details.rotation);
             }else{
                 scene.add(model);
             }
         }
+        scene.freshState = freshState;
         scene.loadPromise.then(() => {
             for (let [name, details] of Object.entries(json)){
                 let model = models[name];
