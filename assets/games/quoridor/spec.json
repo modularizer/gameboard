@@ -1,679 +1,189 @@
 {
-
   "scene": {
     "camera": {
-      "position": {"x": 25, "y": 50, "z": 40},
-      "lookAt": {"x": 0, "y": 0, "z": 0}
+      "position": {
+        "x": 25,
+        "y": 50,
+        "z": 40
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
     }
   },
   "snaps": {
-      "walls": {
-        "y": 0.75,
-        "step": 3,
-        "offset": {"x":  1, "z": -1},
-        "rotationLockedAxes": ["x", "z"],
-        "rotationNodes": "grid"
+    "walls": {
+      "y": 0.75,
+      "step": 3,
+      "offset": {
+        "x": 1,
+        "z": -1
       },
-      "pieces": {
+      "rotationLockedAxes": [
+        "x",
+        "z"
+      ],
+      "rotationNodes": "grid"
+    },
+    "pieces": {
+      "y": 1.25,
+      "step": 3,
+      "offset": 0,
+      "rotationNodes": "grid"
+    }
+  },
+  "templates": {
+    "square": {
+      "src": {
+        "top": "#8B4513",
+        "dimensions": {
+          "depth": 2,
+          "width": 2,
+          "height": 0.5
+        }
+      },
+      "position": {
+        "x": "$x",
+        "y": 0.75,
+        "z": "$z"
+      },
+      "moveable": false
+    },
+    "endFeature": {
+      "src": {
+        "top": "#3E2723",
+        "dimensions": {
+          "depth": 5,
+          "width": 2,
+          "height": 0.75
+        }
+      },
+      "position": {
+        "x": "$x",
+        "y": 0.75,
+        "z": "$z"
+      },
+      "moveable": false
+    },
+    "corner": {
+      "src": {
+        "top": "#3E2723",
+        "dimensions": {
+          "depth": 5,
+          "width": 2,
+          "height": 0.75
+        }
+      },
+      "position": {
+        "x": "$x",
+        "y": 0.75,
+        "z": "$z"
+      },
+      "moveable": false
+    },
+    "wall": {
+      "src": {
+        "top": "#D7C7B3",
+        "left": "#D7C7B3",
+        "right": "#D7C7B3",
+        "dimensions": {
+          "depth": 5,
+          "width": 1,
+          "height": 2.5
+        }
+      },
+      "position": {
+        "x": "$x",
+        "y": 0.75,
+        "z": "$z"
+      },
+      "snap": "walls",
+      "moveable": true
+    },
+    "piece": {
+      "src": {
+        "top": "$color",
+        "side": "$color",
+        "dimensions": {
+          "radius": 0.75,
+          "height": 1
+        }
+      },
+      "position": {
+        "x": 0,
         "y": 1.25,
-        "step": 3,
-        "offset": 0,
-        "rotationNodes": "grid"
+        "z": "$z"
+      },
+      "snap": "pieces",
+      "moveable": true
+    }
+  },
+  "repeatedModels": {
+    "Square$i": {
+      "template": "square",
+      "x": {
+        "start": -13,
+        "stop": 11,
+        "step": 3
+      },
+      "z": {
+        "start": -13,
+        "stop": 11,
+        "step": 3
       }
+    },
+    "endFeature$i": {
+      "template": "endFeature",
+      "x": {
+        "start": -13,
+        "stop": 11,
+        "step": 3
+      },
+      "z": [-19, 14]
+    },
+    "corner$i": {
+      "template": "corner",
+      "x": [-16, 14],
+      "z": [-19, 14]
+    },
+    "wall$i": {
+      "template": "wall",
+      "x": {
+        "start": -14,
+        "stop": 14,
+        "step": 3
+      },
+      "z": [-19, 14]
+    }
   },
-  "A1": {
-    "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-    "position": {"x": -13, "y": 0.75, "z": -13},
-    "moveable": false
-  },
-  "A2": {
-      "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-      "position": {"x": -13, "y": 0.75, "z": -10},
-      "moveable": false
-  },
-  "A3": {
-      "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-      "position": {"x": -13, "y": 0.75, "z": -7},
-      "moveable": false
-  },
-    "A4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "A5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "A6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "A7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "A8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "A9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -13, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-  "B1": {
-    "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-    "position": {"x": -10, "y": 0.75, "z": -13},
-    "moveable": false
-  },
-    "B2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "B3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "B4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "B5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "B6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "B7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "B8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": -10, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "B9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x":-10, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-  "C1": {
-    "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-    "position": {"x": -7, "y": 0.75, "z": -13},
-    "moveable": false
-  },
-    "C2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x":-7, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "C3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "C4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "C5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "C6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "C7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "C8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "C9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -7, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "D1": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x":-4, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "D2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "D3": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "D4": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "D5": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "D6": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "D7": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "D8": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "D9": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -4, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "E1": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "E2": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "E3": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "E4": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "E5": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "E6": {
-        "src":{"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position":{"x": -1, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "E7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -1, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "E8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -1, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "E9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": -1, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "F1": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "F2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "F3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "F4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "F5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "F6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "F7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "F8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "F9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 2, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "G1": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 5, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "G2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 5, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "G3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 5, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "G4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "G5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "G6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "G7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "G8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "G9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 5, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "H1": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 8, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "H2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 8, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "H3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 8, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "H4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 8, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "H5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 8, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "H6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 8, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "H7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 8, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "H8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 8, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "H9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 8, "y": 0.75, "z": 11},
-        "moveable": false
-    },
-    "I1": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 11, "y": 0.75, "z": -13},
-        "moveable": false
-    },
-    "I2": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 11, "y": 0.75, "z": -10},
-        "moveable": false
-    },
-    "I3": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 11, "y": 0.75, "z": -7},
-        "moveable": false
-    },
-    "I4": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 11, "y": 0.75, "z": -4},
-        "moveable": false
-    },
-    "I5": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 11, "y": 0.75, "z": -1},
-        "moveable": false
-    },
-    "I6": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 11, "y": 0.75, "z": 2},
-        "moveable": false
-    },
-    "I7": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 11, "y": 0.75, "z": 5},
-        "moveable": false
-    },
-    "I8": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height":0.5}},
-        "position": {"x": 11, "y": 0.75, "z": 8},
-        "moveable": false
-    },
-    "I9": {
-        "src": {"top": "#8B4513", "dimensions": {"depth": 2, "width": 2, "height": 0.5}},
-        "position": {"x": 11, "y": 0.75, "z": 11},
-        "moveable": false
-    },
+  "models": {
     "base": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 38, "width": 32, "height": 0.75}},
-        "position": {"x": -16, "y": 0, "z": -19},
-        "moveable": false
-    },
-    "Y1": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -13, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y2": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -10, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y3": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -7, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y4": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -4, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y5": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -1, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y6": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 2, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y7": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 5, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y8": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 8, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Y9": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 11, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "X1": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": -13, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X2": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -10, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X3": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -7, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X4": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -4, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X5": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -1, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X6": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 2, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X7": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 5, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X8": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height": 0.75}},
-        "position": {"x": 8, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "X9": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 11, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "Corner1": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -16, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Corner2": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": -16, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "Corner3": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 14, "y": 0.75, "z": -19},
-        "moveable": false
-    },
-    "Corner4": {
-        "src": {"top": "#3E2723", "dimensions": {"depth": 5, "width": 2, "height":0.75}},
-        "position": {"x": 14, "y": 0.75, "z": 14},
-        "moveable": false
-    },
-    "Wall1": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -14, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall2": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -11, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall3": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -8, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall4": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -5, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall5": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -2, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall6": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 1, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall7": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 4, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall8": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 7, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall9": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":  "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 10, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall10": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right": "#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 13, "y": 0.75, "z": -19},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall11": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -14, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall12": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -11, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall13": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -8, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall14": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -5, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall15": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": -2, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall16": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 1, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall17": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 4, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall18": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 7, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall19": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3", "dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 10, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
-    },
-    "Wall20": {
-        "src": {"top": "#D7C7B3", "left": "#D7C7B3", "right":"#D7C7B3","dimensions": {"depth": 5, "width": 1, "height": 2.5}},
-        "position": {"x": 13, "y": 0.75, "z": 14},
-        "snap": "walls",
-        "moveable": true
+      "src": {
+        "top": "#3E2723",
+        "dimensions": {
+          "depth": 38,
+          "width": 32,
+          "height": 0.75
+        }
+      },
+      "position": {
+        "x": -16,
+        "y": 0,
+        "z": -19
+      },
+      "moveable": false
     },
     "Piece1": {
-      "src": {"top": "rgb(130, 22, 5)", "side":"rgb(130, 22, 5)","dimensions": {"radius": 0.75, "height": 1}},
-        "position": {"x": 0, "y": 0.75, "z": -12.5},
-        "snap": "pieces",
-        "moveable": true
+      "template": "piece",
+      "color": "rgb(130, 22, 5)",
+      "z": -12.5
     },
     "Piece2": {
-      "src": {"top": "#CD853F", "side":"#CD853F","dimensions": {"radius":  0.75, "height": 1}},
-        "position": {"x": 0, "y": 0.75, "z": 11.75},
-        "snap": "pieces",
-        "moveable": true
+      "template": "piece",
+      "color":  "#CD853F",
+      "z": 11.75
     }
-
-
-
+  }
 }

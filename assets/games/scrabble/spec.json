@@ -13,22 +13,8 @@
         "rotationNodes": "grid"
       }
   },
-  "game": {
-    "src": {
-      "top": "GAME/board.png",
-      "bottom": "#CD853F",
-      "left": "#CD853F",
-      "right": "#CD853F",
-      "front": "#CD853F",
-      "back": "#CD853F",
-      "dimensions": {"width": 20.4, "height": 0.2, "depth": 17}
-    },
-    "position": {"x": -11.2, "y": 0, "z": -8.95},
-    "moveable": false
-  },
   "templates": {
-    "tile": {
-      "template": {
+    "tile":  {
         "src": {
           "top": "GAME/$letter.png",
           "topCover": "#CD853F",
@@ -44,14 +30,81 @@
           }
         },
         "position": {
-          "x": "$x",
+          "x": -10,
           "y": 0.2,
-          "z": "$z"
+          "z": -10
         },
         "moveable": true,
         "snap": "tiles"
       },
-      "parameters": ["x", "z", "letter"]
+    "a": {"template": "tile", "letter": "a"},
+    "b": {"template": "tile", "letter": "b"},
+    "c": {"template": "tile", "letter": "c"},
+    "d": {"template": "tile", "letter": "d"},
+    "e": {"template": "tile", "letter": "e"},
+    "f": {"template": "tile", "letter": "f"},
+    "g": {"template": "tile", "letter": "g"},
+    "h": {"template": "tile", "letter": "h"},
+    "i": {"template": "tile", "letter": "i"},
+    "j": {"template": "tile", "letter": "j"},
+    "k": {"template": "tile", "letter": "k"},
+    "l": {"template": "tile", "letter": "l"},
+    "m": {"template": "tile", "letter": "m"},
+    "n": {"template": "tile", "letter": "n"},
+    "o": {"template": "tile", "letter": "o"},
+    "p": {"template": "tile", "letter": "p"},
+    "q": {"template": "tile", "letter": "q"},
+    "r": {"template": "tile", "letter": "r"},
+    "s": {"template": "tile", "letter": "s"},
+    "t": {"template": "tile", "letter": "t"},
+    "u": {"template": "tile", "letter": "u"},
+    "v": {"template": "tile", "letter": "v"},
+    "w": {"template": "tile", "letter": "w"},
+    "x": {"template": "tile", "letter": "x"},
+    "y": {"template": "tile", "letter": "y"},
+    "z": {"template": "tile", "letter": "z"}
+  },
+  "repeatedModels": {
+    "a$i": {"template": "a", "count": 9},
+    "b$i": {"template": "b", "count": 2},
+    "c$i": {"template": "c", "count": 2},
+    "d$i": {"template": "d", "count": 4},
+    "e$i": {"template": "e", "count": 12},
+    "f$i": {"template": "f", "count": 2},
+    "g$i": {"template": "g", "count": 3},
+    "h$i": {"template": "h", "count": 2},
+    "i$i": {"template": "i", "count": 9},
+    "j$i": {"template": "j", "count": 1},
+    "k$i": {"template": "k", "count": 1},
+    "l$i": {"template": "l", "count": 4},
+    "m$i": {"template": "m", "count": 2},
+    "n$i": {"template": "n", "count": 6},
+    "o$i": {"template": "o", "count": 8},
+    "p$i": {"template": "p", "count": 2},
+    "q$i": {"template": "q", "count": 1},
+    "r$i": {"template": "r", "count": 6},
+    "s$i": {"template": "s", "count": 4},
+    "t$i": {"template": "t", "count": 6},
+    "u$i": {"template": "u", "count": 4},
+    "v$i": {"template": "v", "count": 2},
+    "w$i": {"template": "w", "count": 2},
+    "x$i": {"template": "x", "count": 1},
+    "y$i": {"template": "y", "count": 2},
+    "z$i": {"template": "z", "count": 1}
+  },
+  "models": {
+    "board": {
+      "src": {
+        "top": "GAME/board.png",
+        "bottom": "#CD853F",
+        "left": "#CD853F",
+        "right": "#CD853F",
+        "front": "#CD853F",
+        "back": "#CD853F",
+        "dimensions": {"width": 20.4, "height": 0.2, "depth": 17}
+      },
+      "position": {"x": -11.2, "y": 0, "z": -8.95},
+      "moveable": false
     }
   },
   "script": "GAME/script.js"

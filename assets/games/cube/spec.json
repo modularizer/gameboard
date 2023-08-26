@@ -5,13 +5,34 @@
       "lookAt": {"x": 0, "y": 0, "z": 0}
     }
   },
-  "cube": {
-    "src": {"top": "GAME/top.jpg", "bottom": "GAME/bottom.jpg", "left": "GAME/left.jpg", "right": "GAME/right.jpg", "front": "GAME/front.jpg", "back": "GAME/back.jpg"},
-    "position": {"x": 0, "y": 2, "z": 0},
-    "animation": {
-      "rotation": {"x": 0.01, "y": 0, "z": 0.02},
-      "position": {"x": 0.001, "y": 0.001, "z": 0}
-    },
-    "moveable": true
+  "models": {
+    "cube": {
+      "src": {
+        "top": "GAME/top.jpg",
+        "bottom": "GAME/bottom.jpg",
+        "left": "GAME/left.jpg",
+        "right": "GAME/right.jpg",
+        "front": "GAME/front.jpg",
+        "back": "GAME/back.jpg"
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 0
+      },
+      "animation": {
+        "rotation": {
+          "x": 0.01,
+          "y": 0,
+          "z": 0.02
+        },
+        "position": {
+          "x": 0.001,
+          "y": 0.001,
+          "z": 0
+        }
+      },
+      "moveable": true
+    }
   }
 }

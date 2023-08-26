@@ -545,18 +545,29 @@ export class CustomScene extends THREE.Scene {
 
         let o;
         let p;
+        let possibleItems = [];
         if (intersects.length){
-            o = intersects[0].object;
-            this.state.selectedFace = intersects[0].face;
-            p = intersects[0].point;
+            for (let intersect of intersects){
+                o = intersect.object;
+                while (!items.includes(o)){
+                    o = o.parent;
+                }
+                o = o.parent.parent;
+                possibleItems.push([intersect, o])
+            }
+            // select first one initially and get its position
+            let p = possibleItems[0][1].position;
+            console.log(possibleItems[0][1], p)
+            possibleItems = possibleItems.filter(([intersect, o])=>o.position.equals(p));
+            console
 
-            while (!items.includes(o)){
-                o = o.parent;
-            }
-            o = o.parent.parent;
-            if (!this.state.items.includes(o)){
-                console.error("clicked object not in items", o);
-            }
+            // now randomly select one of the items that are in the same position
+            let i = Math.floor(Math.random() * possibleItems.length);
+            console.log("possibleItems",i,  possibleItems.length)
+            o = possibleItems[i][1];
+
+            this.state.selectedFace = possibleItems[i][0].face;
+            p = possibleItems[i][0].point;
             o.clickPoint = o.worldToLocal(p);
         }else{
             o = null;

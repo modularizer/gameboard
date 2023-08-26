@@ -52,27 +52,141 @@ function placeModels(sourcePositions, spacing = 0){
 }
 
 
+function templateString(template, values){
+    for (let [key, value] of Object.entries(values)){
+        if (typeof value === "string"){
+            template = template.replaceAll("$" + key, value);
+        }else{
+            template = template.replaceAll('"$' + key + '"', JSON.stringify(value));
+            template = template.replaceAll("$" + key, JSON.stringify(value));
+        }
+    }
+    return template;
+}
 
+function templateItem(templateObject, values){
+    let template = JSON.stringify(templateObject);
+    template = templateString(template, values);
+    return JSON.parse(template);
+}
 
 function loadJSON(scene, src){
     let folder = src.substring(0, src.lastIndexOf("/")+1);
     return fetch(src).then(r => r.json()).then(json => {
-        let metadata = json.metadata || {};
-        if (json.metadata){
-            delete json.metadata;
+        // update scene config
+        if (json.scene){
+            scene.updateConfig(json.scene);
         }
-        let snaps = json.snaps;
-        delete json.snaps;
-        let sceneSpec = json.scene;
-        delete json.scene;
-        if (sceneSpec){
-            scene.updateConfig(sceneSpec);
+
+        // perform for loops
+        let forModels = {};
+        if (json.repeatedModels){
+            for (let [key, value] of Object.entries(json.repeatedModels)){
+                let templateName = value.template;
+                if (!templateName){
+                    throw new Error("template is required for for loop");
+                }
+                delete value.template;
+                let combinations = [];
+
+                if (Object.keys(value).length === 1 && Object.keys(value)[0] === "count"){
+                    for (let i = 0; i < value.count; i++){
+                        combinations.push({})
+                    }
+                }else{
+                    let values = {}
+                    for (let [k, v] of Object.entries(value)){
+                        if (Array.isArray(v)){
+                            values[k] = v;
+                        }else if (Object.keys(v).filter(_v => !["start", "stop", "step"].includes(_v)).length === 0){// if all keys in start, stop, step
+                            let start = v.start || 0;
+                            let step = v.step || 1;
+                            let stop = v.stop || 0;
+                            let _v = [];
+                            for (let i = start; i <= stop; i += step){
+                                _v.push(i);
+                            }
+                            values[k] = _v;
+                        }else {
+                            values[k] = [v];
+                        }
+                    }
+
+                    // get all combinations of values
+                    // values is a dict of key: [values], e.g. {"a": [1,2,3], "b": [2, 4, 6], "c": [8], "d": [9, 10]}
+                    // combinations is a list of dicts, e.g. [{"a": 1, "b": 2, "c": 8, "d": 9}, {"a": 1, "b": 2, "c": 8, "d": 10}, ...]
+
+                    for (let [k, v] of Object.entries(values)){
+                    let _combinations = [];
+                    for (let _v of v){
+                        if (combinations.length === 0){
+                            _combinations.push({[k]: _v});
+                        }else{
+                            for (let c of combinations){
+                                let _c = JSON.parse(JSON.stringify(c)); // deep copy
+                                _c[k] = _v; // add new key
+                                _combinations.push(_c);
+                            }
+                        }
+                    }
+                    combinations = _combinations;
+                }
+                }
+
+                for (let [i, combination] of Object.entries(combinations)){
+                    let c = Object.assign({i: i}, combination);
+                    combination.template = templateName;
+                    forModels[templateString(key, c)] = combination;
+                }
+            }
         }
+        console.log("forModels", forModels);
+        json.models = {...json.models, ...forModels};
+
+
+        // perform template substitution of templates
+        for (let [name, details] of Object.entries(json.templates)){
+            if (details.template){
+                const templateName = details.template;
+                delete details.template;
+                const templateDetails = json.templates[templateName];
+                details = templateItem(templateDetails, details);
+                json.templates[name] = details;
+            }
+        }
+
+        // perform template substitution
+        for (let [name, details] of Object.entries(json.models)){
+            if (details.template){
+                const templateName = details.template;
+                delete details.template;
+                const templateDetails = json.templates[templateName];
+                details = templateItem(templateDetails, details);
+                json.models[name] = details;
+            }
+        }
+
+        // perform alias substitution
+        if (json.aliases){
+            json.models = templateItem(json.models, json.aliases);
+        }
+
+        // shuffle models
+        let keys = Object.keys(json.models);
+        keys.sort(() => Math.random() - 0.5);
+        let shuffledModels = {};
+        for (let key of keys){
+            shuffledModels[key] = json.models[key];
+        }
+        json.models = shuffledModels;
+
 
         let models = {};
         let freshState = {};
-        for (let [name, details] of Object.entries(json)){
+        let modelsSpec = {};
+        for (let [name, details] of Object.entries(json.models)){
             details.name = name;
+
             if (typeof details.src === "string"){
                 details.src = details.src.replaceAll("GAME/", folder);
             }else{
@@ -89,14 +203,14 @@ function loadJSON(scene, src){
             }else{
                 scene.add(model);
             }
+            modelsSpec[name] = details;
         }
         scene.freshState = freshState;
         scene.loadPromise.then(() => {
-            for (let [name, details] of Object.entries(json)){
+            for (let [name, details] of Object.entries(modelsSpec)){
                 let model = models[name];
                 if (details.snap){
-
-                    let s = snaps[details.snap];
+                    let s = json.snaps[details.snap];
                     model.setSnapController(s.y, s.step, s.offset, s.lockedAxes, s.freeAxes, s.rotationLockedAxes, s.rotationFreeAxes, s.positionNodes, s.rotationNodes);
                     model.snap();
                 }else if (details.snap === false){
@@ -114,7 +228,9 @@ function loadJSON(scene, src){
                 }
             }
         })
-        return {models, metadata};
+        json.models = models;
+        json.metadata = json.metadata || {};
+        return json;
     })
 }
 
