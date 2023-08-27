@@ -29,6 +29,14 @@ export class GameBoard extends HTMLElement {
                 <option value="lobby">Please select a room</option>
             </select><br/>
             <input id="roomInput" placeholder="Room Name" class="hidden"></input>
+            <select id="playerSelect">
+                <option value="pub">Public Observer</option>
+                <option value="omni">Omniscient Observer</option>
+                <option value="p1">Player 1</option>
+                <option value="p2">Player 2</option>
+                <option value="p3">Player 3</option>
+                <option value="p4">Player 4</option>
+            </select><br/>
             <button id="reset">Reset Room</button>
           </div>
           <div id="instructionsBox" class="widget tr">
@@ -68,7 +76,17 @@ export class GameBoard extends HTMLElement {
         this.showInstructions = this.showInstructions.bind(this);
         this.hideInstructions = this.hideInstructions.bind(this);
 
-        this.rtc = new MQTTRTCClient({handlers: this.handlers});
+        let topic = location.hash.replace("#", "").split(".");
+        if (topic.length == 0){
+            topic = "lobby.lobby";
+        }else if (topic.length == 1){
+            topic = topic[0] + ".lobby";
+        }else{
+            topic = topic[0] + "." + topic[1];
+        }
+
+
+        this.rtc = new MQTTRTCClient({handlers: this.handlers, topic: topic});
         this.voiceChat = new WebRTCAudioChannel(this.rtc);
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
         this.keyListeners.addTo(window);
@@ -92,6 +110,7 @@ export class GameBoard extends HTMLElement {
         this.x = this.shadowRoot.getElementById("x");
         this.gameSelect = this.shadowRoot.getElementById("gameSelect");
         this.roomSelect = this.shadowRoot.getElementById("roomSelect");
+        this.playerSelect = this.shadowRoot.getElementById("playerSelect");
         this.roomInput = this.shadowRoot.getElementById("roomInput");
         this.reset = this.shadowRoot.getElementById("reset");
         this.chat = this.shadowRoot.getElementById("chat");
@@ -112,6 +131,12 @@ export class GameBoard extends HTMLElement {
         this.reset.addEventListener("click", (() => {
             this.scene.reset();
         }).bind(this));
+        this.playerSelect.addEventListener("change", (e => {
+            this.playerName = e.target.value;
+            localStorage.setItem("playerName", e.target.value);
+            location.hash = "#" + this.gameName + "." + this.roomName + "." + this.playerName;
+            location.reload();
+        }).bind(this));
         for (let game of this.gameNames){
             if (game === "lobby") continue;
             let option = document.createElement("option");
@@ -128,7 +153,7 @@ export class GameBoard extends HTMLElement {
         }
         this.gameSelect.addEventListener("change", (e => {
             this.gameName = e.target.value;
-            location.hash = "#" + this.gameName + "." + this.roomName;
+            location.hash = "#" + this.gameName + "." + this.roomName + "." + this.playerName;
             location.reload();
         }).bind(this));
         this.roomSelect.addEventListener("change", (e => {
@@ -140,7 +165,7 @@ export class GameBoard extends HTMLElement {
                 this.roomName = e.target.value;
                 this.secretRooms.push(this.roomName);
                 localStorage.setItem("secretRooms", JSON.stringify(this.secretRooms));
-                location.hash = "#" + this.gameName + "." + this.roomName;
+                location.hash = "#" + this.gameName + "." + this.roomName + "." + this.playerName;
                 location.reload();
             }
         }).bind(this));
@@ -184,6 +209,8 @@ export class GameBoard extends HTMLElement {
 
         this.gameName = (hashParts && this.gameNames.includes(hashParts[0]))? hashParts[0] : (localStorage.getItem("game") || "lobby");
         this.roomName = (hashParts.length >= 2) ? hashParts[1] : (localStorage.getItem("room") || "lobby");
+        this.playerName = (hashParts.length >= 3) ? hashParts[2] : (localStorage.getItem("playerName") || "pub");
+        this.playerSelect.value = this.playerName;
         if (!this.roomNames.includes(this.roomName)){
             this.roomNames.push(this.roomName);
             this.secretRooms.push(this.roomName);
@@ -196,7 +223,8 @@ export class GameBoard extends HTMLElement {
 
         localStorage.setItem("game", this.gameName);
         localStorage.setItem("room", this.roomName);
-        location.hash = "#" + this.gameName + "." + this.roomName;
+        localStorage.setItem("playerName", this.playerName);
+        location.hash = "#" + this.gameName + "." + this.roomName + "." + this.playerName;
         document.title = this.gameName;
         this.gameSelect.value = this.gameName;
         this.roomSelect.value = this.roomName;

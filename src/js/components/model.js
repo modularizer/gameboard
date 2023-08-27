@@ -24,13 +24,21 @@ function loadModel(source) {
 
 
 class Model extends BaseModel {
-    constructor({src, color, name, position, rotation, moveable, metadata}) {
+    constructor({src, color, name, position, rotation, moveable, metadata, covered, hidden, shellColor, dropzone, movezone, opacity}) {
         if (src instanceof Promise){
             super(src);
         }else{
             super(loadModel(src));
         }
+        this.dropzone = dropzone;
+        this.movezone = movezone;
+        this.zones = [];
+
+        if (hidden) this.visible = false;
+        if (shellColor !== undefined) this.loadPromise.then(() => this.setShellColor(shellColor));
+        if (!covered) this.loadPromise.then(() => this.uncover());
         if (color !== undefined) this.setColor(color);
+        if (opacity !== undefined) this.setOpacity(opacity);
         if (name) this.name = name;
         if (position) this.position.set(position.x, position.y, position.z);
         if (rotation) this.pivot.rotation.set(rotation.x, rotation.y, rotation.z);
@@ -69,6 +77,7 @@ function templateItem(templateObject, values){
     template = templateString(template, values);
     return JSON.parse(template);
 }
+
 
 function loadJSON(scene, src){
     let folder = src.substring(0, src.lastIndexOf("/")+1);
@@ -185,6 +194,17 @@ function loadJSON(scene, src){
         let freshState = {};
         let modelsSpec = {};
         for (let [name, details] of Object.entries(json.models)){
+            let players = details.players;
+            if (players){
+                delete details.players;
+            }
+
+            if (players){
+                let extra = players[localStorage.getItem("playerName")]
+                if (extra){
+                    Object.assign(details, extra);
+                }
+            }
             details.name = name;
 
             if (typeof details.src === "string"){
@@ -212,7 +232,11 @@ function loadJSON(scene, src){
                 if (details.snap){
                     let s = json.snaps[details.snap];
                     model.setSnapController(s.y, s.step, s.offset, s.lockedAxes, s.freeAxes, s.rotationLockedAxes, s.rotationFreeAxes, s.positionNodes, s.rotationNodes);
-                    model.snap();
+                    try{
+                        model.snap();
+                    }catch(e){
+                        console.log("snap error", e);
+                    }
                 }else if (details.snap === false){
                     model.snapController = null;
                 }
@@ -228,6 +252,8 @@ function loadJSON(scene, src){
                 }
             }
         })
+
+
         json.models = models;
         json.metadata = json.metadata || {};
         return json;

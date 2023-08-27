@@ -58,6 +58,7 @@ export class CustomScene extends THREE.Scene {
         this.renderer = new THREE.WebGLRenderer();
         this.gridHelper = new THREE.GridHelper();
         this.axesHelper = new THREE.AxesHelper();
+        this.zones = [];
 
 
         this.configure(this.config, cameraPosition, lookAt);
@@ -110,6 +111,7 @@ export class CustomScene extends THREE.Scene {
         this.freshState = {};
 
         this.loadPromise.then(this.loadCachedState.bind(this));
+
         this.loadPromise.then(()=>{console.timeEnd("load")});
 
 //        window.addEventListener('load', ()=>{
@@ -166,7 +168,10 @@ export class CustomScene extends THREE.Scene {
         "Alt": ()=>{this.state.clickMode = "middle"},
         "default": (e, k)=>{
             console.warn("Unhandled key:", k);
-            if (this.state.selectedItem) this.state.selectedItem.keydown(e, k)
+            if (this.state.selectedItem) {
+                console.log("selectedItem", this.state.selectedItem)
+               this.state.selectedItem.keydown(e, k)
+            }
         },
     },{
         "Control": ()=>{this.state.clickMode = "left"},
@@ -450,6 +455,16 @@ export class CustomScene extends THREE.Scene {
         this.animate();
         this.sceneLoaded = true;
     }
+    add(item){
+
+        super.add(item);
+        if (item.dropzone || item.movezone){
+            this.addZone(item);
+        }
+    }
+    addZone(item){
+        this.zones.push(item);
+    }
     addModel(item, position, rotation){
         if (item.loadPromise) {
             if (!item.loaded){
@@ -555,11 +570,17 @@ export class CustomScene extends THREE.Scene {
                 o = o.parent.parent;
                 possibleItems.push([intersect, o])
             }
+            let nonzoneItems = possibleItems.filter(([intersect, o])=>{
+                return !this.zones.includes(o)
+            });
+            if (nonzoneItems.length){
+                possibleItems = nonzoneItems;
+            }
+
+
             // select first one initially and get its position
             let p = possibleItems[0][1].position;
-            console.log(possibleItems[0][1], p)
             possibleItems = possibleItems.filter(([intersect, o])=>o.position.equals(p));
-            console
 
             // now randomly select one of the items that are in the same position
             let i = Math.floor(Math.random() * possibleItems.length);
@@ -727,7 +748,7 @@ export class CustomScene extends THREE.Scene {
             }
 
             this.sendItemUpdate({[item.name]: {position: endPos.toArray()}, nocache: true});
-            item.position.set(endPos.x, endPos.y, endPos.z);
+            item.setPosition(endPos);
         } else {
             this.state.mouseState.jumpOffset = endPos.clone().sub(item.position);
             this.state.mouseState.firstMove = false;
@@ -771,9 +792,43 @@ export class CustomScene extends THREE.Scene {
         this.fullState = this.getFullState()
         localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
     }
+    checkZones(){
+        if (!this.loaded){
+            return this.loadPromise.then(this.checkZones.bind(this));
+        }
+
+        this.state.items.map(item => {
+            item.zones = this.zones;
+        })
+        const zoneBoxes = this.zones.map(zone => new THREE.Box3().setFromObject(zone.shell));
+        const inZones = [];
+
+
+
+        this.state.items.map((item, i) => {
+            const zones = this.zones.filter((zone, j) => zoneBoxes[j].containsPoint(item.position));
+            inZones.push([item, zones]);
+            for (let zone of zones) {
+                if (!zone.contents.includes(item)) {
+                    zone.contents.push(item);
+                }
+            }
+        })
+        console.log("inZones", inZones)
+
+        for (let [item, zones] of inZones){
+            for (let zone of zones){
+                item.setZone(zone, "dropzone", true);
+                item.setZone(zone, "movezone", true);
+            }
+        }
+
+
+    }
     loadCachedState(){
         if (this.syncedFrom.length){
             this.cacheFullState();
+//            setTimeout(this.checkZones.bind(this), 1000);
             return
         }
         this.log("loading from browser cache")
@@ -783,13 +838,15 @@ export class CustomScene extends THREE.Scene {
             let item = this.state.itemsByName[name];
             if (!item){continue}
             if (update.position){
-                item.position.set(...update.position);
+                item.setPosition(...update.position);
             }
             if (update.rotation){
                 item.pivot.rotation.set(...update.rotation);
             }
             item.snap();
         }
+//        setTimeout(this.checkZones.bind(this), 1000);
+
     }
     sync(data, sender){
         if (data === "request"){
@@ -802,6 +859,7 @@ export class CustomScene extends THREE.Scene {
         }else{
             this.log(`Syncing from ${sender}`);
             this.receiveItemUpdate(data, sender, true);
+            setTimeout(this.checkZones.bind(this), 1000);
             this.syncedFrom.push(sender);
             if (this.syncInterval){
                 clearInterval(this.syncInterval);
@@ -823,7 +881,7 @@ export class CustomScene extends THREE.Scene {
 
                 changed = true;
                 if (update.position){
-                    this.log(`You moved ${name}`);
+                    this.log('You moved');
                     this.fullState[name].position = update.position;
                 }
                 if (update.rotation ){
@@ -872,8 +930,8 @@ export class CustomScene extends THREE.Scene {
                 let item = this.state.itemsByName[name];
                 if (!item){continue}
                 if (update.position){
-                    if (cache) this.log(`${sender} moved ${name}`);
-                    item.position.set(...update.position);
+                    if (cache) this.log(`${sender} moved`);
+                    item.setPosition(...update.position);
                 }
                 if (update.rotation){
                     if (cache && !update.position) this.log(`${sender} rotated ${name}`);
@@ -881,6 +939,8 @@ export class CustomScene extends THREE.Scene {
                 }
             }
         }
+
+        this.cacheFullState();
     }
     log(msg){
         console.log(msg);

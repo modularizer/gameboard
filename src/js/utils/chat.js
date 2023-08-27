@@ -50,7 +50,7 @@ export class ChatBox extends HTMLElement {
             float: right;
         }
       </style>
-      <div id="chat-container">
+      <div id="chat-container" style="min-width: 250px">
         <div id="chat-header">
         Chat
         <input id="chat-name" style="float:right">

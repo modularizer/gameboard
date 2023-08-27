@@ -264,7 +264,9 @@ export class SnapController {
 
     checkCollision(newP){
         let s = `${newP.x}, ${newP.y}, ${newP.z}`;
-        if (positions[s] && positions[s] !== this.item) return true;
+        if (positions[s] && positions[s] !== this.item && positions[s].position.equals(newP)){
+           return true;
+        }
         if (positions[this.item.lastPositionString]){ delete positions[this.item.lastPositionString];}
         positions[s] = this.item;
         this.item.lastPositionString = s;

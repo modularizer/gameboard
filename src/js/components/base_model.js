@@ -9,18 +9,28 @@ import { DeferredPromise } from '../utils/deferredPromise.js';
 export class BaseModel extends THREE.Group {
     constructor(loadPromise) {
         super();
+        this.zone = null;
+        this.activeZones = [];
+        this.pendingZones = [];
+        this.contents = [];
+        this.zones = [];
+
         this.truePivot = new THREE.Object3D();
         this.pivot = this.truePivot;
         this.pivot.position.copy(this.position);
 
         this.castShadow = this.config.castShadow;
         this.receiveShadow = this.config.receiveShadow;
+        this.checkZones = this.checkZones.bind(this);
+        this.snap = this.snap.bind(this);
+        this.setPosition = this.setPosition.bind(this);
 
 
         this.loadPromise = loadPromise;
         this.loaded = false;
 
         this.wireframe = null;
+        this.shell = null;
         this.originCube = null;
 
         // make a simple cube that we will replace with the model when it loads
@@ -49,8 +59,10 @@ export class BaseModel extends THREE.Group {
                 this.add(this.truePivot);
                 this.addOriginCube();
                 this.addWireframe();
+                this.addShell(0xffffff);
                 this.truePivot.add(this.wireframe);
                 this.truePivot.add(this.originCube);
+                this.truePivot.add(this.shell);
 
                 this.snapController = new SnapController(this);
                 this.setShadow(this.config.castShadow, this.config.receiveShadow);
@@ -83,8 +95,10 @@ export class BaseModel extends THREE.Group {
 
                 this.addOriginCube();
                 this.addWireframe();
+                this.addShell(0xffffff);
                 this.truePivot.add(this.wireframe);
                 this.truePivot.add(this.originCube);
+                this.truePivot.add(this.shell);
 
                 this.snapController = new SnapController(this);
 
@@ -101,6 +115,7 @@ export class BaseModel extends THREE.Group {
     }
 
     keydown(event, k){
+        console.log("handling keydown", event, k)
         if (this.keydownListeners[k]){
             this.keydownListeners[k](event);
         }
@@ -116,11 +131,30 @@ export class BaseModel extends THREE.Group {
         },
         "ArrowLeft": (event) => {
             this.pivot.rotateY(-Math.PI/2);
+        },
+        "Ctrl+ ": (event) => {
+            this.toggleCover();
         }
     }
     keyupListeners = {
 
 
+    }
+    toggleCover(){
+        if (this.shell.visible){
+            this.uncover();
+        }else{
+            this.cover();
+        }
+    }
+    cover(){
+        this.shell.visible = true;
+    }
+    uncover(){
+        this.shell.visible = false;
+    }
+    setShellColor(color){
+        this.shell.material.color.set(color);
     }
 
 
@@ -159,7 +193,9 @@ export class BaseModel extends THREE.Group {
     snap(){
         if (!this.model){return this.loadPromise.then(this.snap.bind(this))}
         if (this.config.snap && this.snapController){
+            try{
             this.snapController.snap();
+            }catch(e){}
         }
     }
 
@@ -226,12 +262,12 @@ export class BaseModel extends THREE.Group {
         cube.visible = this.config.originCube.visible;
         this.originCube = cube;
     }
-    addWireframe() {
+    addWireframe(offset=0.01) {
         let boundingBox = this.getBoundingBox(); // Assume this method returns a THREE.Box3
         let boxGeometry = new THREE.BoxGeometry(
-            boundingBox.max.x - boundingBox.min.x,
-            boundingBox.max.y - boundingBox.min.y,
-            boundingBox.max.z - boundingBox.min.z
+            (2 * offset) + boundingBox.max.x - boundingBox.min.x,
+            (2 * offset) + boundingBox.max.y - boundingBox.min.y,
+            (2 * offset) + boundingBox.max.z - boundingBox.min.z
         );
 
         boxGeometry.translate(
@@ -263,6 +299,27 @@ export class BaseModel extends THREE.Group {
         wireframeMesh.visible = this.config.wireframe.visible;
         this.wireframe = wireframeMesh;
     }
+    addShell(color=0xffffff, visible=true, offset=0.01) {
+        let boundingBox = this.getBoundingBox(); // Assume this method returns a THREE.Box3
+        let boxGeometry = new THREE.BoxGeometry(
+            (2 * offset) + boundingBox.max.x - boundingBox.min.x,
+            (2 * offset) + boundingBox.max.y - boundingBox.min.y,
+            (2 * offset) + boundingBox.max.z - boundingBox.min.z
+        );
+
+        boxGeometry.translate(
+            ((boundingBox.min.x + boundingBox.max.x) / 2),
+            ((boundingBox.min.y + boundingBox.max.y) / 2),
+            ((boundingBox.min.z + boundingBox.max.z) / 2)
+        );
+
+        // add a box shell all of a single color
+        let boxMaterial = new THREE.MeshBasicMaterial({ color: color, side: THREE.FrontSide });
+        let boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+        boxMesh.visible = visible;
+        this.shell = boxMesh;
+        return this.shell;
+    }
     setColor(color){
         if (!this.model){
             this.cube.material.color.set(color);
@@ -284,13 +341,181 @@ export class BaseModel extends THREE.Group {
             }
         });
     }
-    setPosition(p){
+    setOpacity(opacity=1){
         if (!this.model){
-            this.cube.position.set(p.x, p.y, p.z);
-            return this.loadPromise.then(() => {this.setPosition(p)})
+            this.cube.material.opacity = opacity;
+            this.cube.material.transparent = opacity < 1;
+            return this.loadPromise.then(() => {this.setOpacity(opacity)})
         };
-        this.model.position.set(p.x, p.y, p.z);
 
+        this.model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                // if the object uses multiple materials
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((material) => {
+                        material.opacity = opacity;
+                        material.transparent = opacity < 1;
+                    });
+                }
+                // if the object uses a single material
+                else {
+                    child.material.opacity = opacity;
+                    child.material.transparent = opacity < 1;
+                }
+            }
+        });
+    }
+    setPosition(...args){
+        if (args.length === 1){
+            this.position.set(args[0].x, args[0].y, args[0].z);
+        }else{
+            this.position.set(...args);
+        }
+
+        try{
+            if (!this.loaded){return this.loadPromise.then(()=>{this.setPosition(...args)})}
+            this.checkZones();
+        }catch(e){console.warn(e)}
+    }
+    checkZones(force=false){
+        let method;
+        let part;
+
+        this.zones.forEach(zone=>{
+            const box = new THREE.Box3().setFromObject(zone.shell);
+            const alreadyInZone = this.activeZones.includes(zone);
+            const nowInZone = box.containsPoint(this.position);
+
+
+            if (alreadyInZone !== nowInZone){
+                if (!nowInZone){
+                    this.activeZones = this.activeZones.filter(z=>z !== zone);
+                }else{
+                    this.activeZones.push(zone);
+                }
+
+
+                if (zone.movezone){
+                    this.setZone(zone, "movezone", nowInZone);
+                }
+                if (zone.dropzone){
+                    if (!this.selected){
+                        this.setZone(zone, "dropzone", nowInZone);
+                    }else{
+                        this.pendingZones.push(zone);
+                    }
+                }
+            }else if ((!this.selected) && nowInZone && this.pendingZones.includes(zone)){
+                if (zone.dropzone){
+                    this.setZone(zone, "dropzone", nowInZone);
+                }
+                this.pendingZones = this.pendingZones.filter(z=>z !== zone);
+            }
+        })
+    }
+    setZone(zone, mode, nowInZone){
+        if (!zone[mode]){return}
+        let fullMethod = zone[mode][1 - 1*nowInZone];
+        if (!fullMethod){return}
+        if (!fullMethod.includes(".")){
+            fullMethod = "item." + fullMethod;
+        }
+        let call = "";
+        if (fullMethod.includes("(")){
+            call = fullMethod.slice(fullMethod.indexOf("(")+1, fullMethod.length-1);
+        }
+        let [part, method] = fullMethod.split(".");
+
+        if (nowInZone && !zone.contents.includes(this)){
+            zone.contents.push(this);
+        }else if (!nowInZone && zone.contents.includes(this)){
+            zone.contents = zone.contents.filter(c=>c !== this);
+        }
+        const i = ((part === "item")?this:zone)
+        const f = i[method].bind(i);
+        if (call){
+            // do a scoped safe eval of f using the call string like
+            eval("f("+call+")");
+        }else{
+            f();
+        }
+    }
+    shuffleXZ(config){
+        if (!config){config = {}}
+        config.includedAxes = ["x", "z"];
+        this.shuffleXYZ(config);
+    }
+    shuffleXYZ(config){
+        let {interval, xInterval, yInterval, zInterval, xOffset, yOffset, zOffset, includedAxes, padding} = config || {};
+        if (!interval){interval = 1}
+        if (!xInterval){xInterval = interval}
+        if (!yInterval){yInterval = interval}
+        if (!zInterval){zInterval = interval}
+        if (!xOffset){xOffset = 0}
+        if (!yOffset){yOffset = 0}
+        if (!zOffset){zOffset = 0}
+        if (!padding){padding = 1}
+        if (!includedAxes){includedAxes = ["x", "y", "z"]}
+
+        // get all x position at interval xInterval and offset by xOffset which fall within the bounding box
+        let xPositions = [];
+        let yPositions = [];
+        let zPositions = [];
+        let box = this.getBoundingBox();
+        let ximin = Math.floor((box.min.x - xOffset) / xInterval);
+        let ximax = Math.floor((box.max.x - xOffset) / xInterval);
+        let yimin = Math.floor((box.min.y - yOffset) / yInterval);
+        let yimax = Math.floor((box.max.y - yOffset) / yInterval);
+        let zimin = Math.floor((box.min.z - zOffset) / zInterval);
+        let zimax = Math.floor((box.max.z - zOffset) / zInterval);
+
+        for (let xi = ximin; xi < ximax; xi += 1){
+            let x = xi*xInterval + xOffset;
+            if (x < (box.min.x + padding) || x > (box.max.x - padding)){continue}
+            xPositions.push(x);
+        }
+        for (let yi = yimin; yi < yimax; yi += 1){
+            let y = yi*yInterval + yOffset;
+            if (y < (box.min.y + padding) || y > (box.max.y - padding)){continue}
+            yPositions.push(y);
+        }
+        for (let zi = zimin; zi < zimax; zi += 1){
+            let z = zi*zInterval + zOffset;
+            if (z < (box.min.z + padding) || z > (box.max.z - padding)){continue}
+            zPositions.push(z);
+        }
+
+        if (!includedAxes.includes("x")){
+            xPositions = [xPositions[0]];
+        }
+        if (!includedAxes.includes("y")){
+            yPositions = [yPositions[0]];
+        }
+        if (!includedAxes.includes("z")){
+            zPositions = [zPositions[0]];
+        }
+
+
+
+        let combinations = [];
+        for (let x of xPositions){
+            for (let y of yPositions){
+                for (let z of zPositions){
+                    combinations.push([x, y, z]);
+                }
+            }
+        }
+
+        // shuffle sort the combinations
+        combinations.sort((a, b)=>Math.random() - 0.5);
+        const box1 = new THREE.Box3().setFromObject(this.shell);
+        this.contents = this.contents.filter(c =>{
+            return box1.containsPoint(c.position);
+        })
+        for (let [ind, item] of Object.entries(this.contents)){
+            let c = combinations[ind];
+            item.position.set(c[0], c[1], c[2]);
+        }
     }
     rotate(rx = 0, ry = 0, rz = 0) {
         this.pivot.rotation.x += rx;
@@ -298,11 +523,13 @@ export class BaseModel extends THREE.Group {
         this.pivot.rotation.z += rz;
     }
     onMouseDown(event) {
+        this.selected = true;
         let m = this.config.selected.scale;
         this.scale.set(m, m, m);
         if (!this.offset){
             this.offset = true;
             this.model.position.add(this.config.selected.offset);
+            this.shell.position.add(this.config.selected.offset);
             this.wireframe.position.add(this.config.selected.offset);
             this.originCube.position.add(this.config.selected.offset);
         }
@@ -311,15 +538,18 @@ export class BaseModel extends THREE.Group {
         this.originCube.visible = this.config.selected.originCube;
     }
     onMouseUp(event) {
+        this.selected = false;
         this.scale.set(1, 1, 1);
         if (this.offset) {
             this.offset = false;
             this.model.position.sub(this.config.selected.offset);
+            this.shell.position.sub(this.config.selected.offset);
             this.wireframe.position.sub(this.config.selected.offset);
             this.originCube.position.sub(this.config.selected.offset);
         }
         this.wireframe.visible = false;
         this.originCube.visible = false;
+        this.checkZones();
     }
     onRightClickDown(event) {
         this.onMouseDown(event);
@@ -332,14 +562,17 @@ export class BaseModel extends THREE.Group {
 
     }
     select(color){
+        this.selected = true;
         if (color !== undefined){
             this.wireframe.material.color.set(color);
         }
         this.wireframe.visible = true;
     }
     unselect(){
+        this.selected = false;
         this.wireframe.visible = false;
         this.wireframe.material.color.set(this.config.wireframe.color);
+        this.checkZones();
     }
 }
 

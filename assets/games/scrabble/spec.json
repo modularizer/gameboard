@@ -1,7 +1,7 @@
 {
   "scene": {
     "camera": {
-      "position": {"x": 5, "y": 5, "z": 5},
+      "position": {"x": 0, "y": 30, "z": 25},
       "lookAt": {"x": 0, "y": 0, "z": 0}
     }
   },
@@ -17,22 +17,24 @@
     "tile":  {
         "src": {
           "top": "GAME/$letter.png",
-          "topCover": "#CD853F",
           "bottom": "#CD853F",
           "left": "#CD853F",
           "right": "#CD853F",
           "front": "#CD853F",
           "back": "#CD853F",
+
           "dimensions": {
             "width": 0.916,
             "height": 0.2,
             "depth": 1
           }
         },
+        "shellColor": "#CD853F",
+        "covered": true,
         "position": {
-          "x": -10,
+          "x": 0,
           "y": 0.2,
-          "z": -10
+          "z": -15
         },
         "moveable": true,
         "snap": "tiles"
@@ -105,6 +107,98 @@
       },
       "position": {"x": -11.2, "y": 0, "z": -8.95},
       "moveable": false
+    },
+    "shuffle": {
+      "src": {
+          "top": "brown",
+          "dimensions": {
+            "width": 20,
+            "height": 2,
+            "depth": 10
+          }
+        },
+      "hidden": false,
+      "opacity": 0.2,
+      "position": {
+        "x": -11,
+        "y": 0,
+        "z": -20
+      },
+      "moveable": false,
+      "dropzone": ["zone.shuffleXZ", ""]
+    },
+    "uncover": {
+      "src": {
+          "top": "black",
+          "dimensions": {
+            "width": 16,
+            "height": 3,
+            "depth": 16
+          }
+        },
+      "hidden": true,
+      "opacity": 0.2,
+      "position": {
+        "x": -7.5,
+        "y": -1,
+        "z": -8.5
+      },
+      "moveable": false,
+      "dropzone": ["uncover", "cover"]
+    },
+    "uncoverYellow":{
+      "src": {
+        "top": "yellow",
+        "front": "yellow",
+        "back": "yellow",
+        "left": "yellow",
+        "right": "yellow",
+        "bottom": "yellow",
+        "dimensions": {
+          "width": 15,
+          "height": 3,
+          "depth": 5
+        }
+      },
+      "hidden": false,
+      "opacity": 0.2,
+      "position": {
+        "x": -15,
+        "y": -1,
+        "z": 8.5
+      },
+      "moveable": false,
+      "players": {
+        "omni": {"movezone": ["uncover", "cover"]},
+        "p2": {"movezone": ["uncover", "cover"]}
+      }
+    },
+    "uncoverGreen":{
+      "src": {
+        "top": "green",
+        "front": "green",
+        "back": "green",
+        "left": "green",
+        "right": "green",
+        "bottom": "green",
+        "dimensions": {
+          "width": 15,
+          "height": 3,
+          "depth": 5
+        }
+      },
+      "hidden": false,
+      "opacity": 0.2,
+      "position": {
+        "x": 0,
+        "y": -1,
+        "z": 8.5
+      },
+      "moveable": false,
+      "players": {
+        "omni": {"movezone": ["uncover", "cover"]},
+        "p1": {"movezone": ["uncover", "cover"]}
+      }
     }
   },
   "script": "GAME/script.js"
