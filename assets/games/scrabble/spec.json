@@ -64,7 +64,8 @@
     "w": {"template": "tile", "letter": "w"},
     "x": {"template": "tile", "letter": "x"},
     "y": {"template": "tile", "letter": "y"},
-    "z": {"template": "tile", "letter": "z"}
+    "z": {"template": "tile", "letter": "z"},
+    "blank": {"template": "tile", "letter": "blank"}
   },
   "repeatedModels": {
     "a$i": {"template": "a", "count": 9},
@@ -92,7 +93,8 @@
     "w$i": {"template": "w", "count": 2},
     "x$i": {"template": "x", "count": 1},
     "y$i": {"template": "y", "count": 2},
-    "z$i": {"template": "z", "count": 1}
+    "z$i": {"template": "z", "count": 1},
+    "blank$i": {"template": "blank", "count": 2}
   },
   "models": {
     "board": {
