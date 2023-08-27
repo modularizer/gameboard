@@ -1,3 +1,14 @@
+/*
+node build.js --min --obf --inc
+node build.js --min --obf --version date
+node build.js --min --obf --version 0.0.1
+node build.js --min --obf --inc
+node
+
+
+*/
+
+
 const gameboardMinPath = 'build/gameboard.min.js';
 const fs = require('fs').promises;
 const path = require('path');
