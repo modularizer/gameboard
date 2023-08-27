@@ -443,10 +443,11 @@ export class BaseModel extends THREE.Group {
     shuffleXZ(config){
         if (!config){config = {}}
         config.includedAxes = ["x", "z"];
+        config.ypadding = 0;
         this.shuffleXYZ(config);
     }
     shuffleXYZ(config){
-        let {interval, xInterval, yInterval, zInterval, xOffset, yOffset, zOffset, includedAxes, padding} = config || {};
+        let {interval, xInterval, yInterval, zInterval, xOffset, yOffset, zOffset, includedAxes, padding, xpadding, ypadding, zpadding} = config || {};
         if (!interval){interval = 1}
         if (!xInterval){xInterval = interval}
         if (!yInterval){yInterval = interval}
@@ -455,6 +456,10 @@ export class BaseModel extends THREE.Group {
         if (!yOffset){yOffset = 0}
         if (!zOffset){zOffset = 0}
         if (!padding){padding = 1}
+        if (xpadding === undefined){xpadding = padding}
+        if (ypadding === undefined){ypadding = padding}
+        if (zpadding === undefined){zpadding = padding}
+        ypadding = 0;
         if (!includedAxes){includedAxes = ["x", "y", "z"]}
 
         // get all x position at interval xInterval and offset by xOffset which fall within the bounding box
@@ -471,28 +476,28 @@ export class BaseModel extends THREE.Group {
 
         for (let xi = ximin; xi < ximax; xi += 1){
             let x = xi*xInterval + xOffset;
-            if (x < (box.min.x + padding) || x > (box.max.x - padding)){continue}
+            if (x < (box.min.x + xpadding) || x > (box.max.x - xpadding)){continue}
             xPositions.push(x);
         }
         for (let yi = yimin; yi < yimax; yi += 1){
             let y = yi*yInterval + yOffset;
-            if (y < (box.min.y + padding) || y > (box.max.y - padding)){continue}
+            if (y < (box.min.y + ypadding) || y > (box.max.y - ypadding)){continue}
             yPositions.push(y);
         }
         for (let zi = zimin; zi < zimax; zi += 1){
             let z = zi*zInterval + zOffset;
-            if (z < (box.min.z + padding) || z > (box.max.z - padding)){continue}
+            if (z < (box.min.z + zpadding) || z > (box.max.z - zpadding)){continue}
             zPositions.push(z);
         }
 
         if (!includedAxes.includes("x")){
-            xPositions = [xPositions[0]];
+            xPositions = [Math.min(...xPositions)];
         }
         if (!includedAxes.includes("y")){
-            yPositions = [yPositions[0]];
+            yPositions = [Math.min(...yPositions)];
         }
         if (!includedAxes.includes("z")){
-            zPositions = [zPositions[0]];
+            zPositions = [Math.min(...zPositions)];
         }
 
 
@@ -514,6 +519,7 @@ export class BaseModel extends THREE.Group {
         })
         for (let [ind, item] of Object.entries(this.contents)){
             let c = combinations[ind];
+            item.cover();
             item.position.set(c[0], c[1], c[2]);
         }
     }

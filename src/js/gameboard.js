@@ -44,6 +44,9 @@ export class GameBoard extends HTMLElement {
                 <button id = "x" class="fr hidden">x</button>
                 <pre id="instructions" class="hidden">
                 </pre>
+                <button id="showScore" class="hidden">+</button>
+                <button id="hideScore" class="fr">x</button>
+                <score-card id="score" class=""></score-card>
           </div>
           <pre id="subtitles" class="widget bc subtitles"></pre>
           <div id="disappearingLog" class="floating bl">
@@ -108,6 +111,9 @@ export class GameBoard extends HTMLElement {
         this.instructions = this.shadowRoot.getElementById("instructions");
         this.q = this.shadowRoot.getElementById("q");
         this.x = this.shadowRoot.getElementById("x");
+        this.showScore = this.shadowRoot.getElementById("showScore");
+        this.hideScore = this.shadowRoot.getElementById("hideScore");
+        this.score = this.shadowRoot.getElementById("score");
         this.gameSelect = this.shadowRoot.getElementById("gameSelect");
         this.roomSelect = this.shadowRoot.getElementById("roomSelect");
         this.playerSelect = this.shadowRoot.getElementById("playerSelect");
@@ -127,6 +133,12 @@ export class GameBoard extends HTMLElement {
         }).bind(this));
         this.x.addEventListener("click", (() => {
             this.hideInstructions();
+        }).bind(this));
+        this.showScore.addEventListener("click", (() => {
+            this.showScoreCard();
+        }).bind(this));
+        this.hideScore.addEventListener("click", (() => {
+            this.hideScoreCard();
         }).bind(this));
         this.reset.addEventListener("click", (() => {
             this.scene.reset();
@@ -201,8 +213,16 @@ export class GameBoard extends HTMLElement {
         }
 
         this.instructions.innerHTML = this.defaultInstructions;
-        console.log(this.chat)
         this.chat.attachMQTTRTC(this.rtc);
+
+
+
+        this.score.addEventListener("save", (e)=>{
+            this.rtc.send(e.detail, "score");
+        })
+        this.rtc.handlers.score = (data, sender) => {
+            this.score.fromCSV(data);
+        }
         console.log("Bound elements");
     }
     loadGame(){
@@ -233,10 +253,21 @@ export class GameBoard extends HTMLElement {
 
         const src = "./assets/games/" + this.gameName + "/spec.json?" + Date.now();
         console.log("Loading game", this.gameName, "from", src);
-        loadJSON(this.scene, src).then((({models, metadata}) => {
+        loadJSON(this.scene, src).then((({models, metadata, scorecard}) => {
             this.models = models;
             this.metadata = metadata;
 
+            this.score.fromCSV(scorecard, false);
+            let csv2 = localStorage.getItem(location.hash + 'score-card');
+            if (csv2) {
+                scorecard = csv2;
+                this.score.fromCSV(scorecard);
+            }
+            if (scorecard){
+                this.showScoreCard();
+            }else{
+                this.hideScoreCard();
+            }
 
             if (metadata.instructions) {
                 let i = localStorage.getItem(this.game + "Instructions");
@@ -250,6 +281,16 @@ export class GameBoard extends HTMLElement {
             }
 
         }).bind(this));
+    }
+    showScoreCard(){
+        this.score.classList.remove("hidden");
+        this.hideScore.classList.remove("hidden");
+        this.showScore.classList.add("hidden");
+    }
+    hideScoreCard(){
+        this.score.classList.add("hidden");
+        this.hideScore.classList.add("hidden");
+        this.showScore.classList.remove("hidden");
     }
 
     handlers = {
@@ -268,6 +309,7 @@ export class GameBoard extends HTMLElement {
                 this.subtitles.style.opacity = 0;
             }, 1000);
         },
+        score: (data, sender) => {console.log("Received score from", sender, data);},
     }
     defaultInstructions = `To Move:
     1. Click & drag (then it will snap to position) OR
@@ -281,12 +323,12 @@ To Rotate:
 Software Version: ${window.version}`
 
     keydownHandlers = {
-        " ": () => {
+        "Control+ ": () => {
             this.voiceChat.startStreaming();
         }
     }
     keyupHandlers = {
-        " ": () => {
+        "Control+ ": () => {
             this.voiceChat.stopStreaming();
         }
     }

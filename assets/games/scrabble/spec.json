@@ -5,6 +5,7 @@
       "lookAt": {"x": 0, "y": 0, "z": 0}
     }
   },
+  "scorecard": "P1|Pts|Total|P2|Pts|Total",
   "snaps": {
       "tiles": {
         "y": 0.2,
@@ -123,7 +124,7 @@
       "opacity": 0.2,
       "position": {
         "x": -11,
-        "y": 0,
+        "y": -1,
         "z": -20
       },
       "moveable": false,

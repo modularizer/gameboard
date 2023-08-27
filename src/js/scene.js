@@ -150,7 +150,7 @@ export class CustomScene extends THREE.Scene {
                 this.camera.position.y += this.config.speed
             }
         },
-        "r": ()=>{
+        "Control+r": ()=>{
             if (!this.state.dragging) {
                 this.state.animate = !this.state.animate; // Toggle rotation
             }
@@ -161,9 +161,9 @@ export class CustomScene extends THREE.Scene {
                 if (item.onRightClickUp) item.onRightClickUp(event);
             }
         },
-        "x": ()=>{this.reset()},
-        "p": ()=>{this.state.moveMode = "y"},
-        "n": ()=>{this.state.moveMode = "normal"},
+        "Control+x": ()=>{this.reset()},
+        "Control+p": ()=>{this.state.moveMode = "y"},
+        "Control+n": ()=>{this.state.moveMode = "normal"},
         "Control": ()=>{this.state.clickMode = "right"},
         "Alt": ()=>{this.state.clickMode = "middle"},
         "default": (e, k)=>{
@@ -819,7 +819,6 @@ export class CustomScene extends THREE.Scene {
                 }
             }
         })
-        console.log("inZones", inZones)
 
         for (let [item, zones] of inZones){
             for (let zone of zones){
