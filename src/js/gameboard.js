@@ -130,6 +130,7 @@ export class GameBoard extends HTMLElement {
         }).bind(this));
         this.reset.addEventListener("click", (() => {
             this.scene.reset();
+            location.reload();
         }).bind(this));
         this.playerSelect.addEventListener("change", (e => {
             this.playerName = e.target.value;

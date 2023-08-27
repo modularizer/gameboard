@@ -494,6 +494,11 @@ export class CustomScene extends THREE.Scene {
         localStorage.setItem(location.hash + "FullState", JSON.stringify(this.freshState));
         this.loadCachedState();
         this.sendItemUpdate(this.freshState);
+
+
+        localStorage.removeItem(location.hash + "FullState");
+        this.sendItemUpdate("reset");
+        location.reload();
     }
     animate(t) {
         requestAnimationFrame(this.animate.bind(this));
@@ -896,6 +901,10 @@ export class CustomScene extends THREE.Scene {
         }
     }
     receiveItemUpdate(data, sender, forcenocache=false){
+        if (data === "reset"){
+            localStorage.removeItem(location.hash + "FullState");
+            location.reload();
+        }
         let cache = !(forcenocache || data.nocache);
         delete data.nocache;
         for (let [name, update] of Object.entries(data)){
