@@ -16,7 +16,8 @@ function getMaterial(v, loader){
                 map: loader.load(v, deferredLoadPromise.resolve, undefined, deferredLoadPromise.reject)
              });
              loadPromise = deferredLoadPromise.promise;
-
+        }else if (["transparent", "clear", "none"].includes(v)){
+            v = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 });
         }else{
             v = new THREE.MeshStandardMaterial({ color: new THREE.Color(v) });
         }
@@ -117,7 +118,10 @@ export function loadCube(sources){
         }
     }
 
+
     Promise.all(promises).then(() => {
+
+
         // Auto-detect the dimensions of the cube based on the average of image dimensions
         let avgDimensions = {}
         for (let [k, v] of Object.entries(dimensions)) {
@@ -192,6 +196,20 @@ export function loadCube(sources){
                 materials[b] = new THREE.MeshStandardMaterial({color: defaultColors[b]});
             }
         }
+
+        // if any sides are transparent, make all sides double-sided
+        let transparent = false;
+        for (let [k, v] of Object.entries(materials)) {
+            if (v.transparent){
+                transparent = true;
+            }
+        }
+        if (transparent){
+            for (let [k, v] of Object.entries(materials)) {
+                v.side = THREE.BackSide;
+            }
+        }
+
 
         // Create a geometry
         let sizes = [dimensions.width, dimensions.height, dimensions.depth]

@@ -24,7 +24,7 @@ function loadModel(source) {
 
 
 class Model extends BaseModel {
-    constructor({src, color, name, position, rotation, moveable, metadata, covered, hidden, shellColor, dropzone, movezone, opacity}) {
+    constructor({src, color, name, position, rotation, moveable, metadata, covered, hidden, shellColor, dropzone, movezone, opacity, dblclick, coverMode, grabOffset, center}) {
         if (src instanceof Promise){
             super(src);
         }else{
@@ -32,11 +32,31 @@ class Model extends BaseModel {
         }
         this.dropzone = dropzone;
         this.movezone = movezone;
+        this.dblclick = dblclick || "flip";
+        this.config.coverMode = coverMode || "shell";
         this.zones = [];
 
+        if (center){this.loadPromise.then(() => {
+            this.model.position.y -= this.height/2;
+
+        })}
+
         if (hidden) this.visible = false;
+        this.showShell = shellColor !== false
+
         if (shellColor !== undefined) this.loadPromise.then(() => this.setShellColor(shellColor));
-        if (!covered) this.loadPromise.then(() => this.uncover());
+        if (!covered){
+            this.loadPromise.then(() => {
+                this.uncover();
+                if ((!this.showShell) || (coverMode && coverMode !== "shell")){
+                    this.shell.visible = false;
+                }
+            })
+        }else if ((!this.showShell) || (coverMode && coverMode !== "shell")){
+            this.loadPromise.then(() => {
+                this.shell.visible = false;
+            })
+        }
         if (color !== undefined) this.setColor(color);
         if (opacity !== undefined) this.setOpacity(opacity);
         if (name) this.name = name;
@@ -44,6 +64,10 @@ class Model extends BaseModel {
         if (rotation) this.pivot.rotation.set(rotation.x, rotation.y, rotation.z);
         if (metadata) this.metadata = metadata;
         if (moveable) this.moveable = moveable;
+
+        if (grabOffset !== undefined){
+            this.config.selected.offset.y = grabOffset;
+        }
     }
 }
 
@@ -194,17 +218,16 @@ function loadJSON(scene, src){
         let freshState = {};
         let modelsSpec = {};
         for (let [name, details] of Object.entries(json.models)){
-            let players = details.players;
-            if (players){
-                delete details.players;
-            }
 
-            if (players){
+            if (details.players){
+                let players = details.players;
+                delete details.players;
                 let extra = players[localStorage.getItem("playerName")]
                 if (extra){
                     Object.assign(details, extra);
                 }
             }
+
             details.name = name;
 
             if (typeof details.src === "string"){

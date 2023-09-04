@@ -28,6 +28,7 @@ export class BaseModel extends THREE.Group {
 
         this.loadPromise = loadPromise;
         this.loaded = false;
+        this.covered = true;
 
         this.wireframe = null;
         this.shell = null;
@@ -91,7 +92,7 @@ export class BaseModel extends THREE.Group {
 
                 // adjust the position of the truePivot to align its origin with the minimum corner of the model's bounding box
                 this.truePivot.position.set(size.x/2, 0, size.z/2);
-//                this.model.position.set(0, size.y/2, 0);
+                this.height = size.y;
 
                 this.addOriginCube();
                 this.addWireframe();
@@ -148,10 +149,36 @@ export class BaseModel extends THREE.Group {
         }
     }
     cover(){
-        this.shell.visible = true;
+        let o = false;
+        this.covered = true;
+        if (this.offset){
+            o = true;
+            this.revertOffset();
+        }
+        if (this.config.coverMode === "shell" && this.showShell){
+            this.shell.visible = true;
+        }else if (this.config.coverMode === "flip"){
+            this.pivot.rotation.x = Math.PI;
+        }
+        if (o){
+            this.applyOffset();
+        }
     }
     uncover(){
-        this.shell.visible = false;
+        let o = false;
+        this.covered = false;
+        if (this.offset){
+            o = true;
+            this.revertOffset();
+        }
+        if (this.config.coverMode === "shell"){
+            this.shell.visible = false;
+        }else if (this.config.coverMode === "flip"){
+            this.pivot.rotation.x = 0;
+        }
+        if (o){
+            this.applyOffset();
+        }
     }
     setShellColor(color){
         this.shell.material.color.set(color);
@@ -203,6 +230,7 @@ export class BaseModel extends THREE.Group {
         snap: true,
         castShadow: true,
         receiveShadow: true,
+        coverMode: "shell",
         wireframe: {
             visible: false,
             color: 0x00ff00,
@@ -423,7 +451,10 @@ export class BaseModel extends THREE.Group {
         let call = "";
         if (fullMethod.includes("(")){
             call = fullMethod.slice(fullMethod.indexOf("(")+1, fullMethod.length-1);
+            fullMethod = fullMethod.slice(0, fullMethod.indexOf("("));
         }
+
+
         let [part, method] = fullMethod.split(".");
 
         if (nowInZone && !zone.contents.includes(this)){
@@ -432,6 +463,7 @@ export class BaseModel extends THREE.Group {
             zone.contents = zone.contents.filter(c=>c !== this);
         }
         const i = ((part === "item")?this:zone)
+        console.log({fullMethod, method, part})
         const f = i[method].bind(i);
         if (call){
             // do a scoped safe eval of f using the call string like
@@ -518,7 +550,7 @@ export class BaseModel extends THREE.Group {
             return box1.containsPoint(c.position);
         })
         for (let [ind, item] of Object.entries(this.contents)){
-            let c = combinations[ind];
+            let c = combinations[ind % combinations.length];
             item.cover();
             item.position.set(c[0], c[1], c[2]);
         }
@@ -532,27 +564,34 @@ export class BaseModel extends THREE.Group {
         this.selected = true;
         let m = this.config.selected.scale;
         this.scale.set(m, m, m);
-        if (!this.offset){
-            this.offset = true;
-            this.model.position.add(this.config.selected.offset);
-            this.shell.position.add(this.config.selected.offset);
-            this.wireframe.position.add(this.config.selected.offset);
-            this.originCube.position.add(this.config.selected.offset);
-        }
-
+        this.applyOffset();
         this.wireframe.visible = this.config.selected.wireframe;
         this.originCube.visible = this.config.selected.originCube;
+    }
+    applyOffset(){
+        if (!this.offset){
+            let offset = this.config.selected.offset.clone();
+            offset.applyEuler(this.pivot.rotation);
+            this.offset = offset;
+            this.model.position.add(offset);
+            this.shell.position.add(offset);
+            this.wireframe.position.add(offset);
+            this.originCube.position.add(offset);
+        }
+    }
+    revertOffset(){
+        if (this.offset){
+            this.model.position.sub(this.offset);
+            this.shell.position.sub(this.offset);
+            this.wireframe.position.sub(this.offset);
+            this.originCube.position.sub(this.offset);
+            this.offset = false;
+        }
     }
     onMouseUp(event) {
         this.selected = false;
         this.scale.set(1, 1, 1);
-        if (this.offset) {
-            this.offset = false;
-            this.model.position.sub(this.config.selected.offset);
-            this.shell.position.sub(this.config.selected.offset);
-            this.wireframe.position.sub(this.config.selected.offset);
-            this.originCube.position.sub(this.config.selected.offset);
-        }
+        this.revertOffset();
         this.wireframe.visible = false;
         this.originCube.visible = false;
         this.checkZones();

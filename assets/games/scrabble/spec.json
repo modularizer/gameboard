@@ -3,6 +3,11 @@
     "camera": {
       "position": {"x": 0, "y": 30, "z": 25},
       "lookAt": {"x": 0, "y": 0, "z": 0}
+    },
+    "lights": {
+      "ambient": {"intensity": 0.6},
+      "directional": {"enabled": true, "color": "white", "intensity": 0.1, "position":  {"x": 0, "y":  50, "z": 0}},
+      "point": {"enabled": true,"color": "white", "intensity": 0.4, "position":  {"x": 0, "y":  50, "z": 0}}
     }
   },
   "scorecard": "P1|Pts|Total|P2|Pts|Total",
@@ -11,14 +16,14 @@
         "y": 0.2,
         "step": 1,
         "offset": 0,
-        "rotationNodes": "grid"
+        "rotationNodes": "cube"
       }
   },
   "templates": {
     "tile":  {
         "src": {
           "top": "GAME/$letter.png",
-          "bottom": "#CD853F",
+          "bottom": "GAME/_.png",
           "left": "#CD853F",
           "right": "#CD853F",
           "front": "#CD853F",
@@ -31,15 +36,50 @@
           }
         },
         "shellColor": "#CD853F",
+        "coverMode": "flip",
         "covered": true,
+        "center": true,
+        "dblClick": "flip",
         "position": {
           "x": 0,
           "y": 0.2,
           "z": -15
         },
+        "rotation": {
+          "x": 3.14,
+          "y": 0,
+          "z": 0
+        },
         "moveable": true,
         "snap": "tiles"
       },
+    "hand": {
+      "src": {
+        "top": "$color",
+        "front": "$color",
+        "back": "$color",
+        "left": "$color",
+        "right": "$color",
+        "bottom": "$color",
+        "dimensions": {
+          "width": 15,
+          "height": 2,
+          "depth": 5
+        }
+      },
+      "hidden": false,
+      "opacity": 0.1,
+      "position": {
+        "x": "$x",
+        "y": -1,
+        "z": "$z"
+      },
+      "moveable": false,
+      "players": {
+        "omni": {"movezone": ["uncover", "cover"]},
+        "$player": {"movezone": ["uncover", "cover"]}
+      }
+    },
     "a": {"template": "tile", "letter": "a"},
     "b": {"template": "tile", "letter": "b"},
     "c": {"template": "tile", "letter": "c"},
@@ -66,7 +106,7 @@
     "x": {"template": "tile", "letter": "x"},
     "y": {"template": "tile", "letter": "y"},
     "z": {"template": "tile", "letter": "z"},
-    "blank": {"template": "tile", "letter": "blank"}
+    "blank": {"template": "tile", "letter": "_"}
   },
   "repeatedModels": {
     "a$i": {"template": "a", "count": 9},
@@ -121,7 +161,7 @@
           }
         },
       "hidden": false,
-      "opacity": 0.2,
+      "opacity": 0.01,
       "position": {
         "x": -11,
         "y": -1,
@@ -149,59 +189,33 @@
       "moveable": false,
       "dropzone": ["uncover", "cover"]
     },
-    "uncoverYellow":{
-      "src": {
-        "top": "yellow",
-        "front": "yellow",
-        "back": "yellow",
-        "left": "yellow",
-        "right": "yellow",
-        "bottom": "yellow",
-        "dimensions": {
-          "width": 15,
-          "height": 3,
-          "depth": 5
-        }
-      },
-      "hidden": false,
-      "opacity": 0.2,
-      "position": {
-        "x": -15,
-        "y": -1,
-        "z": 8.5
-      },
-      "moveable": false,
-      "players": {
-        "omni": {"movezone": ["uncover", "cover"]},
-        "p2": {"movezone": ["uncover", "cover"]}
-      }
+    "yellowHand": {
+      "template": "hand",
+      "player": "p1",
+      "color": "yellow",
+      "x": -15,
+      "z": 8.5
     },
-    "uncoverGreen":{
-      "src": {
-        "top": "green",
-        "front": "green",
-        "back": "green",
-        "left": "green",
-        "right": "green",
-        "bottom": "green",
-        "dimensions": {
-          "width": 15,
-          "height": 3,
-          "depth": 5
-        }
-      },
-      "hidden": false,
-      "opacity": 0.2,
-      "position": {
-        "x": 0,
-        "y": -1,
-        "z": 8.5
-      },
-      "moveable": false,
-      "players": {
-        "omni": {"movezone": ["uncover", "cover"]},
-        "p1": {"movezone": ["uncover", "cover"]}
-      }
+    "greenHand": {
+      "template": "hand",
+      "player": "p2",
+      "color": "green",
+      "x": 0,
+      "z": 8.5
+    },
+    "blueHand": {
+      "template": "hand",
+      "color": "blue",
+      "player": "p3",
+      "x": -26,
+      "z": 0
+    },
+    "redHand": {
+      "template": "hand",
+      "player": "p4",
+      "color": "red",
+      "x": 9,
+      "z": 0
     }
   },
   "script": "GAME/script.js"

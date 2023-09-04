@@ -1,8 +1,8 @@
-window.version = 'v20230827T20:11:57.964Z';
+window.version = 'v20230904T22:42:52.629Z';
 
-import { GameBoard } from "./gameboard.js?v20230827T20:11:57.964Z";
-import { ChatBox } from "./utils/chat.js?v20230827T20:11:57.964Z";
-import { ScoreCard } from "./utils/score-card.js?v20230827T20:11:57.964Z";
+import { GameBoard } from "./gameboard.js?v20230904T22:42:52.629Z";
+import { ChatBox } from "./utils/chat.js?v20230904T22:42:52.629Z";
+import { ScoreCard } from "./utils/score-card.js?v20230904T22:42:52.629Z";
 
 customElements.define('score-card', ScoreCard);
 customElements.define('chat-box', ChatBox);

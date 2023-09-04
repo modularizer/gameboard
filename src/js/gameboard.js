@@ -60,7 +60,7 @@ export class GameBoard extends HTMLElement {
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
-        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube", "scrabble"]
+        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube", "scrabble", "ticket_to_ride"]
         this.roomNames = ["lobby", "octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate"];
         this.secretRooms = JSON.parse(localStorage.getItem("secretRooms") || "[]");
         this.roomNames = this.roomNames.concat(this.secretRooms);

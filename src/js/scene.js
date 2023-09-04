@@ -64,8 +64,8 @@ export class CustomScene extends THREE.Scene {
         this.configure(this.config, cameraPosition, lookAt);
 
 
-        super.add(this.gridHelper);
-        super.add(this.axesHelper);
+//        super.add(this.gridHelper);
+//        super.add(this.axesHelper);
 
         let d = {
             "camera": this.configCamera,
@@ -408,7 +408,6 @@ export class CustomScene extends THREE.Scene {
 
         for (let [lightName, spec] of Object.entries(config)){
             let light = null;
-            if (spec.enabled == false) continue;
             if (spec.type == "ambient"){
                 light = new THREE.AmbientLight(spec.color, spec.intensity);
             }else if (spec.type == "directional"){
@@ -421,6 +420,7 @@ export class CustomScene extends THREE.Scene {
                 light.position.set(spec.position.x, spec.position.y, spec.position.z);
                 light.castShadow = spec.castShadow;
             }
+            light.visible = spec.enabled;
             if (this.lights[lightName] && this.lights[lightName].parent) this.remove(this.lights[lightName]);
             this.lights[lightName] = light;
             super.add(light);
@@ -697,8 +697,24 @@ export class CustomScene extends THREE.Scene {
     }
     onDblClick(event) {
         let item = this.getClickedItem(event);
+
         if (item) {
-            item.pivot.rotateY(Math.PI/2);
+            // match rot{axis}{deg}, e.g. rotX90, rotY180, rotZ270 or flip{axis}, e.g. flipX, flipY, flipZ or rotate{axis}{deg}, e.g. rotateX90, rotateY180, rotateZ270
+            // make axis and deg both optional, e.g. rot, flip, rotate followed by optional axis and deg
+            let s = item.dblclick;
+
+            let [mode, axis, deg] = s.match(/^(flip|rot|rotate)?([xyz])?(\d+)?$/i).slice(1);
+            mode = mode || "rot";
+            if (mode === "rot"){mode="rotate"}
+            if (mode === "flip"){
+                deg = 180;
+                axis = axis || "x";
+            }else{
+                deg = (deg !== undefined)?parseInt(deg):90;
+                axis = axis || "y";
+            }
+            axis = axis.toLowerCase();
+            item.pivot.rotation[axis] += (deg * Math.PI / 180);
             this.sendItemUpdate({[item.name]: {rotation: item.pivot.rotation.toArray()}})
         }
     }
@@ -943,6 +959,9 @@ export class CustomScene extends THREE.Scene {
                 }
                 if (update.rotation){
                     if (cache && !update.position) this.log(`${sender} rotated ${name}`);
+                    if (item.config && (item.config.coverMode === "flip")){
+                        update.rotation[0] = item.covered?Math.PI:0;
+                    }
                     item.pivot.rotation.set(...update.rotation);
                 }
             }

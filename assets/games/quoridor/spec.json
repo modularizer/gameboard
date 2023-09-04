@@ -94,6 +94,7 @@
           "height": 2.5
         }
       },
+      "dblclick": "rotate",
       "position": {
         "x": "$x",
         "y": 0.75,
