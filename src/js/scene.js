@@ -360,9 +360,20 @@ export class CustomScene extends THREE.Scene {
         }
     }
     addOrbitControls(){
+        // make sure the camera position, zoom, and angle do not change when oritcontrols are enabled
+
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.minPolarAngle = (this.config.camera.minAngle * Math.PI / 180); // radians
         this.controls.maxPolarAngle = (this.config.camera.maxAngle * Math.PI / 180); // radians
+        this.controls.touches.ONE = THREE.TOUCH.PAN;
+        this.controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;
+        this.controls.touches.THREE = THREE.TOUCH.PAN;
+        this.controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.PAN,
+        }
+
         for (let [k, v] of Object.entries(this.orbitListeners)){
             this.controls.addEventListener(k, v.bind(this));
         }
@@ -612,7 +623,17 @@ export class CustomScene extends THREE.Scene {
         }
         let item = this.getClickedItem(event);
         if (item){
+            this.camera.updateProjectionMatrix();
+            // manually end controls
+            this.controls.update();
             this.controls.enabled = false;
+            // Temporarily store camera state before the drag operation
+            this.controlsDisabledState = {
+                position: this.camera.position.clone(),
+                rotation: this.camera.rotation.clone(),
+                target: this.controls.target.clone(),
+                zoom: this.camera.zoom,
+            }
 
 
             this.state.selectedItem = item;
@@ -677,7 +698,14 @@ export class CustomScene extends THREE.Scene {
             this.sendItemUpdate({"unselected": item.name, nocache: true});
             this.state.selectedFace = null;
             this.state.dragging = false;
+
             this.addOrbitControls();
+            this.camera.position.copy(this.controlsDisabledState.position);
+            this.camera.rotation.copy(this.controlsDisabledState.rotation);
+            this.camera.zoom = this.controlsDisabledState.zoom;
+            this.camera.updateProjectionMatrix();
+            this.controls.target.copy(this.controlsDisabledState.target);
+            this.controls.update();
 
             // if right click, call context menu
             if (button === 2) {
