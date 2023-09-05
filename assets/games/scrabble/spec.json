@@ -23,7 +23,7 @@
     "tile":  {
         "src": {
           "top": "GAME/$letter.png",
-          "bottom": "GAME/_.png",
+          "bottom": "GAME/blank.png",
           "left": "#CD853F",
           "right": "#CD853F",
           "front": "#CD853F",
@@ -106,7 +106,7 @@
     "x": {"template": "tile", "letter": "x"},
     "y": {"template": "tile", "letter": "y"},
     "z": {"template": "tile", "letter": "z"},
-    "blank": {"template": "tile", "letter": "_"}
+    "blank": {"template": "tile", "letter": "blank"}
   },
   "repeatedModels": {
     "a$i": {"template": "a", "count": 9},
