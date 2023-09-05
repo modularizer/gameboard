@@ -246,7 +246,7 @@ export class MQTTRTCClient {
 
 
 export class RTCConnection {
-    rtcConfiguration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
+    rtcConfiguration = { "iceServers": [{ "urls": "stun:stun4.l.google.com:19302" }] }
 
 
     constructor(name, target, mqttClient, handlers){
