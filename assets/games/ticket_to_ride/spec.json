@@ -4,6 +4,10 @@
       "position": {"x": 0, "y": 50, "z": 40},
       "lookAt": {"x": 0, "y": 0, "z": 0}
     },
+    "floor": {
+      "width": 150,
+      "height": 150
+    },
     "lights": {
       "ambient": {"intensity": 0.9},
       "directional": {"enabled": false, "position":  {"x": 100, "y":  100, "z": 100}},
@@ -37,7 +41,7 @@
         "right": "#000",
         "front": "#000",
         "back": "#000",
-        "dimensions": {"width": 8, "height": 0.2, "depth":  4}
+        "dimensions": {"width": 6, "height": 0.2, "depth":  3}
       },
       "position": {"x": "$x", "y": 0.2, "z": -20},
       "rotation": {"x": 3.14, "y": 0, "z": 0},
@@ -150,7 +154,7 @@
           "dimensions": {
             "width": 20,
             "height": 1.5,
-            "depth": 20
+            "depth": 40
           }
         },
       "hidden": false,
