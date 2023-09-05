@@ -173,7 +173,7 @@ function loadJSON(scene, src){
                 }
             }
         }
-        console.log("forModels", forModels);
+//        console.log("forModels", forModels);
         json.models = {...json.models, ...forModels};
 
 

@@ -463,7 +463,6 @@ export class BaseModel extends THREE.Group {
             zone.contents = zone.contents.filter(c=>c !== this);
         }
         const i = ((part === "item")?this:zone)
-        console.log({fullMethod, method, part})
         const f = i[method].bind(i);
         if (call){
             // do a scoped safe eval of f using the call string like

@@ -235,7 +235,7 @@ export function loadCube(sources){
         ]);
         cube.position.set(0, dimensions.height/2, 0);
         promise.resolve(cube);
-    });
+    }).catch(console.error);
 
     return promise.promise;
 }
