@@ -246,10 +246,31 @@ export class MQTTRTCClient {
 
 
 export class RTCConnection {
-    rtcConfiguration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
+    rtcConfiguration = {
+        iceServers: [
+            {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            }
+        ]
+    }
 
 
     constructor(name, target, mqttClient, handlers){
+        let conf = localStorage.getItem("rtcConfiguration") || "default";
+
+        if (conf === "default"){
+        }else if (conf.iceServers){
+            this.rtcConfiguration = conf;
+        }else if (Array.isArray(conf)){
+            this.rtcConfiguration.iceServers = conf;
+        }else if (conf.urls){
+            this.rtcConfiguration.iceServers = [conf];
+        }else{
+            this.rtcConfiguration.iceServers[0] = {"urls": conf}
+        }
+
         console.log("making RTCConnection", handlers)
         this.name = name;
         this.target = target;
