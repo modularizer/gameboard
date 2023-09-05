@@ -246,15 +246,7 @@ export class MQTTRTCClient {
 
 
 export class RTCConnection {
-    rtcConfiguration = {
-        iceServers: [
-            {
-                urls: 'turn:openrelay.metered.ca:80',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            }
-        ]
-    }
+    rtcConfiguration = {}
 
 
     constructor(name, target, mqttClient, handlers){
@@ -277,7 +269,6 @@ export class RTCConnection {
         this.mqttClient = mqttClient;
         this.handlers = handlers
         this.dataChannels = {};
-        this.peerConnection = new RTCPeerConnection(this.rtcConfiguration);
         this.peerConnection = new RTCPeerConnection(this.rtcConfiguration);
 
         this.peerConnection.onicecandidate = this.onicecandidate.bind(this);
