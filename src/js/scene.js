@@ -817,10 +817,10 @@ export class CustomScene extends THREE.Scene {
 
     attachMQTTRTC(m){
         this.m = m;
-        this.m.handlers["moves"] = this.receiveItemUpdate.bind(this);
+        this.m.rtcHandlers["moves"] = this.receiveItemUpdate.bind(this);
         this.syncedFrom = [];
         this.syncedTo = [];
-        this.m.handlers["sync"] = this.sync.bind(this);
+        this.m.rtcHandlers["sync"] = this.sync.bind(this);
         console.log("requesting sync")
         this.syncInterval = setInterval((() => {
             this.m.send("request", "sync")

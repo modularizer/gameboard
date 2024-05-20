@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import { MQTTRTCClient } from './utils/mqtt-rtc.js';
-import { WebRTCAudioChannel } from './utils/rtcAudio.js';
+import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtchat/rtchat.js';
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
@@ -54,7 +53,7 @@ export class GameBoard extends HTMLElement {
           </div>
           <button id="hideLogs" class="widget logs" style="opacity: 0;">x</button>
           <button id="showLogs" class="widget logs hidden">+</button>
-          <chat-box id="chat" class="widget"></chat-box>
+          <div id="chat" class="widget"></div>
 
         `;
         wrapper.classList.add("fullscreen");
@@ -88,9 +87,9 @@ export class GameBoard extends HTMLElement {
             topic = topic[0] + "." + topic[1];
         }
 
-
-        this.rtc = new MQTTRTCClient({handlers: this.handlers, topic: topic});
-        this.voiceChat = new WebRTCAudioChannel(this.rtc);
+        this.rtchat = new RTChat({handlers: this.handlers, topic: topic, hideRoom: true});
+        this.shadowRoot.getElementById("chat").appendChild(this.rtchat);
+        this.rtc = this.rtchat.rtc;
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
         this.keyListeners.addTo(window);
         this.scene = new CustomScene();
@@ -213,14 +212,13 @@ export class GameBoard extends HTMLElement {
         }
 
         this.instructions.innerHTML = this.defaultInstructions;
-        this.chat.attachMQTTRTC(this.rtc);
 
 
 
         this.score.addEventListener("save", (e)=>{
             this.rtc.send(e.detail, "score");
         })
-        this.rtc.handlers.score = (data, sender) => {
+        this.rtc.rtcHandlers.score = (data, sender) => {
             this.score.fromCSV(data);
         }
         console.log("Bound elements");
@@ -298,7 +296,6 @@ export class GameBoard extends HTMLElement {
         dm: (data, sender) => {console.log("Received DM from", sender, data);},
         chat: (data, sender) => {console.log("Received group chat from", sender, data);},
         moves: (data, sender) => {console.log("Received moves from", sender, data);},
-        audio: (data, sender) => {console.log("Received audio from", sender, data);},
         subtitles: (data, sender) => {
             this.subtitles.style.transition = "";
             this.subtitles.style.opacity = 1;
