@@ -87,7 +87,7 @@ export class GameBoard extends HTMLElement {
             topic = topic[0] + "." + topic[1];
         }
 
-        this.rtchat = new RTChat({handlers: this.handlers, topic: topic, hideRoom: true});
+        this.rtchat = new RTChat({handlers: this.handlers, topic: topic});
         this.shadowRoot.getElementById("chat").appendChild(this.rtchat);
         this.rtc = this.rtchat.rtc;
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
