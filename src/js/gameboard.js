@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtchat/rtchat.js';
+//import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtchat/rtchat.js';
+import { RTChat, SignedMQTTRTCClient } from 'http://localhost:63342/rtchat/rtchat.js';
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
@@ -87,7 +88,7 @@ export class GameBoard extends HTMLElement {
             topic = topic[0] + "." + topic[1];
         }
 
-        this.rtchat = new RTChat({handlers: this.handlers, topic: topic});
+        this.rtchat = new RTChat({handlers: this.handlers, topic: topic, trustMode: "moderate"});
         this.shadowRoot.getElementById("chat").appendChild(this.rtchat);
         this.rtc = this.rtchat.rtc;
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
