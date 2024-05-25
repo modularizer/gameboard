@@ -67,6 +67,7 @@ async function updateVersion() {
 
         let indexHTMLData = await fs.readFile(indexHtmlPath, 'utf8');
         indexHTMLData = indexHTMLData.replace(/"build\/gameboard\.min\.js\?v.*?"/g, `"build/gameboard.min.js?v${newVersion}"`);
+        indexHTMLData = indexHTMLData.replace(/"src\/js\/index\.js\?v.*?"/g, `"src/js/index.js?v${newVersion}"`);
         await fs.writeFile(indexHtmlPath, indexHTMLData, 'utf8');
         console.log(`Version updated to ${newVersion}`);
     }

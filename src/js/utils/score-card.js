@@ -2,7 +2,6 @@ export class ScoreCard extends HTMLElement {
     constructor() {
         super();
         let csv = this.innerText;
-        console.log("csv", csv, this.innerHTML);
 
         // Create shadow root
         this.attachShadow({ mode: 'open' });
