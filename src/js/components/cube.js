@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { DeferredPromise } from '../utils/deferredPromise.js';
 
+
+window.THREEVideos = {};
+
 function getMaterial(v, loader){
     let loadPromise = false;
     if (v instanceof THREE.MeshStandardMaterial){
@@ -18,6 +21,39 @@ function getMaterial(v, loader){
              loadPromise = deferredLoadPromise.promise;
         }else if (["transparent", "clear", "none"].includes(v)){
             v = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 });
+        }else if (["fullytransparent", "totallyclear"].includes(v)){
+            v = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 });
+            v.fullyTransparent = true;
+        } else if (v.startsWith("videochat")){
+            let id = v;
+            if (id == "videochat"){
+                id = 'videochat' + (Object.keys(window.THREEVideos).length + 1);
+            }
+            let element = document.getElementById(id);
+            if (!element){
+                element = document.createElement('video');
+                element.id = id;
+                element.style.display = "none";
+                document.body.appendChild(element);
+                element.loop = true;
+                element.autoplay = true;
+                element.playsInline = true;
+            }
+            let texture = new THREE.VideoTexture(element);
+            let material = new THREE.MeshStandardMaterial({ map: texture });
+            window.THREEVideos[id] = {
+                element: element,
+                texture: texture,
+                material: material,
+            }
+
+            v = material
+            // set transparent if no srcObject
+            if (!element.srcObject){
+                v.transparent = true;
+                v.opacity = 0;
+            }
+
         }else{
             v = new THREE.MeshStandardMaterial({ color: new THREE.Color(v) });
         }
@@ -199,12 +235,19 @@ export function loadCube(sources){
 
         // if any sides are transparent, make all sides double-sided
         let transparent = false;
+        let nonTransparent = false;
         for (let [k, v] of Object.entries(materials)) {
             if (v.transparent){
-                transparent = true;
+                if (!v.fullyTransparent){
+                    transparent = true;
+                }
+            }else {
+                console.log("double-sided", k, materials)
+                nonTransparent = true;
             }
         }
-        if (transparent){
+        if (transparent && nonTransparent){
+            console.log("Making cube double-sided");
             for (let [k, v] of Object.entries(materials)) {
                 v.side = THREE.BackSide;
             }

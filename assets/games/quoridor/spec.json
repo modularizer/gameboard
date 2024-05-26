@@ -119,6 +119,32 @@
       },
       "snap": "pieces",
       "moveable": true
+    },
+    "Video": {
+      "src": {
+        "top": "fullytransparent",
+        "left": "fullytransparent",
+        "right": "fullytransparent",
+        "bottom": "fullytransparent",
+        "front": "fullytransparent",
+        "back": "$videoPlayer",
+        "dimensions": {
+          "depth": 1,
+          "width": 46,
+          "height": 25
+        }
+      },
+      "position": {
+        "x": -23,
+        "y": 0.75,
+        "z": "$z"
+      },
+      "rotation": {
+        "x": 0,
+        "y": "$yrotation",
+        "z": 0
+      },
+      "moveable": false
     }
   },
   "repeatedModels": {
@@ -185,6 +211,18 @@
       "template": "piece",
       "color":  "#CD853F",
       "z": 11.75
+    },
+    "Video1": {
+      "template": "Video",
+      "videoPlayer": "videochat-p1",
+      "yrotation": 0,
+      "z": -35
+    },
+    "Video2": {
+      "template": "Video",
+      "videoPlayer": "videochat-p2",
+      "yrotation": 3.1415926575323846268979,
+      "z": 35
     }
   }
 }
