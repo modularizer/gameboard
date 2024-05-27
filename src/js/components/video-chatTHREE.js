@@ -24,7 +24,7 @@ class VideoChatTHREE extends BasicVideoChat {
         let id = "videochat-" + ((this.playerName === "p1")?"p1":"p2");
         console.log("setting local src", id, this.videos, stream);
         let localVideo = this.setVideoSrc(id, stream);
-        localVideo.muted = true;
+        localVideo.setAttribute("muted", true);
     }
     setRemoteSrc(stream, name) {
         super.setRemoteSrc(stream, name);
