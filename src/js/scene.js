@@ -7,6 +7,49 @@ import { DeferredPromise } from './utils/deferredPromise.js';
 import { merge } from './utils/merge.js';
 
 
+function d2R(degrees) {
+    return degrees * (Math.PI / 180);
+}
+function r2D(radians) {
+    return radians * (180 / Math.PI);
+}
+
+class Angle {
+    constructor(value, units = "degrees") {
+        if (value instanceof Angle) {
+            return value;
+        }
+        this.value = value;
+        this.unit = units;
+    }
+    get radians() {
+        if (this.unit === "degrees") {
+            return d2R(this.value);
+        } else {
+            return this.value;
+        }
+    }
+    get degrees() {
+        if (this.unit === "radians") {
+            return r2D(this.value);
+        } else {
+            return this.value;
+        }
+    }
+    set radians(value) {
+        this.value = value;
+        this.unit = "radians";
+    }
+    set degrees(value) {
+        this.value = value;
+        this.unit = "degrees";
+    }
+    toString() {
+        return `${this.value} ${this.unit}`;
+    }
+}
+
+
 function toXYZ(v) {
     if (v instanceof THREE.Vector3) return [v.x, v.y, v.z];
     if (v instanceof Array) return { x: v[0], y: v[1], z: v[2] };
@@ -118,6 +161,13 @@ export class CustomScene extends THREE.Scene {
 //           this.display(document.body);
 //           this.sceneLoaded = true;
 //        })
+        window.addEventListener('resize', (()=>{
+            console.warn("resize")
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+
+        }).bind(this), false)
     }
 
     // key listeners
@@ -167,9 +217,7 @@ export class CustomScene extends THREE.Scene {
         "Control": ()=>{this.state.clickMode = "right"},
         "Alt": ()=>{this.state.clickMode = "middle"},
         "default": (e, k)=>{
-            console.warn("Unhandled key:", k);
             if (this.state.selectedItem) {
-                console.log("selectedItem", this.state.selectedItem)
                this.state.selectedItem.keydown(e, k)
             }
         },
@@ -506,7 +554,6 @@ export class CustomScene extends THREE.Scene {
         this.loadCachedState();
         this.sendItemUpdate(this.freshState);
 
-
         localStorage.removeItem(location.hash + "FullState");
         this.sendItemUpdate("reset");
         location.reload();
@@ -821,7 +868,6 @@ export class CustomScene extends THREE.Scene {
         this.syncedFrom = [];
         this.syncedTo = [];
         this.m.rtcHandlers["sync"] = this.sync.bind(this);
-        console.log("requesting sync")
         this.syncInterval = setInterval((() => {
             this.m.send("request", "sync")
         }).bind(this), 1000); // tries to sync every second until it is successfully gets a sync response
@@ -919,28 +965,27 @@ export class CustomScene extends THREE.Scene {
         this.m.send(data, "moves");
 
         if (!data.nocache){
-
             let changed = false;
             for (let [name, update] of Object.entries(data)){
-            if (!["selected", "unselected"].includes(name)){
-                if (!this.fullState[name]){
-                    this.fullState[name] = {"position": null, "rotation": null}
-                }
+                if (!["selected", "unselected"].includes(name)){
+                    if (!this.fullState[name]){
+                        this.fullState[name] = {"position": null, "rotation": null}
+                    }
 
-                changed = true;
-                if (update.position){
-                    this.log('You moved');
-                    this.fullState[name].position = update.position;
+                    changed = true;
+                    if (update.position){
+                        this.log('You moved');
+                        this.fullState[name].position = update.position;
+                    }
+                    if (update.rotation ){
+                        if (!update.position) this.log(`You rotated ${name}`);
+                        this.fullState[name].rotation = update.rotation;
+                    }
                 }
-                if (update.rotation ){
-                    if (!update.position) this.log(`You rotated ${name}`);
-                    this.fullState[name].rotation = update.rotation;
+                if (changed){
+                    localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
                 }
             }
-            if (changed){
-                localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
-            }
-        }
         }
     }
     receiveItemUpdate(data, sender, forcenocache=false){

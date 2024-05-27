@@ -97,12 +97,10 @@ export class GameBoard extends HTMLElement {
         this.scene = new CustomScene();
         this.scene.onlog = this.log.bind(this);
         this.scene.attachMQTTRTC(this.rtc);
-        console.log("Gameboard constructed");
         this.onDocumentLoad();
 
     }
     onDocumentLoad() {
-        console.log("document loaded");
         window.g = this;
         this.saveElements();
         this.bindElements();
@@ -126,7 +124,6 @@ export class GameBoard extends HTMLElement {
         this.sceneBox = this.shadowRoot.getElementById("sceneBox");
         this.hideLogs = this.shadowRoot.getElementById("hideLogs");
         this.showLogs = this.shadowRoot.getElementById("showLogs");
-        console.log("Saved elements");
     }
     bindElements(){
         this.q.addEventListener("click", (() => {
@@ -223,7 +220,6 @@ export class GameBoard extends HTMLElement {
         this.rtc.rtcHandlers.score = (data, sender) => {
             this.score.fromCSV(data);
         }
-        console.log("Bound elements");
     }
     loadGame(){
         const hashParts = location.hash.replace("#", "").split(".");
@@ -252,7 +248,6 @@ export class GameBoard extends HTMLElement {
         this.roomInput.classList.add("hidden");
 
         const src = "./assets/games/" + this.gameName + "/spec.json?" + Date.now();
-        console.log("Loading game", this.gameName, "from", src);
         loadJSON(this.scene, src).then((({models, metadata, scorecard}) => {
             this.models = models;
             this.metadata = metadata;
@@ -344,55 +339,55 @@ Software Version: ${window.version}`
         localStorage.removeItem(this.game + "Instructions");
     }
     log(message) {
-    // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds
-    const log = this.disappearingLog;
-    const div = document.createElement("pre");
-    div.classList.add("logs");
-    div.classList.add("disappearing");
-    div.style.opacity = 1;
-    div.innerText = message;
-    log.appendChild(div);
+        // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds
+        const log = this.disappearingLog;
+        const div = document.createElement("pre");
+        div.classList.add("logs");
+        div.classList.add("disappearing");
+        div.style.opacity = 1;
+        div.innerText = message;
+        log.appendChild(div);
 
-    // Move all messages up
-    Array.from(log.children).forEach((child, index) => {
-        // Move each message up by 20px by reading bottom and adding 20px not using translate
-        let bottom = parseInt(child.style.bottom) || 0;
-        child.style.bottom = (bottom + 20) + "px";
-    });
+        // Move all messages up
+        Array.from(log.children).forEach((child, index) => {
+            // Move each message up by 20px by reading bottom and adding 20px not using translate
+            let bottom = parseInt(child.style.bottom) || 0;
+            child.style.bottom = (bottom + 20) + "px";
+        });
 
-    const x = this.hideLogs;
-    const p = this.showLogs;
-    if (this.fadeHideLogs) {
-        clearInterval(this.fadeHideLogs);
-        this.fadeHideLogs = null;
-    }
-    x.style.opacity = 1;
-    p.style.opacity = 1;
-    setTimeout((() => {
-        x.style.opacity = 1;
-        p.style.opacity = 1;
+        const x = this.hideLogs;
+        const p = this.showLogs;
         if (this.fadeHideLogs) {
             clearInterval(this.fadeHideLogs);
             this.fadeHideLogs = null;
         }
-        this.fadeHideLogs = setInterval(() => {
-            x.style.opacity = Math.max((parseFloat(x.style.opacity) || 0) - 0.01, 0);
-            p.style.opacity = Math.max((parseFloat(p.style.opacity) || 0) - 0.01, 0);
-        }, 100);
-    }).bind(this), 2000);
+        x.style.opacity = 1;
+        p.style.opacity = 1;
+        setTimeout((() => {
+            x.style.opacity = 1;
+            p.style.opacity = 1;
+            if (this.fadeHideLogs) {
+                clearInterval(this.fadeHideLogs);
+                this.fadeHideLogs = null;
+            }
+            this.fadeHideLogs = setInterval(() => {
+                x.style.opacity = Math.max((parseFloat(x.style.opacity) || 0) - 0.01, 0);
+                p.style.opacity = Math.max((parseFloat(p.style.opacity) || 0) - 0.01, 0);
+            }, 100);
+        }).bind(this), 2000);
 
 
-    // Fade out and move up the new message
-    setTimeout(() => {
-        div.style.opacity = 0;
-//        div.style.transform = "translateY(-80px)"; // Move the new message up by 40px
-    }, 1000);
+        // Fade out and move up the new message
+        setTimeout(() => {
+            div.style.opacity = 0;
+    //        div.style.transform = "translateY(-80px)"; // Move the new message up by 40px
+        }, 1000);
 
-    // Remove the new message after fading out
-    setTimeout(() => {
-        log.removeChild(div);
-    }, 11000);
+        // Remove the new message after fading out
+        setTimeout(() => {
+            log.removeChild(div);
+        }, 11000);
 
-}
+    }
 
 };
