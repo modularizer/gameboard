@@ -23,7 +23,8 @@ class VideoChatTHREE extends BasicVideoChat {
         super.setLocalSrc(stream);
         let id = "videochat-" + ((this.playerName === "p1")?"p1":"p2");
         console.log("setting local src", id, this.videos, stream);
-        this.setVideoSrc(id, stream);
+        let localVideo = this.setVideoSrc(id, stream);
+        localVideo.muted = true;
     }
     setRemoteSrc(stream, name) {
         super.setRemoteSrc(stream, name);
@@ -44,7 +45,7 @@ class VideoChatTHREE extends BasicVideoChat {
                 d.material.opacity = 0;
             }
         }
-
+        return d.element;
     }
 }
 customElements.define('videochat-three', VideoChatTHREE);
