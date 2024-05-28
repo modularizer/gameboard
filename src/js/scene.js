@@ -87,7 +87,13 @@ export class CustomScene extends THREE.Scene {
         this.cacheFullState = this.cacheFullState.bind(this);
         this.getFullState = this.getFullState.bind(this);
         this.loadCachedState = this.loadCachedState.bind(this);
+        this.getDiffFromFreshState = this.getDiffFromFreshState.bind(this);
+        this._getStateDiff = this._getStateDiff.bind(this);
+        this._applyStateDiff = this._applyStateDiff.bind(this);
+        this.applyDiffFromFreshState = this.applyDiffFromFreshState.bind(this);
 
+
+        this.freshState = {};
         this.fullState = {};
 
         // Event listener for arrow keys
@@ -153,7 +159,7 @@ export class CustomScene extends THREE.Scene {
         })
         this.freshState = {};
 
-        this.loadPromise.then(this.loadCachedState.bind(this));
+//        this.loadPromise.then(this.loadCachedState.bind(this));
 
         this.loadPromise.then(()=>{console.timeEnd("load")});
 
@@ -352,7 +358,12 @@ export class CustomScene extends THREE.Scene {
         this._config = value;
         this.configure(this._config);
     }
-    updateConfig(value) {
+    updateConfig(value, playerName) {
+        if (value.camera && value.camera.position && value.camera.position.players){
+            if (value.camera.position.players[playerName]){
+                value.camera.position = value.camera.position.players[playerName];
+            }
+        }
         let o = merge(this.config, value);
         this.configure(o, o.camera.position, o.camera.lookAt?o.camera.lookAt:{x:0,y:0,z:0});
     }
@@ -531,7 +542,7 @@ export class CustomScene extends THREE.Scene {
                     this.loaded = false;
                     this.loadDeferredPromise = new DeferredPromise();
                     this.loadPromise = this.loadDeferredPromise.promise;
-                    this.loadPromise.then(this.loadCachedState.bind(this));
+//                    this.loadPromise.then(this.loadCachedState.bind(this));
                     this.loadPromise.then(()=>{console.timeEnd("load")});
                 }
                 item.loadPromise.then(this.checkIfFullyLoaded.bind(this));
@@ -550,8 +561,9 @@ export class CustomScene extends THREE.Scene {
     }
     reset(){
         this.log("reset room");
-        localStorage.setItem(location.hash + "FullState", JSON.stringify(this.freshState));
-        this.loadCachedState();
+        console.log("resetting room")
+//        localStorage.setItem(location.hash + "FullState", JSON.stringify(this.freshState));
+//        this.loadCachedState();
         this.sendItemUpdate(this.freshState);
 
         localStorage.removeItem(location.hash + "FullState");
@@ -883,9 +895,57 @@ export class CustomScene extends THREE.Scene {
         }
         return data;
     }
+    getDiffFromFreshState(){
+        return this._getStateDiff(this.getFullState(), this.freshState);
+    }
+    _getStateDiff(newState, oldState){
+        let diff = {};
+        for (let [name, update] of Object.entries(newState)){
+            if (!oldState[name]){
+                diff[name] = update;
+            }else{
+                let position = update.position.map((v, i)=>(v != oldState[name].position[i])?v:null);
+                let rotation = update.rotation.map((v, i)=>(((v - oldState[name].rotation[i]) % (2 * Math.PI)) > 0.001)?v:null);
+                let positionChanged = position.some(v=>v);
+                let rotationChanged = rotation.some(v=>v);
+                if (positionChanged || rotationChanged){
+                    diff[name] = {};
+                    if (positionChanged) diff[name].position = position;
+                    if (rotationChanged) diff[name].rotation = rotation;
+                }
+            }
+        }
+        return diff;
+    }
+    _applyStateDiff(diff, oldState){
+        let newState = JSON.parse(JSON.stringify(oldState));
+        for (let [name, update] of Object.entries(diff)){
+            if (!oldState[name]){
+                newState[name] = update;
+            }else{
+                if (update.position){
+                    let newPosition = update.position.map((v, i)=>(v!==null)?v:oldState[name].position[i]);
+                    newState[name].position = newPosition;
+                }
+                if (update.rotation){
+                    let newRotation = update.rotation.map((v, i)=>(v!==null)?v:oldState[name].rotation[i]);
+                    newState[name].rotation = newRotation;
+                }
+            }
+        }
+        return newState;
+
+    }
+    applyDiffFromFreshState(diff){
+        let fullState = this._applyStateDiff(diff, this.freshState);
+        this.applyFullState(fullState);
+    }
+
     cacheFullState(){
         this.fullState = this.getFullState()
-        localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
+        let diff = this._getStateDiff(this.fullState, this.freshState);
+        console.warn("setting cache", diff)
+        localStorage.setItem(location.hash + "FullState", JSON.stringify(diff));
     }
     checkZones(){
         if (!this.loaded){
@@ -921,12 +981,19 @@ export class CustomScene extends THREE.Scene {
     }
     loadCachedState(){
         if (this.syncedFrom.length){
-            this.cacheFullState();
+//            this.cacheFullState();
 //            setTimeout(this.checkZones.bind(this), 1000);
             return
         }
         this.log("loading from browser cache")
-        let data = JSON.parse(localStorage.getItem(location.hash + "FullState") || "false");
+
+        let diff = JSON.parse(localStorage.getItem(location.hash + "FullState"));
+        console.warn("loading cache", diff)
+        this.applyDiffFromFreshState(diff);
+//        setTimeout(this.checkZones.bind(this), 1000);
+
+    }
+    applyFullState(data){
         if (!data){return}
         for (let [name, update] of Object.entries(data)){
             let item = this.state.itemsByName[name];
@@ -939,8 +1006,6 @@ export class CustomScene extends THREE.Scene {
             }
             item.snap();
         }
-//        setTimeout(this.checkZones.bind(this), 1000);
-
     }
     sync(data, sender){
         if (data === "request"){
@@ -983,10 +1048,11 @@ export class CustomScene extends THREE.Scene {
                     }
                 }
                 if (changed){
-                    localStorage.setItem(location.hash + "FullState", JSON.stringify(this.fullState));
+                    this.cacheFullState();
                 }
             }
         }
+
     }
     receiveItemUpdate(data, sender, forcenocache=false){
         if (data === "reset"){

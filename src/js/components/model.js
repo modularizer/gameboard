@@ -103,12 +103,12 @@ function templateItem(templateObject, values){
 }
 
 
-function loadJSON(scene, src){
+function loadJSON(scene, src, playerName){
     let folder = src.substring(0, src.lastIndexOf("/")+1);
     return fetch(src).then(r => r.json()).then(json => {
         // update scene config
         if (json.scene){
-            scene.updateConfig(json.scene);
+            scene.updateConfig(json.scene, playerName);
         }
 
         // perform for loops
@@ -218,7 +218,6 @@ function loadJSON(scene, src){
         let freshState = {};
         let modelsSpec = {};
         for (let [name, details] of Object.entries(json.models)){
-
             if (details.players){
                 let players = details.players;
                 delete details.players;
@@ -248,7 +247,8 @@ function loadJSON(scene, src){
             }
             modelsSpec[name] = details;
         }
-        scene.freshState = freshState;
+//        scene.freshState = JSON.parse(JSON.stringify(freshState));
+        let once = false;
         scene.loadPromise.then(() => {
             for (let [name, details] of Object.entries(modelsSpec)){
                 let model = models[name];
@@ -273,6 +273,12 @@ function loadJSON(scene, src){
                         model.startTranslation(p.x, p.y, p.z);
                     }
                 }
+            }
+            if (!once){
+                scene.freshState = JSON.parse(JSON.stringify(scene.getFullState()));
+                console.warn("setting fresh state", scene.freshState);
+                scene.loadCachedState();
+                once = true;
             }
         })
 

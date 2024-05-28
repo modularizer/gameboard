@@ -68,11 +68,13 @@ export class GameBoard extends HTMLElement {
         this.roomNames.push("+");
 
         // bind handlers
-        for (let o of [this.handlers, this.keydownHandlers, this.keyupHandlers]){
+        for (let o of [this.handlers, this.keydownHandlers, this.keyupHandlers, this.questionHandlers]){
             for (let [k, v] of Object.entries(o)){
                 o[k] = v.bind(this);
             }
         }
+
+
         this.onDocumentLoad = this.onDocumentLoad.bind(this);
         this.saveElements = this.saveElements.bind(this);
         this.bindElements = this.bindElements.bind(this);
@@ -88,10 +90,43 @@ export class GameBoard extends HTMLElement {
         }else{
             topic = topic[0] + "." + topic[1];
         }
+        this.loadStartTime = Date.now();
 
-        this.rtchat = new RTChat({handlers: this.handlers, topic: topic, trustMode: "unsafe"}, VideoChatTHREE);
+        this.rtchat = new RTChat({handlers: this.handlers, questionHandlers: this.questionHandlers, topic: topic, trustMode: "unsafe"}, VideoChatTHREE);
         this.shadowRoot.getElementById("chat").appendChild(this.rtchat);
         this.rtc = this.rtchat.rtc;
+
+        let otherPlayerNames = {};
+        this.rtc.on("validation", (peerName)=>{
+            setTimeout((()=>{
+            console.warn("asking playerName from ", peerName)
+            this.rtc.sendRTCQuestion("playerName", peerName).then(({playerName, loadStartTime})=>{
+                console.warn("received playerName from ", peerName, (loadStartTime < this.loadStartTime), playerName == this.playerName)
+                if ((loadStartTime < this.loadStartTime) && (playerName == this.playerName)){
+                    try{
+                        let n = parseInt(playerName.replace("p", ""));
+                        for (let i = 1; i < 5; i++){
+                            if ((i != n) && (!otherPlayerNames["p" + i])){;
+                                console.warn("switching playerName", n, i)
+                                this.log("Switching to p" + i);
+                                this.playerSelect.value = "p" + i;
+                                // set hash
+                                location.hash = "#" + this.gameName + "." + this.roomName + ".p" + i;
+                                console.warn("Reloading", location.hash);
+                                location.reload();
+                                return
+                            }
+                        }
+                    }catch(e){
+                        console.error(e);
+                    }
+                }else{
+                    otherPlayerNames[playerName] = peerName;
+                }
+            });}).bind(this),200);
+        })
+
+
         this.keyListeners = new KeyListeners(this.keydownHandlers, this.keyupHandlers);
         this.keyListeners.addTo(window);
         this.scene = new CustomScene();
@@ -248,7 +283,7 @@ export class GameBoard extends HTMLElement {
         this.roomInput.classList.add("hidden");
 
         const src = "./assets/games/" + this.gameName + "/spec.json?" + Date.now();
-        loadJSON(this.scene, src).then((({models, metadata, scorecard}) => {
+        loadJSON(this.scene, src, this.playerName).then((({models, metadata, scorecard}) => {
             this.models = models;
             this.metadata = metadata;
 
@@ -305,6 +340,12 @@ export class GameBoard extends HTMLElement {
         },
         score: (data, sender) => {console.log("Received score from", sender, data);},
     }
+    questionHandlers = {
+        playerName: ()=>{return {playerName: this.playerName, loadStartTime: this.loadStartTime}},
+        state: ()=>{return this.state}
+    }
+
+
     defaultInstructions = `To Move:
     1. Click & drag (then it will snap to position) OR
     2. Click the use arrow keys (then it will snap)
@@ -389,5 +430,13 @@ Software Version: ${window.version}`
         }, 11000);
 
     }
+
+    get state(){
+        return this.scene.getDiffFromFreshState();
+    }
+    set state(state){
+        this.scene.applyDiffFromFreshState(state);
+    }
+
 
 };

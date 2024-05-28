@@ -2,9 +2,18 @@
   "scene": {
     "camera": {
       "position": {
-        "x": 25,
-        "y": 50,
-        "z": 40
+        "players": {
+          "p1": {
+            "x": 25,
+            "y": 50,
+            "z": -40
+          },
+          "p2": {
+              "x": 25,
+              "y": 50,
+              "z": 40
+          }
+        }
       },
       "lookAt": {
         "x": 0,
@@ -175,15 +184,25 @@
       "x": [-16, 14],
       "z": [-19, 14]
     },
-    "wall$i": {
+    "wall-Player1-$i": {
       "template": "wall",
       "x": {
         "start": -14,
         "stop": 14,
         "step": 3
       },
-      "z": [-19, 14]
+      "z": [-19]
+    },
+    "wall-Player2-$i": {
+      "template": "wall",
+      "x": {
+        "start": -14,
+        "stop": 14,
+        "step": 3
+      },
+      "z": [14]
     }
+
   },
   "models": {
     "base": {
@@ -202,23 +221,23 @@
       },
       "moveable": false
     },
-    "Piece1": {
+    "Piece-Player1": {
       "template": "piece",
       "color": "rgb(130, 22, 5)",
-      "z": -12.5
+      "z": -12
     },
-    "Piece2": {
+    "Piece-Player2": {
       "template": "piece",
       "color":  "#CD853F",
-      "z": 11.75
+      "z": 12
     },
-    "Video1": {
+    "Video-Player1": {
       "template": "Video",
       "videoPlayer": "videochat-p1",
       "yrotation": 0,
       "z": -35
     },
-    "Video2": {
+    "Video-Player2": {
       "template": "Video",
       "videoPlayer": "videochat-p2",
       "yrotation": 3.1415926575323846268979,
