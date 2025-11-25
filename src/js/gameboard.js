@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtchat/bundles/rtchat.esm.min.js';
-//import { RTChat, SignedMQTTRTCClient } from 'http://localhost:63342/rtchat/bundles/rtchat.esm.js';
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
@@ -326,7 +325,13 @@ export class GameBoard extends HTMLElement {
     handlers = {
         sync: (data, sender) => {console.log("Received sync from", sender, data);},
         dm: (data, sender) => {console.log("Received DM from", sender, data);},
-        chat: (data, sender) => {console.log("Received group chat from", sender, data);},
+        chat: (data, sender) => {
+            console.log("Received group chat from", sender, data);
+            // Call RTChat's internal handler to display message in ChatBox
+            if (this.rtc && this.rtc.emit) {
+                this.rtc.emit('chat', data, sender);
+            }
+        },
         moves: (data, sender) => {console.log("Received moves from", sender, data);},
         subtitles: (data, sender) => {
             this.subtitles.style.transition = "";
