@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtchat/bundles/rtchat.esm.min.js';
+import { RTChat } from 'https://modularizer.github.io/rtchat/bundles/rtchat.esm.min.js';
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
-import {gameNames, roomNames} from "./config";
+import {gameNames, roomNames} from "./config.js";
 // import { VideoChatTHREE } from './components/video-chatTHREE.js';
 
 export class GameBoard extends HTMLElement {
@@ -40,14 +40,21 @@ export class GameBoard extends HTMLElement {
             </select><br/>
             <button id="reset">Reset Room</button>
           </div>
-          <div id="instructionsBox" class="widget tr">
-                <button id="q">?</button>
+          <a id="githubLink" href="https://github.com/modularizer/gameboard" target="_blank" class="widget" style="top: 0; right: 0; background: none; border: none; padding: 0.5em; margin: 0.5em;">
+            <svg width="32" height="32" viewBox="0 0 16 16" fill="white" style="display: block;">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+          </a>
+          <div id="instructionsBox" class="widget tr" style="top: 50px;">
+                <button id="q">? Get  Help</button>
                 <button id = "x" class="fr hidden">x</button>
                 <pre id="instructions" class="hidden">
                 </pre>
-                <button id="showScore" class="hidden">+</button>
-                <button id="hideScore" class="fr">x</button>
-                <score-card id="score" class=""></score-card>
+                <div>
+                  <button id="showScore" class="hidden">+ Scorecard</button>
+                  <button id="hideScore" class="fr hidden">x</button>
+                </div>
+                <score-card id="score" class="hidden"></score-card>
           </div>
           <pre id="subtitles" class="widget bc subtitles"></pre>
           <div id="disappearingLog" class="floating bl">
@@ -257,11 +264,13 @@ export class GameBoard extends HTMLElement {
         }
     }
     loadGame(){
+        console.log("loadGame() called");
         const hashParts = location.hash.replace("#", "").split(".");
 
         this.gameName = (hashParts && this.gameNames.includes(hashParts[0]))? hashParts[0] : (localStorage.getItem("game") || "lobby");
         this.roomName = (hashParts.length >= 2) ? hashParts[1] : (localStorage.getItem("room") || "lobby");
         this.playerName = (hashParts.length >= 3) ? hashParts[2] : (localStorage.getItem("playerName") || "pub");
+        console.log("Game name set to:", this.gameName);
         this.playerSelect.value = this.playerName;
         if (!this.roomNames.includes(this.roomName)){
             this.roomNames.push(this.roomName);
@@ -283,7 +292,11 @@ export class GameBoard extends HTMLElement {
         this.roomInput.classList.add("hidden");
 
         const src = "./assets/games/" + this.gameName + "/spec.json?" + Date.now();
+        // console.log("Loading JSON from:", src);
         loadJSON(this.scene, src, this.playerName).then((({models, metadata, scorecard}) => {
+            // console.log("loadJSON promise resolved");
+            // console.log("metadata:", metadata);
+            // console.log("metadata.instructions exists?", !!metadata.instructions);
             this.models = models;
             this.metadata = metadata;
 
@@ -300,25 +313,43 @@ export class GameBoard extends HTMLElement {
             }
 
             if (metadata.instructions) {
-                let i = localStorage.getItem(this.game + "Instructions");
-                if (i === metadata.instructions) {
-                    this.hideInstructions();
-                }else {
-                    this.showInstructions();
-                }
-
                 this.instructions.innerHTML = metadata.instructions;
+            }
+            
+            // Check if user has dismissed instructions for this game before
+            let dismissed = localStorage.getItem(this.gameName + "InstructionsDismissed");
+            console.log("Game:", this.gameName);
+            console.log("Dismissed flag:", dismissed);
+            console.log("Should show?", dismissed !== "true");
+            if (dismissed !== "true") {
+                // Not dismissed before, so show them
+                console.log("Calling showInstructions()");
+                this.showInstructions();
+            } else {
+                console.log("Leaving instructions hidden");
             }
 
         }).bind(this));
+        
+        // Also check immediately in case the game is already loaded
+        setTimeout(() => {
+            let dismissed = localStorage.getItem(this.gameName + "InstructionsDismissed");
+            if (dismissed !== "true" && this.instructions.innerHTML) {
+                this.showInstructions();
+            }
+        }, 100);
     }
     showScoreCard(){
         this.score.classList.remove("hidden");
+        this.score.style.minWidth = "300px";
+        this.score.style.minHeight = "200px";
         this.hideScore.classList.remove("hidden");
         this.showScore.classList.add("hidden");
     }
     hideScoreCard(){
         this.score.classList.add("hidden");
+        this.score.style.minWidth = "";
+        this.score.style.minHeight = "";
         this.hideScore.classList.add("hidden");
         this.showScore.classList.remove("hidden");
     }
@@ -352,14 +383,25 @@ export class GameBoard extends HTMLElement {
     }
 
 
-    defaultInstructions = `To Move:
-    1. Click & drag (then it will snap to position) OR
-    2. Click the use arrow keys (then it will snap)
+    defaultInstructions = `Welcome to gameboard!
 
-To Rotate:
-    1. Double Click OR
-    2. Click and use spacebar OR
-    3. Right Click and drag to rotate
+1. Choose a game, room, and player number
+2. Copy the url to invite your friends
+3. Use the chat to make sure everyone is ready
+4. Play! It is just a "physical" board 
+   so it is up to you to play by the rules
+    
+To Move:
+    Click on a piece, drag, then release
+
+To Rotate A Piece:
+    Double click on the piece
+   
+To Rotate the view:
+    Click and drag the floor
+
+For more info:
+    https://github.com/modularizer/gameboard
 
 Software Version: ${window.version}`
 
@@ -374,16 +416,25 @@ Software Version: ${window.version}`
         }
     }
     hideInstructions(){
-        this.instructions.style.display = "none";
-        this.q.style.display = "block";
-        this.x.style.display = "none";
-        localStorage.setItem(this.game + "Instructions", this.metadata.instructions);
+        this.instructions.classList.add("hidden");
+        this.q.classList.remove("hidden");
+        this.x.classList.add("hidden");
+        // Mark that user has dismissed instructions for this game
+        localStorage.setItem(this.gameName + "InstructionsDismissed", "true");
     }
     showInstructions(){
-        this.instructions.style.display = "block";
-        this.q.style.display = "none";
-        this.x.style.display = "block";
-        localStorage.removeItem(this.game + "Instructions");
+        console.log("showInstructions called");
+        console.log("this.instructions:", this.instructions);
+        console.log("this.q:", this.q);
+        console.log("this.x:", this.x);
+        this.instructions.classList.remove("hidden");
+        this.q.classList.add("hidden");
+        this.x.classList.remove("hidden");
+        console.log("Instructions classes after:", this.instructions.className);
+        console.log("Q classes after:", this.q.className);
+        console.log("X classes after:", this.x.className);
+        // Remove dismissed flag so instructions show again next time
+        localStorage.removeItem(this.gameName + "InstructionsDismissed");
     }
     log(message) {
         // add a message to the disappearing log, which should fade in opacity, drift slowly up and disappear after a few seconds

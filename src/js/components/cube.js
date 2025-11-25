@@ -242,12 +242,12 @@ export function loadCube(sources){
                     transparent = true;
                 }
             }else {
-                console.log("double-sided", k, materials)
+                // console.log("double-sided", k, materials)
                 nonTransparent = true;
             }
         }
         if (transparent && nonTransparent){
-            console.log("Making cube double-sided");
+            // console.log("Making cube double-sided");
             for (let [k, v] of Object.entries(materials)) {
                 v.side = THREE.BackSide;
             }

@@ -50,9 +50,9 @@ export class ScoreCard extends HTMLElement {
                     </tr>
                 </table>
             </div>
-            <button id="addRow">+_</button>
-            <button id="addCol">+|</button>
-            <button id="reset">x</button>
+            <button id="addRow">+ Row</button>
+            <button id="addCol">+ Col</button>
+            <button id="reset">x Clear</button>
         `;
 
         this.onChange = this.onChange.bind(this);
