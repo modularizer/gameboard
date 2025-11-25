@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle - warm wood tone -->
+  <circle cx="50" cy="50" r="55" fill="#fff"/>
+  
+  <!-- 3x3 checkerboard pattern - skewed perspective -->
+  <g transform="translate(50, 50) rotate(45) skewY(-45) skewX(0) scale(0.7, 1.5)">
+    <!-- Each square is 18x18, centered at origin -->
+    <!-- Row 1 -->
+    <rect x="-27" y="-27" width="18" height="18" fill="#5C4033" stroke="#000" stroke-width="2"/>
+    <rect x="-9" y="-27" width="18" height="18" fill="#D2B48C" stroke="#000" stroke-width="2"/>
+    <rect x="9" y="-27" width="18" height="18" fill="#5C4033" stroke="#000" stroke-width="2"/>
+    
+    <!-- Row 2 -->
+    <rect x="-27" y="-9" width="18" height="18" fill="#D2B48C" stroke="#000" stroke-width="2"/>
+    <rect x="-9" y="-9" width="18" height="18" fill="#5C4033" stroke="#000" stroke-width="2"/>
+    <rect x="9" y="-9" width="18" height="18" fill="#D2B48C" stroke="#000" stroke-width="2"/>
+    
+    <!-- Row 3 -->
+    <rect x="-27" y="9" width="18" height="18" fill="#5C4033" stroke="#000" stroke-width="2"/>
+    <rect x="-9" y="9" width="18" height="18" fill="#D2B48C" stroke="#000" stroke-width="2"/>
+    <rect x="9" y="9" width="18" height="18" fill="#5C4033" stroke="#000" stroke-width="2"/>
+  </g>
+</svg>
+
