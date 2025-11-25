@@ -4,7 +4,7 @@ import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtcha
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
-import { VideoChatTHREE } from './components/video-chatTHREE.js';
+// import { VideoChatTHREE } from './components/video-chatTHREE.js';
 
 export class GameBoard extends HTMLElement {
     constructor() {
@@ -92,7 +92,7 @@ export class GameBoard extends HTMLElement {
         }
         this.loadStartTime = Date.now();
 
-        this.rtchat = new RTChat({handlers: this.handlers, questionHandlers: this.questionHandlers, topic: topic, trustMode: "unsafe"}, VideoChatTHREE);
+        this.rtchat = new RTChat({handlers: this.handlers, questionHandlers: this.questionHandlers, topic: topic, trustMode: "unsafe"}); // VideoChatTHREE disabled
         this.shadowRoot.getElementById("chat").appendChild(this.rtchat);
         this.rtc = this.rtchat.rtc;
 
