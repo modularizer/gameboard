@@ -1,4 +1,4 @@
-import { BasicVideoChat } from 'https://modularizer.github.io/rtchat/rtchat.js';
+import { BasicVideoChat } from 'https://modularizer.github.io/rtchat/bundles/rtchat.min.js';
 //import { BasicVideoChat } from 'http://localhost:63342/rtchat/rtchat.js';
 
 class VideoChatTHREE extends BasicVideoChat {
