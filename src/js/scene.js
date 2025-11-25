@@ -918,6 +918,9 @@ export class CustomScene extends THREE.Scene {
         return diff;
     }
     _applyStateDiff(diff, oldState){
+        if (!diff || typeof diff !== 'object') {
+            return oldState;
+        }
         let newState = JSON.parse(JSON.stringify(oldState));
         for (let [name, update] of Object.entries(diff)){
             if (!oldState[name]){
@@ -987,9 +990,14 @@ export class CustomScene extends THREE.Scene {
         }
         this.log("loading from browser cache")
 
-        let diff = JSON.parse(localStorage.getItem(location.hash + "FullState"));
-        console.warn("loading cache", diff)
-        this.applyDiffFromFreshState(diff);
+        let cachedData = localStorage.getItem(location.hash + "FullState");
+        if (cachedData) {
+            let diff = JSON.parse(cachedData);
+            console.warn("loading cache", diff)
+            this.applyDiffFromFreshState(diff);
+        } else {
+            console.warn("no cached state found")
+        }
 //        setTimeout(this.checkZones.bind(this), 1000);
 
     }
