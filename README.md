@@ -1,29 +1,80 @@
-# 🎮 Gameboard
+# Gameboard
 
 **A serverless, multiplayer 3D board game platform with zero game-specific code.**
 
 Gameboard is a THREE.js-powered web application that renders multiplayer board games entirely from JSON configuration files. 
 Built with a spin-off sister repo [RTChat](https://github.com/modularizer/rtchat), it uses **public MQTT brokers and STUN servers** to establish peer-to-peer WebRTC connections, enabling real-time multiplayer gaming without a backend server.
 
-**🎯 [Play Now](https://modularizer.github.io/gameboard)** | **Sister Project:** [RTChat](https://github.com/modularizer/rtchat)
+![demo.gif](docs/demo.gif)
+![chess.png](docs/chess.png)
+
+
+**🎯 [Play Now](https://modularizer.github.io/gameboard#quoridor.punctuation.p1)** | **Sister Project:** [RTChat](https://github.com/modularizer/rtchat)
 
 ---
 
 ## 🌟 Features
 
-- ✅ **Completely Serverless**: No backend required - uses only public MQTT/STUN for signaling (~3kB/connection)
-- ✅ **Zero Game Logic**: All games defined purely through JSON config files
-- ✅ **Real-time Multiplayer**: WebRTC peer-to-peer connections with automatic state synchronization
-- ✅ **3D Graphics**: Powered by THREE.js with support for OBJ models, procedural shapes, and textures
-- ✅ **Universal Game Engine**: Chess, Quoridor, Scrabble, Ticket to Ride - all use the same code
-- ✅ **Declarative Templates**: JSON templates with loops, aliases, and inheritance
-- ✅ **Player Roles**: Support for multiple players, observers (public/omniscient), and spectators
-- ✅ **Built-in Scorecard**: Configurable scorekeeping with real-time sync
-- ✅ **Browser-based Persistence**: Local caching of game state
+- 🌐 **Completely Serverless**: No backend is used, no server, no databse - uses only public MQTT/STUN server for signaling (~3kB/connection)
+- 💾 **Browser-based Persistence**: Game states get saved in your browser and synced with the rest of the room when other members join
+- ⚡ **Real-time Multiplayer**: WebRTC peer-to-peer connections with automatic state synchronization
+- 💬 **Live Text, Audio, & Video Group Chat**: WebRTC peer-to-peer connections let you talk as you play
+- 🎨 **3D Graphics**: Powered by THREE.js with support for OBJ models, procedural shapes, and textures
+- 🎮 **Universal Game Engine**: Chess, Quoridor, Scrabble, Ticket to Ride - all use the same code
+- 📝 **Zero Game Logic**: All games defined purely through JSON config files which define images, 3D object files, and a configuration for how to setup our THREE.js environment
+- 🏗️ **Declarative Templates**: JSON templates with loops, aliases, and inheritance
+- 👥 **Player Roles**: Support for multiple players, observers (public/omniscient), and spectators
+- 📊 **Built-in Scorecard**: Configurable scorekeeping with real-time sync, but the scoreboard UI needs a lof of work...
+
+---
+
+## 🎲 Add Your Own Game!
+
+Want to create your own board game? **No programming required!** 
+Games are defined entirely through JSON configuration files.
+
+Notes:
+- There is no rule enforcement aside from where pieces snap to on the board
+- You CAN have
+  - randomized draw piles
+  - "hand" regions where the faces of the cards are only visible to the player holding them
+
+
+### Quick Start
+1. Fork this repo
+2. Create `/assets/games/yourgame/spec.json`
+3. Define your board, pieces, and rules in JSON
+4. Add game name to `/src/js/config.js`
+5. Push your code and enable GitHub Pages
+6. Play at https://your-name.github.io/gameboard/#your-game.punctuation.p1
+7. email [modularizer@gmail.com](mailto:modularizer@gmail.com) with questions or suggestions
+
+**[📖 Read the Complete Guide →](ADDING_GAMES.md)**
+
+### What You Can Build
+
+- ♟️ **Board Games** - Chess, Checkers, Go
+- 🃏 **Card Games** - Poker, Uno, Trading cards
+- 🎲 **Dice Games** - Yahtzee, Farkle
+- 🧩 **Puzzle Games** - Sliding puzzles, Tangrams
+- 🗺️ **Territory Games** - Risk, Catan-style games
+
+All using the same universal engine with zero game logic!
 
 ---
 
 ## 🎲 How It Works
+
+### 📑 Table of Contents
+
+| **Getting Started** | **Technical Deep Dive** | **Resources** |
+|:-------------------|:-----------------------|:-------------|
+| [🌟 Features](#-features) | [🎲 How It Works](#-how-it-works) | [📝 Example Config](#-example-minimal-game-config) |
+| [🎲 Add Your Own Game](#-add-your-own-game) | [📄 JSON Configuration](#-json-configuration-system) | [🤝 Contributing](#-contributing) |
+| [🚀 Getting Started](#-getting-started) | [🔧 Technical Details](#-technical-details) | [📜 License](#-license) |
+| [🎮 Supported Games](#-supported-games) | [🔐 Security & Privacy](#-security--privacy) | [🔗 Links](#-links) |
+
+---
 
 ### Architecture Overview
 
@@ -418,18 +469,18 @@ Save to `/assets/games/mygame/spec.json` and it's playable!
 
 ## 🤝 Contributing
 
-Contributions welcome! Easy ways to help:
+Want to contribute, fork, or have questions? 
 
-1. **Add new games** - Just create a JSON config
-2. **Add 3D models** - Free models from [GrabCAD](https://grabcad.com) work great
-3. **Improve templates** - Make JSON configs more concise
-4. **Fix bugs** - Check issues tab
+Contact me at [modularizer@gmail.com](mailto:modularizer@gmail.com)
+
 
 ---
 
 ## 📜 License
 
-MIT License - See [LICENSE](LICENSE)
+This is free and unencumbered software released into the public domain. See [LICENSE](LICENSE) for details.
+
+**TL;DR:** Do whatever you want with this code. No attribution required.
 
 ---
 
@@ -444,9 +495,7 @@ MIT License - See [LICENSE](LICENSE)
 ## 🔗 Links
 
 - **Live Demo**: [modularizer.github.io/gameboard](https://modularizer.github.io/gameboard)
+- **RTChat Live Demo**: [modularizer.github.io/rtchat](https://modularizer.github.io/rtchat)
 - **RTChat Repo**: [github.com/modularizer/rtchat](https://github.com/modularizer/rtchat)
 - **THREE.js Docs**: [threejs.org/docs](https://threejs.org/docs)
 
----
-
-**Built with ❤️ by the open source community**

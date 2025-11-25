@@ -3,6 +3,7 @@ import { RTChat, SignedMQTTRTCClient } from 'https://modularizer.github.io/rtcha
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
+import {gameNames, roomNames} from "./config";
 // import { VideoChatTHREE } from './components/video-chatTHREE.js';
 
 export class GameBoard extends HTMLElement {
@@ -60,8 +61,8 @@ export class GameBoard extends HTMLElement {
         wrapper.classList.add("fullscreen");
         this.shadowRoot.appendChild(wrapper);
 
-        this.gameNames = ["lobby", "quoridor", "chess", "card", "cube", "scrabble", "ticket_to_ride"]
-        this.roomNames = ["lobby", "octopus", "snail", "tree", "tortoise", "anchovie", "punctuation", "kettle", "circular", "squirrel", "caterpillar", "cucumber", "lightbulb", "snorkel", "giraffe", "chocolate"];
+        this.gameNames = gameNames;
+        this.roomNames = roomNames;
         this.secretRooms = JSON.parse(localStorage.getItem("secretRooms") || "[]");
         this.roomNames = this.roomNames.concat(this.secretRooms);
         this.roomNames.push("+");
