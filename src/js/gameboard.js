@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RTChat } from 'https://modularizer.github.io/rtchat/bundles/rtchat.esm.min.js';
+import { RTChat } from 'https://cdn.jsdelivr.net/gh/modularizer/rtchat@latest/bundles/rtchat.esm.min.js';
 import { KeyListeners } from './utils/keyListeners.js';
 import { CustomScene } from './scene.js';
 import { loadJSON } from './components/model.js';
