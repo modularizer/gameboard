@@ -91,9 +91,9 @@ export class GameBoard extends HTMLElement {
 
         let topic = location.hash.replace("#", "").split(".");
         if (topic.length == 0){
-            topic = "lobby.lobby";
+            topic = "quoridor.octopus";
         }else if (topic.length == 1){
-            topic = topic[0] + ".lobby";
+            topic = topic[0] + ".octopus";
         }else{
             topic = topic[0] + "." + topic[1];
         }
